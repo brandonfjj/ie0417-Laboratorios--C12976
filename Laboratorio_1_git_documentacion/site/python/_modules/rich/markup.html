@@ -1,0 +1,362 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.markup &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.markup</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.markup</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ast</span><span class="w"> </span><span class="kn">import</span> <span class="n">literal_eval</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">attrgetter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Match</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._emoji_replace</span><span class="w"> </span><span class="kn">import</span> <span class="n">_emoji_replace</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.emoji</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmojiVariant</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkupError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Span</span><span class="p">,</span> <span class="n">Text</span>
+
+<span class="n">RE_TAGS</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""((\\*)\[([a-z#/@][^[]*?)])"""</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">RE_HANDLER</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"^([\w.]*?)(\(.*?\))?$"</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Tag">
+<a class="viewcode-back" href="../../api/rich.html#rich.markup.Tag">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Tag</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A tag in console markup."""</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+<span class="w">    </span><span class="sd">"""The tag name. e.g. 'bold'."""</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">"""Any additional parameters after the name."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">markup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the string representation of this tag."""</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">]"</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="si">}</span><span class="s2">]"</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="n">_ReStringMatch</span> <span class="o">=</span> <span class="n">Match</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># regex match object</span>
+<span class="n">_ReSubCallable</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_ReStringMatch</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1"># Callable invoked by re.sub</span>
+<span class="n">_EscapeSubMethod</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_ReSubCallable</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>  <span class="c1"># Sub method of a compiled re</span>
+
+
+<div class="viewcode-block" id="escape">
+<a class="viewcode-back" href="../../api/rich.html#rich.markup.escape">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">escape</span><span class="p">(</span>
+    <span class="n">markup</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">_escape</span><span class="p">:</span> <span class="n">_EscapeSubMethod</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(</span><span class="se">\\</span><span class="s2">*)(\[[a-z#/@][^[]*?])"</span><span class="p">)</span><span class="o">.</span><span class="n">sub</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Escapes text so that it won't be interpreted as markup.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        markup (str): Content to be inserted in to markup.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Markup with square brackets escaped.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">escape_backslashes</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called by re.sub replace matches."""</span>
+        <span class="n">backslashes</span><span class="p">,</span> <span class="n">text</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">backslashes</span><span class="si">}{</span><span class="n">backslashes</span><span class="si">}</span><span class="se">\\</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span>
+
+    <span class="n">markup</span> <span class="o">=</span> <span class="n">_escape</span><span class="p">(</span><span class="n">escape_backslashes</span><span class="p">,</span> <span class="n">markup</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">markup</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\\</span><span class="s2">"</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">markup</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\\\\</span><span class="s2">"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">markup</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">"</span>
+
+    <span class="k">return</span> <span class="n">markup</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse</span><span class="p">(</span><span class="n">markup</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tag</span><span class="p">]]]:</span>
+<span class="w">    </span><span class="sd">"""Parse markup in to an iterable of tuples of (position, text, tag).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        markup (str): A string containing console markup</span>
+
+<span class="sd">    """</span>
+    <span class="n">position</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">_divmod</span> <span class="o">=</span> <span class="nb">divmod</span>
+    <span class="n">_Tag</span> <span class="o">=</span> <span class="n">Tag</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">RE_TAGS</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">markup</span><span class="p">):</span>
+        <span class="n">full_text</span><span class="p">,</span> <span class="n">escapes</span><span class="p">,</span> <span class="n">tag_text</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">position</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="n">markup</span><span class="p">[</span><span class="n">position</span><span class="p">:</span><span class="n">start</span><span class="p">],</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">escapes</span><span class="p">:</span>
+            <span class="n">backslashes</span><span class="p">,</span> <span class="n">escaped</span> <span class="o">=</span> <span class="n">_divmod</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">escapes</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">backslashes</span><span class="p">:</span>
+                <span class="c1"># Literal backslashes</span>
+                <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">"</span> <span class="o">*</span> <span class="n">backslashes</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="n">backslashes</span> <span class="o">*</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="n">escaped</span><span class="p">:</span>
+                <span class="c1"># Escape of tag</span>
+                <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="n">full_text</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">escapes</span><span class="p">)</span> <span class="p">:],</span> <span class="kc">None</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">end</span>
+                <span class="k">continue</span>
+        <span class="n">text</span><span class="p">,</span> <span class="n">equals</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">=</span> <span class="n">tag_text</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"="</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">start</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">_Tag</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">parameters</span> <span class="k">if</span> <span class="n">equals</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">end</span>
+    <span class="k">if</span> <span class="n">position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">markup</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">position</span><span class="p">,</span> <span class="n">markup</span><span class="p">[</span><span class="n">position</span><span class="p">:],</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="render">
+<a class="viewcode-back" href="../../api/rich.html#rich.markup.render">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span>
+    <span class="n">markup</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">style</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="n">emoji</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">emoji_variant</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">EmojiVariant</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Render console markup in to a Text instance.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        markup (str): A string containing console markup.</span>
+<span class="sd">        style: (Union[str, Style]): The style to use.</span>
+<span class="sd">        emoji (bool, optional): Also render emoji code. Defaults to True.</span>
+<span class="sd">        emoji_variant (str, optional): Optional emoji variant, either "text" or "emoji". Defaults to None.</span>
+
+
+<span class="sd">    Raises:</span>
+<span class="sd">        MarkupError: If there is a syntax error in the markup.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Text: A test instance.</span>
+<span class="sd">    """</span>
+    <span class="n">emoji_replace</span> <span class="o">=</span> <span class="n">_emoji_replace</span>
+    <span class="k">if</span> <span class="s2">"["</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">markup</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Text</span><span class="p">(</span>
+            <span class="n">emoji_replace</span><span class="p">(</span><span class="n">markup</span><span class="p">,</span> <span class="n">default_variant</span><span class="o">=</span><span class="n">emoji_variant</span><span class="p">)</span> <span class="k">if</span> <span class="n">emoji</span> <span class="k">else</span> <span class="n">markup</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+    <span class="n">append</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">append</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">normalize</span>
+
+    <span class="n">style_stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tag</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pop</span> <span class="o">=</span> <span class="n">style_stack</span><span class="o">.</span><span class="n">pop</span>
+
+    <span class="n">spans</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Span</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">append_span</span> <span class="o">=</span> <span class="n">spans</span><span class="o">.</span><span class="n">append</span>
+
+    <span class="n">_Span</span> <span class="o">=</span> <span class="n">Span</span>
+    <span class="n">_Tag</span> <span class="o">=</span> <span class="n">Tag</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop_style</span><span class="p">(</span><span class="n">style_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tag</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Pop tag matching given style name."""</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">style_stack</span><span class="p">),</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">style_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">style_name</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">position</span><span class="p">,</span> <span class="n">plain_text</span><span class="p">,</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">_parse</span><span class="p">(</span><span class="n">markup</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">plain_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Handle open brace escapes, where the brace is not part of a tag.</span>
+            <span class="n">plain_text</span> <span class="o">=</span> <span class="n">plain_text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\\</span><span class="s2">["</span><span class="p">,</span> <span class="s2">"["</span><span class="p">)</span>
+            <span class="n">append</span><span class="p">(</span><span class="n">emoji_replace</span><span class="p">(</span><span class="n">plain_text</span><span class="p">)</span> <span class="k">if</span> <span class="n">emoji</span> <span class="k">else</span> <span class="n">plain_text</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tag</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"/"</span><span class="p">):</span>  <span class="c1"># Closing tag</span>
+                <span class="n">style_name</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">style_name</span><span class="p">:</span>  <span class="c1"># explicit close</span>
+                    <span class="n">style_name</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">style_name</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">start</span><span class="p">,</span> <span class="n">open_tag</span> <span class="o">=</span> <span class="n">pop_style</span><span class="p">(</span><span class="n">style_name</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">MarkupError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"closing tag '</span><span class="si">{</span><span class="n">tag</span><span class="o">.</span><span class="n">markup</span><span class="si">}</span><span class="s2">' at position </span><span class="si">{</span><span class="n">position</span><span class="si">}</span><span class="s2"> doesn't match any open tag"</span>
+                        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># implicit close</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">start</span><span class="p">,</span> <span class="n">open_tag</span> <span class="o">=</span> <span class="n">pop</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="n">MarkupError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"closing tag '[/]' at position </span><span class="si">{</span><span class="n">position</span><span class="si">}</span><span class="s2"> has nothing to close"</span>
+                        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+                <span class="k">if</span> <span class="n">open_tag</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"@"</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">open_tag</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+                        <span class="n">handler_name</span> <span class="o">=</span> <span class="s2">""</span>
+                        <span class="n">parameters</span> <span class="o">=</span> <span class="n">open_tag</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+                        <span class="n">handler_match</span> <span class="o">=</span> <span class="n">RE_HANDLER</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">handler_match</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">handler_name</span><span class="p">,</span> <span class="n">match_parameters</span> <span class="o">=</span> <span class="n">handler_match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+                            <span class="n">parameters</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="s2">"()"</span> <span class="k">if</span> <span class="n">match_parameters</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">match_parameters</span>
+                            <span class="p">)</span>
+
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">meta_params</span> <span class="o">=</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">SyntaxError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">MarkupError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">"error parsing </span><span class="si">{</span><span class="n">parameters</span><span class="si">!r}</span><span class="s2"> in </span><span class="si">{</span><span class="n">open_tag</span><span class="o">.</span><span class="n">parameters</span><span class="si">!r}</span><span class="s2">; </span><span class="si">{</span><span class="n">error</span><span class="o">.</span><span class="n">msg</span><span class="si">}</span><span class="s2">"</span>
+                            <span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="n">MarkupError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">"error parsing </span><span class="si">{</span><span class="n">open_tag</span><span class="o">.</span><span class="n">parameters</span><span class="si">!r}</span><span class="s2">; </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span>
+                            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+                        <span class="k">if</span> <span class="n">handler_name</span><span class="p">:</span>
+                            <span class="n">meta_params</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">handler_name</span><span class="p">,</span>
+                                <span class="n">meta_params</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">meta_params</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
+                                <span class="k">else</span> <span class="p">(</span><span class="n">meta_params</span><span class="p">,),</span>
+                            <span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">meta_params</span> <span class="o">=</span> <span class="p">()</span>
+
+                    <span class="n">append_span</span><span class="p">(</span>
+                        <span class="n">_Span</span><span class="p">(</span>
+                            <span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">Style</span><span class="p">(</span><span class="n">meta</span><span class="o">=</span><span class="p">{</span><span class="n">open_tag</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">meta_params</span><span class="p">})</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">append_span</span><span class="p">(</span><span class="n">_Span</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">open_tag</span><span class="p">)))</span>
+
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Opening tag</span>
+                <span class="n">normalized_tag</span> <span class="o">=</span> <span class="n">_Tag</span><span class="p">(</span><span class="n">normalize</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="p">),</span> <span class="n">tag</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span>
+                <span class="n">style_stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">normalized_tag</span><span class="p">))</span>
+
+    <span class="n">text_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">style_stack</span><span class="p">:</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> <span class="n">style_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">style</span><span class="p">:</span>
+            <span class="n">append_span</span><span class="p">(</span><span class="n">_Span</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">text_length</span><span class="p">,</span> <span class="n">style</span><span class="p">))</span>
+
+    <span class="n">text</span><span class="o">.</span><span class="n">spans</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">spans</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">key</span><span class="o">=</span><span class="n">attrgetter</span><span class="p">(</span><span class="s2">"start"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">MARKUP</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"[red]Hello World[/red]"</span><span class="p">,</span>
+        <span class="s2">"[magenta]Hello [b]World[/b]"</span><span class="p">,</span>
+        <span class="s2">"[bold]Bold[italic] bold and italic [/bold]italic[/italic]"</span><span class="p">,</span>
+        <span class="s2">"Click [link=https://www.willmcgugan.com]here[/link] to visit my Blog"</span><span class="p">,</span>
+        <span class="s2">":warning-emoji: [bold red blink] DANGER![/]"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="nb">print</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+    <span class="n">grid</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s2">"Markup"</span><span class="p">,</span> <span class="s2">"Result"</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">markup</span> <span class="ow">in</span> <span class="n">MARKUP</span><span class="p">:</span>
+        <span class="n">grid</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="n">markup</span><span class="p">),</span> <span class="n">markup</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

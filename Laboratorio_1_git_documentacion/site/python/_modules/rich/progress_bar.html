@@ -1,0 +1,331 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.progress_bar &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.progress_bar</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.progress_bar</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">monotonic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">blend_rgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color_triplet</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorTriplet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">RenderResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Measurement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span><span class="p">,</span> <span class="n">StyleType</span>
+
+<span class="c1"># Number of characters before 'pulse' animation repeats</span>
+<span class="n">PULSE_SIZE</span> <span class="o">=</span> <span class="mi">20</span>
+
+
+<div class="viewcode-block" id="ProgressBar">
+<a class="viewcode-back" href="../../api/rich.html#rich.progress_bar.ProgressBar">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ProgressBar</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Renders a (progress) bar. Used by rich.progress.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        total (float, optional): Number of steps in the bar. Defaults to 100. Set to None to render a pulsing animation.</span>
+<span class="sd">        completed (float, optional): Number of steps completed. Defaults to 0.</span>
+<span class="sd">        width (int, optional): Width of the bar, or ``None`` for maximum width. Defaults to None.</span>
+<span class="sd">        pulse (bool, optional): Enable pulse effect. Defaults to False. Will pulse if a None total was passed.</span>
+<span class="sd">        style (StyleType, optional): Style for the bar background. Defaults to "bar.back".</span>
+<span class="sd">        complete_style (StyleType, optional): Style for the completed bar. Defaults to "bar.complete".</span>
+<span class="sd">        finished_style (StyleType, optional): Style for a finished bar. Defaults to "bar.finished".</span>
+<span class="sd">        pulse_style (StyleType, optional): Style for pulsing bars. Defaults to "bar.pulse".</span>
+<span class="sd">        animation_time (Optional[float], optional): Time in seconds to use for animation, or None to use system time.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">total</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span>
+        <span class="n">completed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pulse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"bar.back"</span><span class="p">,</span>
+        <span class="n">complete_style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"bar.complete"</span><span class="p">,</span>
+        <span class="n">finished_style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"bar.finished"</span><span class="p">,</span>
+        <span class="n">pulse_style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"bar.pulse"</span><span class="p">,</span>
+        <span class="n">animation_time</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed</span> <span class="o">=</span> <span class="n">completed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulse</span> <span class="o">=</span> <span class="n">pulse</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">complete_style</span> <span class="o">=</span> <span class="n">complete_style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finished_style</span> <span class="o">=</span> <span class="n">finished_style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pulse_style</span> <span class="o">=</span> <span class="n">pulse_style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">animation_time</span> <span class="o">=</span> <span class="n">animation_time</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pulse_segments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Segment</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;Bar </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">completed</span><span class="si">!r}</span><span class="s2"> of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="si">!r}</span><span class="s2">&gt;"</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">percentage_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Calculate percentage complete."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">completed</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">completed</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span>
+        <span class="n">completed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">completed</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">completed</span>
+
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_pulse_segments</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">fore_style</span><span class="p">:</span> <span class="n">Style</span><span class="p">,</span>
+        <span class="n">back_style</span><span class="p">:</span> <span class="n">Style</span><span class="p">,</span>
+        <span class="n">color_system</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">no_color</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="n">ascii</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Get a list of segments to render a pulse animation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[Segment]: A list of segments, one segment per character.</span>
+<span class="sd">        """</span>
+        <span class="n">bar</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="k">if</span> <span class="n">ascii</span> <span class="k">else</span> <span class="s2">"━"</span>
+        <span class="n">segments</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Segment</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">color_system</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"standard"</span><span class="p">,</span> <span class="s2">"eight_bit"</span><span class="p">,</span> <span class="s2">"truecolor"</span><span class="p">)</span> <span class="ow">or</span> <span class="n">no_color</span><span class="p">:</span>
+            <span class="n">segments</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Segment</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">fore_style</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span><span class="n">PULSE_SIZE</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">segments</span> <span class="o">+=</span> <span class="p">[</span><span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="k">if</span> <span class="n">no_color</span> <span class="k">else</span> <span class="n">bar</span><span class="p">,</span> <span class="n">back_style</span><span class="p">)]</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="n">PULSE_SIZE</span> <span class="o">-</span> <span class="p">(</span><span class="n">PULSE_SIZE</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">segments</span>
+
+        <span class="n">append</span> <span class="o">=</span> <span class="n">segments</span><span class="o">.</span><span class="n">append</span>
+        <span class="n">fore_color</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fore_style</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">fore_style</span><span class="o">.</span><span class="n">color</span>
+            <span class="k">else</span> <span class="n">ColorTriplet</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">back_color</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">back_style</span><span class="o">.</span><span class="n">color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">back_style</span><span class="o">.</span><span class="n">color</span>
+            <span class="k">else</span> <span class="n">ColorTriplet</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">cos</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">_Segment</span> <span class="o">=</span> <span class="n">Segment</span>
+        <span class="n">_Style</span> <span class="o">=</span> <span class="n">Style</span>
+        <span class="n">from_triplet</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_triplet</span>
+
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">PULSE_SIZE</span><span class="p">):</span>
+            <span class="n">position</span> <span class="o">=</span> <span class="n">index</span> <span class="o">/</span> <span class="n">PULSE_SIZE</span>
+            <span class="n">fade</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">position</span> <span class="o">*</span> <span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">blend_rgb</span><span class="p">(</span><span class="n">fore_color</span><span class="p">,</span> <span class="n">back_color</span><span class="p">,</span> <span class="n">cross_fade</span><span class="o">=</span><span class="n">fade</span><span class="p">)</span>
+            <span class="n">append</span><span class="p">(</span><span class="n">_Segment</span><span class="p">(</span><span class="n">bar</span><span class="p">,</span> <span class="n">_Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">from_triplet</span><span class="p">(</span><span class="n">color</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">segments</span>
+
+<div class="viewcode-block" id="ProgressBar.update">
+<a class="viewcode-back" href="../../api/rich.html#rich.progress_bar.ProgressBar.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">completed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Update progress with new values.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            completed (float): Number of steps completed.</span>
+<span class="sd">            total (float, optional): Total number of steps, or ``None`` to not change. Defaults to None.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">completed</span> <span class="o">=</span> <span class="n">completed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="o">=</span> <span class="n">total</span> <span class="k">if</span> <span class="n">total</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render_pulse</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">ascii</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Renders the pulse animation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            console (Console): Console instance.</span>
+<span class="sd">            width (int): Width in characters of pulse animation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RenderResult: [description]</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Iterator[Segment]: Segments to render pulse</span>
+<span class="sd">        """</span>
+        <span class="n">fore_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pulse_style</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"white"</span><span class="p">)</span>
+        <span class="n">back_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
+
+        <span class="n">pulse_segments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_pulse_segments</span><span class="p">(</span>
+            <span class="n">fore_style</span><span class="p">,</span> <span class="n">back_style</span><span class="p">,</span> <span class="n">console</span><span class="o">.</span><span class="n">color_system</span><span class="p">,</span> <span class="n">console</span><span class="o">.</span><span class="n">no_color</span><span class="p">,</span> <span class="n">ascii</span><span class="o">=</span><span class="n">ascii</span>
+        <span class="p">)</span>
+        <span class="n">segment_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse_segments</span><span class="p">)</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">monotonic</span><span class="p">()</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">animation_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">animation_time</span>
+        <span class="p">)</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="n">pulse_segments</span> <span class="o">*</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">width</span> <span class="o">/</span> <span class="n">segment_count</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="n">current_time</span> <span class="o">*</span> <span class="mi">15</span><span class="p">)</span> <span class="o">%</span> <span class="n">segment_count</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="n">offset</span> <span class="p">:</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">width</span><span class="p">]</span>
+        <span class="k">yield from</span> <span class="n">segments</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">)</span>
+        <span class="n">ascii</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">legacy_windows</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">ascii_only</span>
+        <span class="n">should_pulse</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pulse</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">should_pulse</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_pulse</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">ascii</span><span class="o">=</span><span class="n">ascii</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">completed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed</span><span class="p">))</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="p">)</span>
+
+        <span class="n">bar</span> <span class="o">=</span> <span class="s2">"-"</span> <span class="k">if</span> <span class="n">ascii</span> <span class="k">else</span> <span class="s2">"━"</span>
+        <span class="n">half_bar_right</span> <span class="o">=</span> <span class="s2">" "</span> <span class="k">if</span> <span class="n">ascii</span> <span class="k">else</span> <span class="s2">"╸"</span>
+        <span class="n">half_bar_left</span> <span class="o">=</span> <span class="s2">" "</span> <span class="k">if</span> <span class="n">ascii</span> <span class="k">else</span> <span class="s2">"╺"</span>
+        <span class="n">complete_halves</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">completed</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="ow">and</span> <span class="n">completed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">width</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="p">)</span>
+        <span class="n">bar_count</span> <span class="o">=</span> <span class="n">complete_halves</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">half_bar_count</span> <span class="o">=</span> <span class="n">complete_halves</span> <span class="o">%</span> <span class="mi">2</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">is_finished</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">completed</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total</span>
+        <span class="n">complete_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">finished_style</span> <span class="k">if</span> <span class="n">is_finished</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">complete_style</span>
+        <span class="p">)</span>
+        <span class="n">_Segment</span> <span class="o">=</span> <span class="n">Segment</span>
+        <span class="k">if</span> <span class="n">bar_count</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">bar</span> <span class="o">*</span> <span class="n">bar_count</span><span class="p">,</span> <span class="n">complete_style</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">half_bar_count</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">half_bar_right</span> <span class="o">*</span> <span class="n">half_bar_count</span><span class="p">,</span> <span class="n">complete_style</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">console</span><span class="o">.</span><span class="n">no_color</span><span class="p">:</span>
+            <span class="n">remaining_bars</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">bar_count</span> <span class="o">-</span> <span class="n">half_bar_count</span>
+            <span class="k">if</span> <span class="n">remaining_bars</span> <span class="ow">and</span> <span class="n">console</span><span class="o">.</span><span class="n">color_system</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">half_bar_count</span> <span class="ow">and</span> <span class="n">bar_count</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">half_bar_left</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+                    <span class="n">remaining_bars</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">remaining_bars</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">bar</span> <span class="o">*</span> <span class="n">remaining_bars</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_measure__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Measurement</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">Measurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">Measurement</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+    <span class="n">bar</span> <span class="o">=</span> <span class="n">ProgressBar</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">show_cursor</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">bar</span><span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">show_cursor</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

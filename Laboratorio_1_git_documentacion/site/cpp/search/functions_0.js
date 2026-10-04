@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['abandon_1289',['Abandon',['../classleveldb_1_1TableBuilder.html#a3b4dded079f960b8624bdfa13d967b94',1,'leveldb::TableBuilder']]],
+  ['add_1290',['Add',['../classleveldb_1_1TableBuilder.html#a37bd347cb6340215475ac9b42dc19d10',1,'leveldb::TableBuilder::Add()'],['../classleveldb_1_1MemTable.html#a37bec80954badb2354426aa175e9371f',1,'leveldb::MemTable::Add()'],['../classleveldb_1_1FindFileTest.html#a7daf932b5d9881438c6edb5f7881901c',1,'leveldb::FindFileTest::Add()'],['../classleveldb_1_1BlockBuilder.html#a17d0e23f1e7afcb874b22a0cb0b6cf17',1,'leveldb::BlockBuilder::Add()'],['../classleveldb_1_1Constructor.html#a5bb35f87d196065b8357200922aae69f',1,'leveldb::Constructor::Add()'],['../classleveldb_1_1Harness.html#a019ddc8e52dc5cfaac85f53993ab1ed4',1,'leveldb::Harness::Add()'],['../classleveldb_1_1BloomTest.html#a2f7777014cec7c35f85373e2832bfd88',1,'leveldb::BloomTest::Add()'],['../classleveldb_1_1Histogram.html#a7dd7147b7f6548f0bebde25ca40e4457',1,'leveldb::Histogram::Add()']]],
+  ['addboundaryinputs_1291',['AddBoundaryInputs',['../namespaceleveldb.html#aeec53d458eb11d3c7101bce65ee9aa67',1,'leveldb']]],
+  ['addboundaryinputstest_1292',['AddBoundaryInputsTest',['../classleveldb_1_1AddBoundaryInputsTest.html#a7fe8baaa1a1ca318a80c353ee5696164',1,'leveldb::AddBoundaryInputsTest']]],
+  ['addfile_1293',['AddFile',['../classleveldb_1_1VersionEdit.html#a4cd5cc92761b7ae5b5f9cff46cb88263',1,'leveldb::VersionEdit']]],
+  ['addinputdeletions_1294',['AddInputDeletions',['../classleveldb_1_1Compaction.html#abb1acdc9b882a7497603b13386e7e1a7',1,'leveldb::Compaction']]],
+  ['additerators_1295',['AddIterators',['../classleveldb_1_1Version.html#a035a0fa5bfe7ab84a711b1138b0b9a3d',1,'leveldb::Version']]],
+  ['addkey_1296',['AddKey',['../classleveldb_1_1FilterBlockBuilder.html#a4fd9db735c5c72973cec62e4fd98137d',1,'leveldb::FilterBlockBuilder']]],
+  ['addlivefiles_1297',['AddLiveFiles',['../classleveldb_1_1VersionSet.html#a3b3c810f0fea88db81b94e604b3dd78f',1,'leveldb::VersionSet']]],
+  ['addrecord_1298',['AddRecord',['../classleveldb_1_1log_1_1Writer.html#acb4abda5a5348ac1771657ff01bf2fad',1,'leveldb::log::Writer']]],
+  ['afterfile_1299',['AfterFile',['../namespaceleveldb.html#a7f9c247b8bae634426f95a6a4443ebfc',1,'leveldb']]],
+  ['allentriesfor_1300',['AllEntriesFor',['../classleveldb_1_1DBTest.html#adaf171601eaaf2cd24edaa394752f733',1,'leveldb::DBTest']]],
+  ['allocate_1301',['Allocate',['../classleveldb_1_1Arena.html#add4bc4b1c8fdf5be7a96a7ec00a0732e',1,'leveldb::Arena']]],
+  ['allocatealigned_1302',['AllocateAligned',['../classleveldb_1_1Arena.html#a9c1e8e695fe25ac96063f9fbacefee9e',1,'leveldb::Arena']]],
+  ['append_1303',['Append',['../classleveldb_1_1WritableFile.html#a53b41841d9577d28f65d4d90e1660de8',1,'leveldb::WritableFile::Append()'],['../classleveldb_1_1StringSink.html#a6eec5d38dd2f49b43657eee5db5a4593',1,'leveldb::StringSink::Append()'],['../classleveldb_1_1WriteBatchInternal.html#ac83c9a45a815c16ad8602b99b752b4bc',1,'leveldb::WriteBatchInternal::Append()'],['../classleveldb_1_1TestWritableFile.html#af0786b4d38da760caeb1acb161612eca',1,'leveldb::TestWritableFile::Append()'],['../classleveldb_1_1WriteBatch.html#a90424a9947fb7501eec2c31acf96e27f',1,'leveldb::WriteBatch::Append()']]],
+  ['appendescapedstringto_1304',['AppendEscapedStringTo',['../namespaceleveldb.html#aa4dfa82a4c1a31fcb076f2ba59f13b19',1,'leveldb']]],
+  ['appendinternalkey_1305',['AppendInternalKey',['../namespaceleveldb.html#a7192bb79e7fa6ba01490473941386534',1,'leveldb']]],
+  ['appendnumberto_1306',['AppendNumberTo',['../namespaceleveldb.html#a089617d12900e6fe5b712c31f651b5ff',1,'leveldb']]],
+  ['apply_1307',['Apply',['../classleveldb_1_1VersionSet_1_1Builder.html#a107e3ef1ea5449f5e1926f5fc028c32f',1,'leveldb::VersionSet::Builder']]],
+  ['approximatememoryusage_1308',['ApproximateMemoryUsage',['../classleveldb_1_1MemTable.html#a667a1ada274201f0bdd3615baf1bd882',1,'leveldb::MemTable']]],
+  ['approximateoffsetof_1309',['ApproximateOffsetOf',['../classleveldb_1_1Table.html#ae9f828f621836e12d154cbe78d6fba3e',1,'leveldb::Table::ApproximateOffsetOf()'],['../classleveldb_1_1VersionSet.html#ada7f3ed63b1c48adb6e5b38348b300e1',1,'leveldb::VersionSet::ApproximateOffsetOf()'],['../classleveldb_1_1TableConstructor.html#afceedae5bc8e477c94f1b7a3afb726a2',1,'leveldb::TableConstructor::ApproximateOffsetOf()']]],
+  ['approximatesize_1310',['ApproximateSize',['../classleveldb_1_1WriteBatch.html#a26cb7284100815458592a7d98b33e66c',1,'leveldb::WriteBatch']]],
+  ['arena_1311',['Arena',['../classleveldb_1_1Arena.html#a612fe3668024ddf7b92f632afa1361ca',1,'leveldb::Arena::Arena()'],['../classleveldb_1_1Arena.html#a8d817e87bd425306e8f913e5cd0731c3',1,'leveldb::Arena::Arena(const Arena &amp;)=delete']]],
+  ['autocompacttest_1312',['AutoCompactTest',['../classleveldb_1_1AutoCompactTest.html#a31fe0ded855f188fac1650c70849760c',1,'leveldb::AutoCompactTest']]]
+];

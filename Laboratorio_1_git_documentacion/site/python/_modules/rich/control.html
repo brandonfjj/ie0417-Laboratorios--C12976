@@ -1,0 +1,357 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.control &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.control</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.control</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Final</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">ControlCode</span><span class="p">,</span> <span class="n">ControlType</span><span class="p">,</span> <span class="n">Segment</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">RenderResult</span>
+
+<span class="n">STRIP_CONTROL_CODES</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="mi">7</span><span class="p">,</span>  <span class="c1"># Bell</span>
+    <span class="mi">8</span><span class="p">,</span>  <span class="c1"># Backspace</span>
+    <span class="mi">11</span><span class="p">,</span>  <span class="c1"># Vertical tab</span>
+    <span class="mi">12</span><span class="p">,</span>  <span class="c1"># Form feed</span>
+    <span class="mi">13</span><span class="p">,</span>  <span class="c1"># Carriage return</span>
+<span class="p">]</span>
+<span class="n">_CONTROL_STRIP_TRANSLATE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">_codepoint</span><span class="p">:</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">_codepoint</span> <span class="ow">in</span> <span class="n">STRIP_CONTROL_CODES</span>
+<span class="p">}</span>
+
+<span class="n">CONTROL_ESCAPE</span><span class="p">:</span> <span class="n">Final</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">a"</span><span class="p">,</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">b"</span><span class="p">,</span>
+    <span class="mi">11</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">v"</span><span class="p">,</span>
+    <span class="mi">12</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">f"</span><span class="p">,</span>
+    <span class="mi">13</span><span class="p">:</span> <span class="s2">"</span><span class="se">\\</span><span class="s2">r"</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">CONTROL_CODES_FORMAT</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">BELL</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x07</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CARRIAGE_RETURN</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">HOME</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[H"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CLEAR</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[2J"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">ENABLE_ALT_SCREEN</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[?1049h"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">DISABLE_ALT_SCREEN</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[?1049l"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">SHOW_CURSOR</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[?25h"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">HIDE_CURSOR</span><span class="p">:</span> <span class="k">lambda</span><span class="p">:</span> <span class="s2">"</span><span class="se">\x1b</span><span class="s2">[?25l"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_UP</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">A"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_DOWN</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">B"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_FORWARD</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">C"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_BACKWARD</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">D"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_MOVE_TO_COLUMN</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">G"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">ERASE_IN_LINE</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">param</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">param</span><span class="si">}</span><span class="s2">K"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_MOVE_TO</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">y</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">H"</span><span class="p">,</span>
+    <span class="n">ControlType</span><span class="o">.</span><span class="n">SET_WINDOW_TITLE</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">title</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">]0;</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="se">\x07</span><span class="s2">"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="Control">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Control</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A renderable that inserts a control code (non printable but may move cursor).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        *codes (str): Positional arguments are either a :class:`~rich.segment.ControlType` enum or a</span>
+<span class="sd">            tuple of ControlType and an integer parameter</span>
+<span class="sd">    """</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"segment"</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">codes</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ControlType</span><span class="p">,</span> <span class="n">ControlCode</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">control_codes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ControlCode</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="p">(</span><span class="n">code</span><span class="p">,)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">code</span><span class="p">,</span> <span class="n">ControlType</span><span class="p">)</span> <span class="k">else</span> <span class="n">code</span> <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">codes</span>
+        <span class="p">]</span>
+        <span class="n">_format_map</span> <span class="o">=</span> <span class="n">CONTROL_CODES_FORMAT</span>
+        <span class="n">rendered_codes</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">_format_map</span><span class="p">[</span><span class="n">code</span><span class="p">](</span><span class="o">*</span><span class="n">parameters</span><span class="p">)</span> <span class="k">for</span> <span class="n">code</span><span class="p">,</span> <span class="o">*</span><span class="n">parameters</span> <span class="ow">in</span> <span class="n">control_codes</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="n">rendered_codes</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">control_codes</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Control.bell">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.bell">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bell</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Ring the 'bell'."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">BELL</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.home">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.home">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">home</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Move cursor to 'home' position."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">HOME</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.move">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.move">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Move cursor relative to current position.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (int): X offset.</span>
+<span class="sd">            y (int): Y offset.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ~Control: Control object.</span>
+
+<span class="sd">        """</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_codes</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ControlCode</span><span class="p">]:</span>
+            <span class="n">control</span> <span class="o">=</span> <span class="n">ControlType</span>
+            <span class="k">if</span> <span class="n">x</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span>
+                    <span class="n">control</span><span class="o">.</span><span class="n">CURSOR_FORWARD</span> <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">control</span><span class="o">.</span><span class="n">CURSOR_BACKWARD</span><span class="p">,</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">y</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="p">(</span>
+                    <span class="n">control</span><span class="o">.</span><span class="n">CURSOR_DOWN</span> <span class="k">if</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">control</span><span class="o">.</span><span class="n">CURSOR_UP</span><span class="p">,</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+                <span class="p">)</span>
+
+        <span class="n">control</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="o">*</span><span class="n">get_codes</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">control</span></div>
+
+
+<div class="viewcode-block" id="Control.move_to_column">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.move_to_column">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_to_column</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Move to the given column, optionally add offset to row.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            x (int): absolute x (column)</span>
+<span class="sd">            y (int): optional y offset (row)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ~Control: Control object.</span>
+<span class="sd">        """</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">cls</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_MOVE_TO_COLUMN</span><span class="p">,</span> <span class="n">x</span><span class="p">),</span>
+                <span class="p">(</span>
+                    <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_DOWN</span> <span class="k">if</span> <span class="n">y</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_UP</span><span class="p">,</span>
+                    <span class="nb">abs</span><span class="p">(</span><span class="n">y</span><span class="p">),</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">y</span>
+            <span class="k">else</span> <span class="bp">cls</span><span class="p">((</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_MOVE_TO_COLUMN</span><span class="p">,</span> <span class="n">x</span><span class="p">))</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.move_to">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.move_to">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move_to</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Move cursor to absolute position.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x (int): x offset (column)</span>
+<span class="sd">            y (int): y offset (row)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ~Control: Control object.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">((</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_MOVE_TO</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Control.clear">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.clear">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Clear the screen."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CLEAR</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.show_cursor">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.show_cursor">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">show_cursor</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">show</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Show or hide the cursor."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">SHOW_CURSOR</span> <span class="k">if</span> <span class="n">show</span> <span class="k">else</span> <span class="n">ControlType</span><span class="o">.</span><span class="n">HIDE_CURSOR</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.alt_screen">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.alt_screen">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">alt_screen</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">enable</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Enable or disable alt screen."""</span>
+        <span class="k">if</span> <span class="n">enable</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">ENABLE_ALT_SCREEN</span><span class="p">,</span> <span class="n">ControlType</span><span class="o">.</span><span class="n">HOME</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">DISABLE_ALT_SCREEN</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Control.title">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.Control.title">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">title</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Control"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set the terminal window title</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            title (str): The new terminal window title</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">((</span><span class="n">ControlType</span><span class="o">.</span><span class="n">SET_WINDOW_TITLE</span><span class="p">,</span> <span class="n">title</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">text</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"RenderResult"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">text</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment</span></div>
+
+
+
+<div class="viewcode-block" id="strip_control_codes">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.strip_control_codes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">strip_control_codes</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_translate_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">_CONTROL_STRIP_TRANSLATE</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Remove control codes from text.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): A string possibly contain control codes.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: String with control codes removed.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">_translate_table</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="escape_control_codes">
+<a class="viewcode-back" href="../../api/rich.html#rich.control.escape_control_codes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">escape_control_codes</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">_translate_table</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">CONTROL_ESCAPE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Replace control codes with their "escaped" equivalent in the given text.</span>
+<span class="sd">    (e.g. "\b" becomes "\\b")</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): A string possibly containing control codes.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: String with control codes replaced with their escaped version.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">_translate_table</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"Look at the title of your terminal window ^"</span><span class="p">)</span>
+    <span class="c1"># console.print(Control((ControlType.SET_WINDOW_TITLE, "Hello, world!")))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">set_window_title</span><span class="p">(</span><span class="s2">"🚀 Loading"</span> <span class="o">+</span> <span class="s2">"."</span> <span class="o">*</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

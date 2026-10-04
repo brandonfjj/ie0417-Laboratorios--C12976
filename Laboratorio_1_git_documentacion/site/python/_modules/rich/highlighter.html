@@ -1,0 +1,364 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.highlighter &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.highlighter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.highlighter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Span</span><span class="p">,</span> <span class="n">Text</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_combine_regex</span><span class="p">(</span><span class="o">*</span><span class="n">regexes</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Combine a number of regexes in to a single regex.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: New regex with all regexes ORed together.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="s2">"|"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">regexes</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Highlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.Highlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Highlighter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Abstract base class for highlighters."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Text</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Highlight a str or Text instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (Union[str, ~Text]): Text to highlight.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            TypeError: If not called with text or str.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Text: A test instance with highlighting applied.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">highlight_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">Text</span><span class="p">):</span>
+            <span class="n">highlight_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"str or Text instance required, not </span><span class="si">{</span><span class="n">text</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">highlight_text</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">highlight_text</span>
+
+<div class="viewcode-block" id="Highlighter.highlight">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.Highlighter.highlight">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Apply highlighting in place to text.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (~Text): A text object highlight.</span>
+<span class="sd">        """</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="NullHighlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.NullHighlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NullHighlighter</span><span class="p">(</span><span class="n">Highlighter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A highlighter object that doesn't highlight.</span>
+
+<span class="sd">    May be used to disable highlighting entirely.</span>
+
+<span class="sd">    """</span>
+
+<div class="viewcode-block" id="NullHighlighter.highlight">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.NullHighlighter.highlight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Nothing to do"""</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegexHighlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.RegexHighlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegexHighlighter</span><span class="p">(</span><span class="n">Highlighter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Applies highlighting from a list of regular expressions."""</span>
+
+    <span class="n">highlights</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">base_style</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>
+
+<div class="viewcode-block" id="RegexHighlighter.highlight">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.RegexHighlighter.highlight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Highlight :class:`rich.text.Text` using regular expressions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (~Text): Text to highlighted.</span>
+
+<span class="sd">        """</span>
+
+        <span class="n">highlight_regex</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">highlight_regex</span>
+        <span class="k">for</span> <span class="n">re_highlight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">highlights</span><span class="p">:</span>
+            <span class="n">highlight_regex</span><span class="p">(</span><span class="n">re_highlight</span><span class="p">,</span> <span class="n">style_prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">base_style</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ReprHighlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.ReprHighlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReprHighlighter</span><span class="p">(</span><span class="n">RegexHighlighter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Highlights the text typically produced from ``__repr__`` methods."""</span>
+
+    <span class="n">base_style</span> <span class="o">=</span> <span class="s2">"repr."</span>
+    <span class="n">highlights</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">r</span><span class="s2">"(?P&lt;tag_start&gt;&lt;)(?P&lt;tag_name&gt;[-\w.:|]*)(?P&lt;tag_contents&gt;[\w\W]*)(?P&lt;tag_end&gt;&gt;)"</span><span class="p">,</span>
+        <span class="sa">r</span><span class="s1">'(?P&lt;attrib_name&gt;[\w_]{1,50})=(?P&lt;attrib_value&gt;"?[\w_]+"?)?'</span><span class="p">,</span>
+        <span class="sa">r</span><span class="s2">"(?P&lt;brace&gt;[][</span><span class="si">{}</span><span class="s2">()])"</span><span class="p">,</span>
+        <span class="n">_combine_regex</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;ipv4&gt;[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;ipv6&gt;([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;eui64&gt;(?:[0-9A-Fa-f]{1,2}-)</span><span class="si">{7}</span><span class="s2">[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:)</span><span class="si">{7}</span><span class="s2">[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]</span><span class="si">{4}</span><span class="s2">\.)</span><span class="si">{3}</span><span class="s2">[0-9A-Fa-f]</span><span class="si">{4}</span><span class="s2">)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;eui48&gt;(?:[0-9A-Fa-f]{1,2}-)</span><span class="si">{5}</span><span class="s2">[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]{1,2}:)</span><span class="si">{5}</span><span class="s2">[0-9A-Fa-f]{1,2}|(?:[0-9A-Fa-f]</span><span class="si">{4}</span><span class="s2">\.)</span><span class="si">{2}</span><span class="s2">[0-9A-Fa-f]</span><span class="si">{4}</span><span class="s2">)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;uuid&gt;[a-fA-F0-9]</span><span class="si">{8}</span><span class="s2">-[a-fA-F0-9]</span><span class="si">{4}</span><span class="s2">-[a-fA-F0-9]</span><span class="si">{4}</span><span class="s2">-[a-fA-F0-9]</span><span class="si">{4}</span><span class="s2">-[a-fA-F0-9]</span><span class="si">{12}</span><span class="s2">)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;call&gt;[\w.]*?)\("</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"\b(?P&lt;bool_true&gt;True)\b|\b(?P&lt;bool_false&gt;False)\b|\b(?P&lt;none&gt;None)\b"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;ellipsis&gt;\.\.\.)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;number_complex&gt;(?&lt;!\w)(?:\-?[0-9]+\.?[0-9]*(?:e[-+]?\d+?)?)(?:[-+](?:[0-9]+\.?[0-9]*(?:e[-+]?\d+)?))?j)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;number&gt;(?&lt;!\w)\-?[0-9]+\.?[0-9]*(e[-+]?\d+?)?\b|0x[0-9a-fA-F]*)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;path&gt;\B(/[-\w._+]+)*\/)(?P&lt;filename&gt;[-\w._+]*)?"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?&lt;![</span><span class="se">\\</span><span class="s2">\w])(?P&lt;str&gt;b?'''.*?(?&lt;!</span><span class="se">\\</span><span class="s2">)'''|b?'.*?(?&lt;!</span><span class="se">\\</span><span class="s2">)'|b?</span><span class="se">\"\"\"</span><span class="s2">.*?(?&lt;!</span><span class="se">\\</span><span class="s2">)</span><span class="se">\"\"\"</span><span class="s2">|b?</span><span class="se">\"</span><span class="s2">.*?(?&lt;!</span><span class="se">\\</span><span class="s2">)</span><span class="se">\"</span><span class="s2">)"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;url&gt;(file|https|http|ws|wss)://[-0-9a-zA-Z$_+!`(),.?/;:&amp;=%#~@]*)"</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="JSONHighlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.JSONHighlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">JSONHighlighter</span><span class="p">(</span><span class="n">RegexHighlighter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Highlights JSON"""</span>
+
+    <span class="c1"># Captures the start and end of JSON strings, handling escaped quotes</span>
+    <span class="n">JSON_STR</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"(?&lt;![</span><span class="se">\\</span><span class="s2">\w])(?P&lt;str&gt;b?</span><span class="se">\"</span><span class="s2">.*?(?&lt;!</span><span class="se">\\</span><span class="s2">)</span><span class="se">\"</span><span class="s2">)"</span>
+    <span class="n">JSON_WHITESPACE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">" "</span><span class="p">,</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">}</span>
+
+    <span class="n">base_style</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"json."</span>
+    <span class="n">highlights</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_combine_regex</span><span class="p">(</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;brace&gt;[\{\[\(\)\]\}])"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"\b(?P&lt;bool_true&gt;true)\b|\b(?P&lt;bool_false&gt;false)\b|\b(?P&lt;null&gt;null)\b"</span><span class="p">,</span>
+            <span class="sa">r</span><span class="s2">"(?P&lt;number&gt;(?&lt;!\w)\-?[0-9]+\.?[0-9]*(e[\-\+]?\d+?)?\b|0x[0-9a-fA-F]*)"</span><span class="p">,</span>
+            <span class="n">JSON_STR</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="JSONHighlighter.highlight">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.JSONHighlighter.highlight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="c1"># Additional work to handle highlighting JSON keys</span>
+        <span class="n">plain</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">plain</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">spans</span><span class="o">.</span><span class="n">append</span>
+        <span class="n">whitespace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">JSON_WHITESPACE</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">JSON_STR</span><span class="p">,</span> <span class="n">plain</span><span class="p">):</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">()</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">end</span>
+            <span class="k">while</span> <span class="n">cursor</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">plain</span><span class="p">):</span>
+                <span class="n">char</span> <span class="o">=</span> <span class="n">plain</span><span class="p">[</span><span class="n">cursor</span><span class="p">]</span>
+                <span class="n">cursor</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">char</span> <span class="o">==</span> <span class="s2">":"</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="n">Span</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="s2">"json.key"</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">whitespace</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="k">break</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ISO8601Highlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.highlighter.ISO8601Highlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ISO8601Highlighter</span><span class="p">(</span><span class="n">RegexHighlighter</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Highlights the ISO8601 date time strings.</span>
+<span class="sd">    Regex reference: https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s07.html</span>
+<span class="sd">    """</span>
+
+    <span class="n">base_style</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"iso8601."</span>
+    <span class="n">highlights</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c1">#</span>
+        <span class="c1"># Dates</span>
+        <span class="c1">#</span>
+        <span class="c1"># Calendar month (e.g. 2008-08). The hyphen is required</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)-(?P&lt;month&gt;1[0-2]|0[1-9])$"</span><span class="p">,</span>
+        <span class="c1"># Calendar date w/o hyphens (e.g. 20080830)</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)(?P&lt;month&gt;1[0-2]|0[1-9])(?P&lt;day&gt;3[01]|0[1-9]|[12][0-9]))$"</span><span class="p">,</span>
+        <span class="c1"># Ordinal date (e.g. 2008-243). The hyphen is optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)-?(?P&lt;day&gt;36[0-6]|3[0-5][0-9]|[12][0-9]</span><span class="si">{2}</span><span class="s2">|0[1-9][0-9]|00[1-9]))$"</span><span class="p">,</span>
+        <span class="c1">#</span>
+        <span class="c1"># Weeks</span>
+        <span class="c1">#</span>
+        <span class="c1"># Week of the year (e.g., 2008-W35). The hyphen is optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)-?W(?P&lt;week&gt;5[0-3]|[1-4][0-9]|0[1-9]))$"</span><span class="p">,</span>
+        <span class="c1"># Week date (e.g., 2008-W35-6). The hyphens are optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)-?W(?P&lt;week&gt;5[0-3]|[1-4][0-9]|0[1-9])-?(?P&lt;day&gt;[1-7]))$"</span><span class="p">,</span>
+        <span class="c1">#</span>
+        <span class="c1"># Times</span>
+        <span class="c1">#</span>
+        <span class="c1"># Hours and minutes (e.g., 17:21). The colon is optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9]):?(?P&lt;minute&gt;[0-5][0-9]))$"</span><span class="p">,</span>
+        <span class="c1"># Hours, minutes, and seconds w/o colons (e.g., 172159)</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9])(?P&lt;minute&gt;[0-5][0-9])(?P&lt;second&gt;[0-5][0-9]))$"</span><span class="p">,</span>
+        <span class="c1"># Time zone designator (e.g., Z, +07 or +07:00). The colons and the minutes are optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;timezone&gt;(Z|[+-](?:2[0-3]|[01][0-9])(?::?(?:[0-5][0-9]))?))$"</span><span class="p">,</span>
+        <span class="c1"># Hours, minutes, and seconds with time zone designator (e.g., 17:21:59+07:00).</span>
+        <span class="c1"># All the colons are optional. The minutes in the time zone designator are also optional</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9])(?P&lt;minute&gt;[0-5][0-9])(?P&lt;second&gt;[0-5][0-9]))(?P&lt;timezone&gt;Z|[+-](?:2[0-3]|[01][0-9])(?::?(?:[0-5][0-9]))?)$"</span><span class="p">,</span>
+        <span class="c1">#</span>
+        <span class="c1"># Date and Time</span>
+        <span class="c1">#</span>
+        <span class="c1"># Calendar date with hours, minutes, and seconds (e.g., 2008-08-30 17:21:59 or 20080830 172159).</span>
+        <span class="c1"># A space is required between the date and the time. The hyphens and colons are optional.</span>
+        <span class="c1"># This regex matches dates and times that specify some hyphens or colons but omit others.</span>
+        <span class="c1"># This does not follow ISO 8601</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;[0-9]</span><span class="si">{4}</span><span class="s2">)(?P&lt;hyphen&gt;-)?(?P&lt;month&gt;1[0-2]|0[1-9])(?(hyphen)-)(?P&lt;day&gt;3[01]|0[1-9]|[12][0-9])) (?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9])(?(hyphen):)(?P&lt;minute&gt;[0-5][0-9])(?(hyphen):)(?P&lt;second&gt;[0-5][0-9]))$"</span><span class="p">,</span>
+        <span class="c1">#</span>
+        <span class="c1"># XML Schema dates and times</span>
+        <span class="c1">#</span>
+        <span class="c1"># Date, with optional time zone (e.g., 2008-08-30 or 2008-08-30+07:00).</span>
+        <span class="c1"># Hyphens are required. This is the XML Schema 'date' type</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;-?(?:[1-9][0-9]*)?[0-9]</span><span class="si">{4}</span><span class="s2">)-(?P&lt;month&gt;1[0-2]|0[1-9])-(?P&lt;day&gt;3[01]|0[1-9]|[12][0-9]))(?P&lt;timezone&gt;Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$"</span><span class="p">,</span>
+        <span class="c1"># Time, with optional fractional seconds and time zone (e.g., 01:45:36 or 01:45:36.123+07:00).</span>
+        <span class="c1"># There is no limit on the number of digits for the fractional seconds. This is the XML Schema 'time' type</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9]):(?P&lt;minute&gt;[0-5][0-9]):(?P&lt;second&gt;[0-5][0-9])(?P&lt;frac&gt;\.[0-9]+)?)(?P&lt;timezone&gt;Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$"</span><span class="p">,</span>
+        <span class="c1"># Date and time, with optional fractional seconds and time zone (e.g., 2008-08-30T01:45:36 or 2008-08-30T01:45:36.123Z).</span>
+        <span class="c1"># This is the XML Schema 'dateTime' type</span>
+        <span class="sa">r</span><span class="s2">"^(?P&lt;date&gt;(?P&lt;year&gt;-?(?:[1-9][0-9]*)?[0-9]</span><span class="si">{4}</span><span class="s2">)-(?P&lt;month&gt;1[0-2]|0[1-9])-(?P&lt;day&gt;3[01]|0[1-9]|[12][0-9]))T(?P&lt;time&gt;(?P&lt;hour&gt;2[0-3]|[01][0-9]):(?P&lt;minute&gt;[0-5][0-9]):(?P&lt;second&gt;[0-5][0-9])(?P&lt;ms&gt;\.[0-9]+)?)(?P&lt;timezone&gt;Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$"</span><span class="p">,</span>
+    <span class="p">]</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"[bold green]hello world![/bold green]"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"'[bold green]hello world![/bold green]'"</span><span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">" /foo"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"foo/bar/baz"</span><span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar/baz?foo=bar+egg&amp;egg=baz"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar/baz/"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar/baz/egg"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar/baz/egg.py"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"/foo/bar/baz/egg.py word"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">" /foo/bar/baz/egg.py word"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"foo /foo/bar/baz/egg.py word"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"foo /foo/bar/ba._++z/egg+.py word"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"https://example.org?foo=bar#header"</span><span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="mf">1234567.34</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">123123123123</span><span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+        <span class="s2">"127.0.1.1 bar 192.168.1.4 2001:0db8:85a3:0000:0000:8a2e:0370:7334 foo"</span>
+    <span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print_json</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="p">{</span><span class="s2">"name"</span><span class="p">:</span> <span class="s2">"apple"</span><span class="p">,</span> <span class="s2">"count"</span><span class="p">:</span> <span class="mi">1</span><span class="p">}),</span> <span class="n">indent</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

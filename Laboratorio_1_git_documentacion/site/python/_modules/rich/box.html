@@ -1,0 +1,594 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.box &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.box</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.box</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Literal</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">loop_last</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">ConsoleOptions</span>
+
+
+<div class="viewcode-block" id="Box">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Box</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Defines characters to render boxes.</span>
+
+<span class="sd">    ┌─┬┐ top</span>
+<span class="sd">    │ ││ head</span>
+<span class="sd">    ├─┼┤ head_row</span>
+<span class="sd">    │ ││ mid</span>
+<span class="sd">    ├─┼┤ row</span>
+<span class="sd">    ├─┼┤ foot_row</span>
+<span class="sd">    │ ││ foot</span>
+<span class="sd">    └─┴┘ bottom</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        box (str): Characters making up box.</span>
+<span class="sd">        ascii (bool, optional): True if this box uses ascii characters only. Default is False.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">box</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">ascii</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_box</span> <span class="o">=</span> <span class="n">box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ascii</span> <span class="o">=</span> <span class="n">ascii</span>
+        <span class="n">line1</span><span class="p">,</span> <span class="n">line2</span><span class="p">,</span> <span class="n">line3</span><span class="p">,</span> <span class="n">line4</span><span class="p">,</span> <span class="n">line5</span><span class="p">,</span> <span class="n">line6</span><span class="p">,</span> <span class="n">line7</span><span class="p">,</span> <span class="n">line8</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="c1"># top</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">top_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_divider</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">top_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line1</span><span class="p">)</span>
+        <span class="c1"># head</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">head_left</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_vertical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line2</span><span class="p">)</span>
+        <span class="c1"># head_row</span>
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_row_left</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_row_horizontal</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_row_cross</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_row_right</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line3</span><span class="p">)</span>
+
+        <span class="c1"># mid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mid_left</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_vertical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line4</span><span class="p">)</span>
+        <span class="c1"># row</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_horizontal</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_cross</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line5</span><span class="p">)</span>
+        <span class="c1"># foot_row</span>
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_left</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_horizontal</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_cross</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_right</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line6</span><span class="p">)</span>
+        <span class="c1"># foot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">foot_left</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_vertical</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line7</span><span class="p">)</span>
+        <span class="c1"># bottom</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_divider</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottom_right</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span>
+            <span class="n">line8</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">"Box(...)"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_box</span>
+
+<div class="viewcode-block" id="Box.substitute">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box.substitute">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">substitute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span><span class="p">,</span> <span class="n">safe</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Box"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Substitute this box for another if it won't render due to platform issues.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            options (ConsoleOptions): Console options used in rendering.</span>
+<span class="sd">            safe (bool, optional): Substitute this for another Box if there are known problems</span>
+<span class="sd">                displaying on the platform (currently only relevant on Windows). Default is True.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Box: A different Box or the same Box.</span>
+<span class="sd">        """</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">legacy_windows</span> <span class="ow">and</span> <span class="n">safe</span><span class="p">:</span>
+            <span class="n">box</span> <span class="o">=</span> <span class="n">LEGACY_WINDOWS_SUBSTITUTIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">box</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">ascii_only</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">box</span><span class="o">.</span><span class="n">ascii</span><span class="p">:</span>
+            <span class="n">box</span> <span class="o">=</span> <span class="n">ASCII</span>
+        <span class="k">return</span> <span class="n">box</span></div>
+
+
+<div class="viewcode-block" id="Box.get_plain_headed_box">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box.get_plain_headed_box">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_plain_headed_box</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Box"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""If this box uses special characters for the borders of the header, then</span>
+<span class="sd">        return the equivalent box that does not.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Box: The most similar Box that doesn't use header-specific box characters.</span>
+<span class="sd">                If the current Box already satisfies this criterion, then it's returned.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="n">PLAIN_HEADED_SUBSTITUTIONS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Box.get_top">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box.get_top">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_top</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widths</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the top of a simple box.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            widths (List[int]): Widths of columns.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string of box characters.</span>
+<span class="sd">        """</span>
+
+        <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">append</span>
+        <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_left</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">width</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="n">widths</span><span class="p">):</span>
+            <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_divider</span><span class="p">)</span>
+        <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">top_right</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Box.get_row">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box.get_row">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_row</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">widths</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">level</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"head"</span><span class="p">,</span> <span class="s2">"row"</span><span class="p">,</span> <span class="s2">"foot"</span><span class="p">,</span> <span class="s2">"mid"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"row"</span><span class="p">,</span>
+        <span class="n">edge</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the top of a simple box.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            width (List[int]): Widths of columns.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string of box characters.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">"head"</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_row_left</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_row_horizontal</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_row_cross</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_row_right</span>
+        <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">"row"</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_left</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_horizontal</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_cross</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_right</span>
+        <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">"mid"</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_left</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="s2">" "</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_vertical</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mid_right</span>
+        <span class="k">elif</span> <span class="n">level</span> <span class="o">==</span> <span class="s2">"foot"</span><span class="p">:</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_left</span>
+            <span class="n">horizontal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_horizontal</span>
+            <span class="n">cross</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_cross</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">foot_row_right</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"level must be 'head', 'row' or 'foot'"</span><span class="p">)</span>
+
+        <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">append</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="n">left</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">width</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="n">widths</span><span class="p">):</span>
+            <span class="n">append</span><span class="p">(</span><span class="n">horizontal</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="n">cross</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">edge</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="n">right</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Box.get_bottom">
+<a class="viewcode-back" href="../../api/rich.html#rich.box.Box.get_bottom">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bottom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">widths</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the bottom of a simple box.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            widths (List[int]): Widths of columns.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string of box characters.</span>
+<span class="sd">        """</span>
+
+        <span class="n">parts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">parts</span><span class="o">.</span><span class="n">append</span>
+        <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_left</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">width</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="n">widths</span><span class="p">):</span>
+            <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_divider</span><span class="p">)</span>
+        <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bottom_right</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># fmt: off</span>
+<span class="n">ASCII</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"+--+</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-+|</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-+|</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-+|</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+--+</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ASCII2</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ASCII_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+=++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"+-++</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">SQUARE</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"┌─┬┐</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"└─┴┘</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">SQUARE_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"┌─┬┐</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╞═╪╡</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"└─┴┘</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">MINIMAL</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"  ╷ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╶─┼╴</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╶─┼╴</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╶─┼╴</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  ╵ </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+
+<span class="n">MINIMAL_HEAVY_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"  ╷ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╺━┿╸</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╶─┼╴</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╶─┼╴</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  ╵ </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">MINIMAL_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"  ╷ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ═╪ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ─┼ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ─┼ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  │ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"  ╵ </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+
+<span class="n">SIMPLE</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">SIMPLE_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+
+<span class="n">SIMPLE_HEAVY</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ━━ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ━━ </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+
+<span class="n">HORIZONTALS</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">" ── </span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">ROUNDED</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"╭─┬╮</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╰─┴╯</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">HEAVY</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"┏━┳┓</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ ┃┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┣━╋┫</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ ┃┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┣━╋┫</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┣━╋┫</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ ┃┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┗━┻┛</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">HEAVY_EDGE</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"┏━┯┓</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ │┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┠─┼┨</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ │┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┠─┼┨</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┠─┼┨</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ │┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┗━┷┛</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">HEAVY_HEAD</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"┏━┳┓</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┃ ┃┃</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"┡━╇┩</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"├─┼┤</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"│ ││</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"└─┴┘</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">DOUBLE</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"╔═╦╗</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ ║║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╠═╬╣</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ ║║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╠═╬╣</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╠═╬╣</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ ║║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╚═╩╝</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">DOUBLE_EDGE</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"╔═╤╗</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ │║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╟─┼╢</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ │║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╟─┼╢</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╟─┼╢</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"║ │║</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"╚═╧╝</span><span class="se">\n</span><span class="s2">"</span>
+<span class="p">)</span>
+
+<span class="n">MARKDOWN</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"|-||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"| ||</span><span class="se">\n</span><span class="s2">"</span>
+    <span class="s2">"    </span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+    <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># fmt: on</span>
+
+<span class="c1"># Map Boxes that don't render with raster fonts on to equivalent that do</span>
+<span class="n">LEGACY_WINDOWS_SUBSTITUTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">ROUNDED</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+    <span class="n">MINIMAL_HEAVY_HEAD</span><span class="p">:</span> <span class="n">MINIMAL</span><span class="p">,</span>
+    <span class="n">SIMPLE_HEAVY</span><span class="p">:</span> <span class="n">SIMPLE</span><span class="p">,</span>
+    <span class="n">HEAVY</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+    <span class="n">HEAVY_EDGE</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+    <span class="n">HEAVY_HEAD</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Map headed boxes to their headerless equivalents</span>
+<span class="n">PLAIN_HEADED_SUBSTITUTIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">HEAVY_HEAD</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+    <span class="n">SQUARE_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">SQUARE</span><span class="p">,</span>
+    <span class="n">MINIMAL_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">MINIMAL</span><span class="p">,</span>
+    <span class="n">MINIMAL_HEAVY_HEAD</span><span class="p">:</span> <span class="n">MINIMAL</span><span class="p">,</span>
+    <span class="n">ASCII_DOUBLE_HEAD</span><span class="p">:</span> <span class="n">ASCII2</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.columns</span><span class="w"> </span><span class="kn">import</span> <span class="n">Columns</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span> <span class="k">as</span> <span class="n">box</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">BOXES</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"ASCII"</span><span class="p">,</span>
+        <span class="s2">"ASCII2"</span><span class="p">,</span>
+        <span class="s2">"ASCII_DOUBLE_HEAD"</span><span class="p">,</span>
+        <span class="s2">"SQUARE"</span><span class="p">,</span>
+        <span class="s2">"SQUARE_DOUBLE_HEAD"</span><span class="p">,</span>
+        <span class="s2">"MINIMAL"</span><span class="p">,</span>
+        <span class="s2">"MINIMAL_HEAVY_HEAD"</span><span class="p">,</span>
+        <span class="s2">"MINIMAL_DOUBLE_HEAD"</span><span class="p">,</span>
+        <span class="s2">"SIMPLE"</span><span class="p">,</span>
+        <span class="s2">"SIMPLE_HEAD"</span><span class="p">,</span>
+        <span class="s2">"SIMPLE_HEAVY"</span><span class="p">,</span>
+        <span class="s2">"HORIZONTALS"</span><span class="p">,</span>
+        <span class="s2">"ROUNDED"</span><span class="p">,</span>
+        <span class="s2">"HEAVY"</span><span class="p">,</span>
+        <span class="s2">"HEAVY_EDGE"</span><span class="p">,</span>
+        <span class="s2">"HEAVY_HEAD"</span><span class="p">,</span>
+        <span class="s2">"DOUBLE"</span><span class="p">,</span>
+        <span class="s2">"DOUBLE_EDGE"</span><span class="p">,</span>
+        <span class="s2">"MARKDOWN"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Panel</span><span class="p">(</span><span class="s2">"[bold green]Box Constants"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"green"</span><span class="p">),</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>
+
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">Columns</span><span class="p">(</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">box_name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">BOXES</span><span class="p">):</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+            <span class="n">show_footer</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"dim"</span><span class="p">,</span> <span class="n">border_style</span><span class="o">=</span><span class="s2">"not dim"</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">"Header 1"</span><span class="p">,</span> <span class="s2">"Footer 1"</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">"Header 2"</span><span class="p">,</span> <span class="s2">"Footer 2"</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">"Cell"</span><span class="p">,</span> <span class="s2">"Cell"</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">"Cell"</span><span class="p">,</span> <span class="s2">"Cell"</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">box</span><span class="p">,</span> <span class="n">box_name</span><span class="p">)</span>
+        <span class="n">table</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="sa">f</span><span class="s2">"box.</span><span class="si">{</span><span class="n">box_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"magenta"</span><span class="p">)</span>
+        <span class="n">columns</span><span class="o">.</span><span class="n">add_renderable</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1"># console.save_svg("box.svg")</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,422 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.logging &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.logging</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.logging</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">Handler</span><span class="p">,</span> <span class="n">LogRecord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">._log_render</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormatTimeCallable</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleRenderable</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.highlighter</span><span class="w"> </span><span class="kn">import</span> <span class="n">Highlighter</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.traceback</span><span class="w"> </span><span class="kn">import</span> <span class="n">Traceback</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich._null_file</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullFile</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_console</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._log_render</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogRender</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.highlighter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReprHighlighter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+
+<div class="viewcode-block" id="RichHandler">
+<a class="viewcode-back" href="../../api/rich.html#rich.logging.RichHandler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RichHandler</span><span class="p">(</span><span class="n">Handler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A logging handler that renders output with Rich. The time / level / message and file are displayed in columns.</span>
+<span class="sd">    The level is color coded, and the message is syntax highlighted.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Be careful when enabling console markup in log messages if you have configured logging for libraries not</span>
+<span class="sd">        under your control. If a dependency writes messages containing square brackets, it may not produce the intended output.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        level (Union[int, str], optional): Log level. Defaults to logging.NOTSET.</span>
+<span class="sd">        console (:class:`~rich.console.Console`, optional): Optional console instance to write logs.</span>
+<span class="sd">            Default will use a global console instance writing to stdout.</span>
+<span class="sd">        show_time (bool, optional): Show a column for the time. Defaults to True.</span>
+<span class="sd">        omit_repeated_times (bool, optional): Omit repetition of the same time. Defaults to True.</span>
+<span class="sd">        show_level (bool, optional): Show a column for the level. Defaults to True.</span>
+<span class="sd">        show_path (bool, optional): Show the path to the original log call. Defaults to True.</span>
+<span class="sd">        enable_link_path (bool, optional): Enable terminal link of path column to file. Defaults to True.</span>
+<span class="sd">        highlighter (Highlighter, optional): Highlighter to style log messages, or None to use ReprHighlighter. Defaults to None.</span>
+<span class="sd">        markup (bool, optional): Enable console markup in log messages. Defaults to False.</span>
+<span class="sd">        rich_tracebacks (bool, optional): Enable rich tracebacks with syntax highlighting and formatting. Defaults to False.</span>
+<span class="sd">        tracebacks_width (Optional[int], optional): Number of characters used to render tracebacks, or None for full width. Defaults to None.</span>
+<span class="sd">        tracebacks_code_width (int, optional): Number of code characters used to render tracebacks, or None for full width. Defaults to 88.</span>
+<span class="sd">        tracebacks_extra_lines (int, optional): Additional lines of code to render tracebacks, or None for full width. Defaults to None.</span>
+<span class="sd">        tracebacks_theme (str, optional): Override pygments theme used in traceback.</span>
+<span class="sd">        tracebacks_word_wrap (bool, optional): Enable word wrapping of long tracebacks lines. Defaults to True.</span>
+<span class="sd">        tracebacks_show_locals (bool, optional): Enable display of locals in tracebacks. Defaults to False.</span>
+<span class="sd">        tracebacks_suppress (Sequence[Union[str, ModuleType]]): Optional sequence of modules or paths to exclude from traceback.</span>
+<span class="sd">        tracebacks_max_frames (int, optional): Optional maximum number of frames returned by traceback.</span>
+<span class="sd">        locals_max_length (int, optional): Maximum length of containers before abbreviating, or None for no abbreviation.</span>
+<span class="sd">            Defaults to 10.</span>
+<span class="sd">        locals_max_string (int, optional): Maximum length of string before truncating, or None to disable. Defaults to 80.</span>
+<span class="sd">        log_time_format (Union[str, TimeFormatterCallable], optional): If ``log_time`` is enabled, either string for strftime or callable that formats the time. Defaults to "[%x %X] ".</span>
+<span class="sd">        keywords (List[str], optional): List of words to highlight instead of ``RichHandler.KEYWORDS``.</span>
+<span class="sd">    """</span>
+
+    <span class="n">KEYWORDS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"GET"</span><span class="p">,</span>
+        <span class="s2">"POST"</span><span class="p">,</span>
+        <span class="s2">"HEAD"</span><span class="p">,</span>
+        <span class="s2">"PUT"</span><span class="p">,</span>
+        <span class="s2">"DELETE"</span><span class="p">,</span>
+        <span class="s2">"OPTIONS"</span><span class="p">,</span>
+        <span class="s2">"TRACE"</span><span class="p">,</span>
+        <span class="s2">"PATCH"</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="n">HIGHLIGHTER_CLASS</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">Highlighter</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ReprHighlighter</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">level</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">NOTSET</span><span class="p">,</span>
+        <span class="n">console</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Console</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">show_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">omit_repeated_times</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_level</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">show_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">enable_link_path</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">highlighter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Highlighter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">markup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">rich_tracebacks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">tracebacks_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tracebacks_code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">88</span><span class="p">,</span>
+        <span class="n">tracebacks_extra_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">tracebacks_theme</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tracebacks_word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">tracebacks_show_locals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">tracebacks_suppress</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">tracebacks_max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">locals_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">locals_max_string</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="n">log_time_format</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">FormatTimeCallable</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"[</span><span class="si">%x</span><span class="s2"> </span><span class="si">%X</span><span class="s2">]"</span><span class="p">,</span>
+        <span class="n">keywords</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span> <span class="o">=</span> <span class="n">console</span> <span class="ow">or</span> <span class="n">get_console</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highlighter</span> <span class="o">=</span> <span class="n">highlighter</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">HIGHLIGHTER_CLASS</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_render</span> <span class="o">=</span> <span class="n">LogRender</span><span class="p">(</span>
+            <span class="n">show_time</span><span class="o">=</span><span class="n">show_time</span><span class="p">,</span>
+            <span class="n">show_level</span><span class="o">=</span><span class="n">show_level</span><span class="p">,</span>
+            <span class="n">show_path</span><span class="o">=</span><span class="n">show_path</span><span class="p">,</span>
+            <span class="n">time_format</span><span class="o">=</span><span class="n">log_time_format</span><span class="p">,</span>
+            <span class="n">omit_repeated_times</span><span class="o">=</span><span class="n">omit_repeated_times</span><span class="p">,</span>
+            <span class="n">level_width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enable_link_path</span> <span class="o">=</span> <span class="n">enable_link_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">markup</span> <span class="o">=</span> <span class="n">markup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rich_tracebacks</span> <span class="o">=</span> <span class="n">rich_tracebacks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_width</span> <span class="o">=</span> <span class="n">tracebacks_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_extra_lines</span> <span class="o">=</span> <span class="n">tracebacks_extra_lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_theme</span> <span class="o">=</span> <span class="n">tracebacks_theme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_word_wrap</span> <span class="o">=</span> <span class="n">tracebacks_word_wrap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_show_locals</span> <span class="o">=</span> <span class="n">tracebacks_show_locals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_suppress</span> <span class="o">=</span> <span class="n">tracebacks_suppress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_max_frames</span> <span class="o">=</span> <span class="n">tracebacks_max_frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_code_width</span> <span class="o">=</span> <span class="n">tracebacks_code_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_max_length</span> <span class="o">=</span> <span class="n">locals_max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_max_string</span> <span class="o">=</span> <span class="n">locals_max_string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="n">keywords</span>
+
+<div class="viewcode-block" id="RichHandler.get_level_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.logging.RichHandler.get_level_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_level_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the level name from the record.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record (LogRecord): LogRecord instance.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Text: A tuple of the style and level name.</span>
+<span class="sd">        """</span>
+        <span class="n">level_name</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">levelname</span>
+        <span class="n">level_text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">styled</span><span class="p">(</span>
+            <span class="n">level_name</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">8</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"logging.level.</span><span class="si">{</span><span class="n">level_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">level_text</span></div>
+
+
+<div class="viewcode-block" id="RichHandler.emit">
+<a class="viewcode-back" href="../../api/rich.html#rich.logging.RichHandler.emit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Invoked by logging."""</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">traceback</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rich_tracebacks</span>
+            <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">exc_info</span>
+            <span class="ow">and</span> <span class="n">record</span><span class="o">.</span><span class="n">exc_info</span> <span class="o">!=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">exc_info</span>
+            <span class="k">assert</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">assert</span> <span class="n">exc_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.traceback</span><span class="w"> </span><span class="kn">import</span> <span class="n">Traceback</span>
+
+            <span class="n">traceback</span> <span class="o">=</span> <span class="n">Traceback</span><span class="o">.</span><span class="n">from_exception</span><span class="p">(</span>
+                <span class="n">exc_type</span><span class="p">,</span>
+                <span class="n">exc_value</span><span class="p">,</span>
+                <span class="n">exc_traceback</span><span class="p">,</span>
+                <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_width</span><span class="p">,</span>
+                <span class="n">code_width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_code_width</span><span class="p">,</span>
+                <span class="n">extra_lines</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_extra_lines</span><span class="p">,</span>
+                <span class="n">theme</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_theme</span><span class="p">,</span>
+                <span class="n">word_wrap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_word_wrap</span><span class="p">,</span>
+                <span class="n">show_locals</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_show_locals</span><span class="p">,</span>
+                <span class="n">locals_max_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_max_length</span><span class="p">,</span>
+                <span class="n">locals_max_string</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_max_string</span><span class="p">,</span>
+                <span class="n">suppress</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_suppress</span><span class="p">,</span>
+                <span class="n">max_frames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tracebacks_max_frames</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="p">:</span>
+                <span class="n">record</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">()</span>
+                <span class="n">formatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">formatter</span><span class="p">,</span> <span class="s2">"usesTime"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">formatter</span><span class="o">.</span><span class="n">usesTime</span><span class="p">():</span>
+                    <span class="n">record</span><span class="o">.</span><span class="n">asctime</span> <span class="o">=</span> <span class="n">formatter</span><span class="o">.</span><span class="n">formatTime</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">formatter</span><span class="o">.</span><span class="n">datefmt</span><span class="p">)</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="n">formatter</span><span class="o">.</span><span class="n">formatMessage</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+        <span class="n">message_renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render_message</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="n">log_renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+            <span class="n">record</span><span class="o">=</span><span class="n">record</span><span class="p">,</span> <span class="n">traceback</span><span class="o">=</span><span class="n">traceback</span><span class="p">,</span> <span class="n">message_renderable</span><span class="o">=</span><span class="n">message_renderable</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">file</span><span class="p">,</span> <span class="n">NullFile</span><span class="p">):</span>
+            <span class="c1"># Handles pythonw, where stdout/stderr are null, and we return NullFile</span>
+            <span class="c1"># instance from Console.file. In this case, we still want to make a log record</span>
+            <span class="c1"># even though we won't be writing anything to a file.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handleError</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">log_renderable</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handleError</span><span class="p">(</span><span class="n">record</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RichHandler.render_message">
+<a class="viewcode-back" href="../../api/rich.html#rich.logging.RichHandler.render_message">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConsoleRenderable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Render message text in to Text.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record (LogRecord): logging Record.</span>
+<span class="sd">            message (str): String containing log message.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ConsoleRenderable: Renderable to display log message.</span>
+<span class="sd">        """</span>
+        <span class="n">use_markup</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">"markup"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">markup</span><span class="p">)</span>
+        <span class="n">message_text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span><span class="n">message</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_markup</span> <span class="k">else</span> <span class="n">Text</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+        <span class="n">highlighter</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="s2">"highlighter"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">highlighter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">highlighter</span><span class="p">:</span>
+            <span class="n">message_text</span> <span class="o">=</span> <span class="n">highlighter</span><span class="p">(</span><span class="n">message_text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">KEYWORDS</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">:</span>
+            <span class="n">message_text</span><span class="o">.</span><span class="n">highlight_words</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keywords</span><span class="p">,</span> <span class="s2">"logging.keyword"</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">message_text</span></div>
+
+
+<div class="viewcode-block" id="RichHandler.render">
+<a class="viewcode-back" href="../../api/rich.html#rich.logging.RichHandler.render">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">record</span><span class="p">:</span> <span class="n">LogRecord</span><span class="p">,</span>
+        <span class="n">traceback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Traceback</span><span class="p">],</span>
+        <span class="n">message_renderable</span><span class="p">:</span> <span class="n">ConsoleRenderable</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConsoleRenderable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Render log for display.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            record (LogRecord): logging Record.</span>
+<span class="sd">            traceback (Optional[Traceback]): Traceback instance or None for no Traceback.</span>
+<span class="sd">            message_renderable (ConsoleRenderable): Renderable (typically Text) containing log message contents.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ConsoleRenderable: Renderable to display log.</span>
+<span class="sd">        """</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">pathname</span><span class="p">)</span>
+        <span class="n">level</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_level_text</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">time_format</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="o">.</span><span class="n">datefmt</span>
+        <span class="n">log_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">fromtimestamp</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">created</span><span class="p">)</span>
+
+        <span class="n">log_renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_render</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">message_renderable</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">traceback</span> <span class="k">else</span> <span class="p">[</span><span class="n">message_renderable</span><span class="p">,</span> <span class="n">traceback</span><span class="p">],</span>
+            <span class="n">log_time</span><span class="o">=</span><span class="n">log_time</span><span class="p">,</span>
+            <span class="n">time_format</span><span class="o">=</span><span class="n">time_format</span><span class="p">,</span>
+            <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+            <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">line_no</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">lineno</span><span class="p">,</span>
+            <span class="n">link_path</span><span class="o">=</span><span class="n">record</span><span class="o">.</span><span class="n">pathname</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_link_path</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">log_renderable</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">sleep</span>
+
+    <span class="n">FORMAT</span> <span class="o">=</span> <span class="s2">"</span><span class="si">%(message)s</span><span class="s2">"</span>
+    <span class="c1"># FORMAT = "%(asctime)-15s - %(levelname)s - %(message)s"</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+        <span class="n">level</span><span class="o">=</span><span class="s2">"NOTSET"</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">,</span>
+        <span class="n">datefmt</span><span class="o">=</span><span class="s2">"[</span><span class="si">%X</span><span class="s2">]"</span><span class="p">,</span>
+        <span class="n">handlers</span><span class="o">=</span><span class="p">[</span><span class="n">RichHandler</span><span class="p">(</span><span class="n">rich_tracebacks</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tracebacks_show_locals</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+    <span class="p">)</span>
+    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">"rich"</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Server starting..."</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Listening on http://127.0.0.1:8080"</span><span class="p">)</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"GET /index.html 200 1298"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"GET /imgs/backgrounds/back1.jpg 200 54386"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"GET /css/styles.css 200 54386"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"GET /favicon.ico 404 242"</span><span class="p">)</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">"JSONRPC request</span><span class="se">\n</span><span class="s2">--&gt; </span><span class="si">%r</span><span class="se">\n</span><span class="s2">&lt;-- </span><span class="si">%r</span><span class="s2">"</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">"version"</span><span class="p">:</span> <span class="s2">"1.1"</span><span class="p">,</span>
+            <span class="s2">"method"</span><span class="p">:</span> <span class="s2">"confirmFruitPurchase"</span><span class="p">,</span>
+            <span class="s2">"params"</span><span class="p">:</span> <span class="p">[[</span><span class="s2">"apple"</span><span class="p">,</span> <span class="s2">"orange"</span><span class="p">,</span> <span class="s2">"mangoes"</span><span class="p">,</span> <span class="s2">"pomelo"</span><span class="p">],</span> <span class="mf">1.123</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"194521489"</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="p">{</span><span class="s2">"version"</span><span class="p">:</span> <span class="s2">"1.1"</span><span class="p">,</span> <span class="s2">"result"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">"id"</span><span class="p">:</span> <span class="s2">"194521489"</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">"Loading configuration file /adasd/asdasd/qeqwe/qwrqwrqwr/sdgsdgsdg/werwerwer/dfgerert/ertertert/ertetert/werwerwer"</span>
+    <span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">"Unable to find 'pomelo' in database!"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"POST /jsonrpc/ 200 65532"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"POST /admin/ 401 42234"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"password was rejected for admin site."</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">divide</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">number</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">divisor</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">foos</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"foo"</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"in divide"</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">/</span> <span class="n">divisor</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">"An error of some kind occurred!"</span><span class="p">)</span>
+
+    <span class="n">divide</span><span class="p">()</span>
+    <span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">"Out of memory!"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"Server exited with code=-1"</span><span class="p">)</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"[bold]EXITING...[/bold]"</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">markup</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

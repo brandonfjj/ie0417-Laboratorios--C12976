@@ -1,0 +1,478 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.cells &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.cells</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.cells</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich._unicode_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">load</span> <span class="k">as</span> <span class="n">load_cell_table</span>
+
+<span class="n">CellSpan</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+<span class="n">_span_get_cell_len</span> <span class="o">=</span> <span class="n">itemgetter</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Ranges of unicode ordinals that produce a 1-cell wide character</span>
+<span class="c1"># This is non-exhaustive, but covers most common Western characters</span>
+<span class="n">_SINGLE_CELL_UNICODE_RANGES</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mh">0x20</span><span class="p">,</span> <span class="mh">0x7E</span><span class="p">),</span>  <span class="c1"># Latin (excluding non-printable)</span>
+    <span class="p">(</span><span class="mh">0xA0</span><span class="p">,</span> <span class="mh">0xAC</span><span class="p">),</span>
+    <span class="p">(</span><span class="mh">0xAE</span><span class="p">,</span> <span class="mh">0x002FF</span><span class="p">),</span>
+    <span class="p">(</span><span class="mh">0x00370</span><span class="p">,</span> <span class="mh">0x00482</span><span class="p">),</span>  <span class="c1"># Greek / Cyrillic</span>
+    <span class="p">(</span><span class="mh">0x02500</span><span class="p">,</span> <span class="mh">0x025FC</span><span class="p">),</span>  <span class="c1"># Box drawing, box elements, geometric shapes</span>
+    <span class="p">(</span><span class="mh">0x02800</span><span class="p">,</span> <span class="mh">0x028FF</span><span class="p">),</span>  <span class="c1"># Braille</span>
+<span class="p">]</span>
+
+<span class="c1"># A frozen set of characters that are a single cell wide</span>
+<span class="n">_SINGLE_CELLS</span> <span class="o">=</span> <span class="nb">frozenset</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="n">character</span>
+        <span class="k">for</span> <span class="n">_start</span><span class="p">,</span> <span class="n">_end</span> <span class="ow">in</span> <span class="n">_SINGLE_CELL_UNICODE_RANGES</span>
+        <span class="k">for</span> <span class="n">character</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="nb">chr</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">_start</span><span class="p">,</span> <span class="n">_end</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+
+<span class="c1"># When called with a string this will return True if all</span>
+<span class="c1"># characters are single-cell, otherwise False</span>
+<span class="n">_is_single_cell_widths</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="n">_SINGLE_CELLS</span><span class="o">.</span><span class="n">issuperset</span>
+
+
+<div class="viewcode-block" id="CellTable">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.CellTable">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CellTable</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Contains unicode data required to measure the cell widths of glyphs."""</span>
+
+    <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">widths</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span>
+    <span class="n">narrow_to_wide</span><span class="p">:</span> <span class="nb">frozenset</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="get_character_cell_size">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.get_character_cell_size">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_character_cell_size</span><span class="p">(</span><span class="n">character</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Get the cell size of a character.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        character (str): A single character.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Number of cells (0, 1 or 2) occupied by that character.</span>
+<span class="sd">    """</span>
+    <span class="n">codepoint</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">character</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">codepoint</span> <span class="ow">and</span> <span class="n">codepoint</span> <span class="o">&lt;</span> <span class="mi">32</span> <span class="ow">or</span> <span class="mh">0x07F</span> <span class="o">&lt;=</span> <span class="n">codepoint</span> <span class="o">&lt;</span> <span class="mh">0x0A0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">table</span> <span class="o">=</span> <span class="n">load_cell_table</span><span class="p">(</span><span class="n">unicode_version</span><span class="p">)</span><span class="o">.</span><span class="n">widths</span>
+
+    <span class="n">last_entry</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">codepoint</span> <span class="o">&gt;</span> <span class="n">last_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+
+    <span class="n">lower_bound</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">upper_bound</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="k">while</span> <span class="n">lower_bound</span> <span class="o">&lt;=</span> <span class="n">upper_bound</span><span class="p">:</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">(</span><span class="n">lower_bound</span> <span class="o">+</span> <span class="n">upper_bound</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">codepoint</span> <span class="o">&lt;</span> <span class="n">start</span><span class="p">:</span>
+            <span class="n">upper_bound</span> <span class="o">=</span> <span class="n">index</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">codepoint</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+            <span class="n">lower_bound</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">width</span>
+    <span class="k">return</span> <span class="mi">1</span></div>
+
+
+
+<div class="viewcode-block" id="cached_cell_len">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.cached_cell_len">[docs]</a>
+<span class="nd">@lru_cache</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cached_cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Get the number of cells required to display text.</span>
+
+<span class="sd">    This method always caches, which may use up a lot of memory. It is recommended to use</span>
+<span class="sd">    `cell_len` over this method.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text (str): Text to display.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: Get the number of cells required to display text.</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="n">_cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="cell_len">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.cell_len">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Get the cell length of a string (length as it appears in the terminal).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: String to measure.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Length of string in terminal cells.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">512</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cached_cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Get the cell length of a string (length as it appears in the terminal).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: String to measure.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Length of string in terminal cells.</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="n">_is_single_cell_widths</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="c1"># "\u200d" is zero width joiner</span>
+    <span class="c1"># "\ufe0f" is variation selector 16</span>
+    <span class="k">if</span> <span class="s2">"</span><span class="se">\u200d</span><span class="s2">"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">text</span> <span class="ow">and</span> <span class="s2">"</span><span class="se">\ufe0f</span><span class="s2">"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
+        <span class="c1"># Simplest case with no unicode stuff that changes the size</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="n">get_character_cell_size</span><span class="p">(</span><span class="n">character</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span> <span class="k">for</span> <span class="n">character</span> <span class="ow">in</span> <span class="n">text</span>
+        <span class="p">)</span>
+
+    <span class="n">cell_table</span> <span class="o">=</span> <span class="n">load_cell_table</span><span class="p">(</span><span class="n">unicode_version</span><span class="p">)</span>
+    <span class="n">total_width</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">last_measured_character</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">SPECIAL</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"</span><span class="se">\u200d</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\ufe0f</span><span class="s2">"</span><span class="p">}</span>
+
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">character_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">character_count</span><span class="p">:</span>
+        <span class="n">character</span> <span class="o">=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">character</span> <span class="ow">in</span> <span class="n">SPECIAL</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">character</span> <span class="o">==</span> <span class="s2">"</span><span class="se">\u200d</span><span class="s2">"</span><span class="p">:</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">last_measured_character</span><span class="p">:</span>
+                <span class="n">total_width</span> <span class="o">+=</span> <span class="n">last_measured_character</span> <span class="ow">in</span> <span class="n">cell_table</span><span class="o">.</span><span class="n">narrow_to_wide</span>
+                <span class="n">last_measured_character</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">character_width</span> <span class="o">:=</span> <span class="n">get_character_cell_size</span><span class="p">(</span><span class="n">character</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">):</span>
+                <span class="n">last_measured_character</span> <span class="o">=</span> <span class="n">character</span>
+                <span class="n">total_width</span> <span class="o">+=</span> <span class="n">character_width</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">return</span> <span class="n">total_width</span>
+
+
+<div class="viewcode-block" id="split_graphemes">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.split_graphemes">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_graphemes</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"tuple[list[CellSpan], int]"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Divide text into spans that define a single grapheme, and additionally return the cell length of the whole string.</span>
+
+<span class="sd">    The returned spans will cover every index in the string, with no gaps. It is possible for some graphemes to have a cell length of zero.</span>
+<span class="sd">    This can occur for nonsense strings like two zero width joiners, or for control codes that don't contribute to the grapheme size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: String to split.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple of a list of *spans* and the cell length of the entire string. A span is a list of tuples</span>
+<span class="sd">            of three values consisting of (&lt;START&gt;, &lt;END&gt;, &lt;CELL LENGTH&gt;), where START and END are string indices,</span>
+<span class="sd">            and CELL LENGTH is the cell length of the single grapheme.</span>
+<span class="sd">    """</span>
+
+    <span class="n">cell_table</span> <span class="o">=</span> <span class="n">load_cell_table</span><span class="p">(</span><span class="n">unicode_version</span><span class="p">)</span>
+    <span class="n">codepoint_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">last_measured_character</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">total_width</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">spans</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">SPECIAL</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"</span><span class="se">\u200d</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"</span><span class="se">\ufe0f</span><span class="s2">"</span><span class="p">}</span>
+    <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">codepoint_count</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">character</span> <span class="o">:=</span> <span class="n">text</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="ow">in</span> <span class="n">SPECIAL</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">spans</span><span class="p">:</span>
+                <span class="c1"># ZWJ or variation selector at the beginning of the string doesn't really make sense.</span>
+                <span class="c1"># But handle it, we must.</span>
+                <span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">index</span><span class="p">,</span> <span class="n">index</span> <span class="o">:=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">character</span> <span class="o">==</span> <span class="s2">"</span><span class="se">\u200d</span><span class="s2">"</span><span class="p">:</span>
+                <span class="c1"># zero width joiner</span>
+                <span class="c1"># The condition handles the case where a ZWJ is at the end of the string, and has nothing to join</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">codepoint_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="mi">1</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">_end</span><span class="p">,</span> <span class="n">cell_length</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">cell_length</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># variation selector 16</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">last_measured_character</span><span class="p">:</span>
+                    <span class="n">start</span><span class="p">,</span> <span class="n">_end</span><span class="p">,</span> <span class="n">cell_length</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">last_measured_character</span> <span class="ow">in</span> <span class="n">cell_table</span><span class="o">.</span><span class="n">narrow_to_wide</span><span class="p">:</span>
+                        <span class="n">last_measured_character</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="n">cell_length</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">total_width</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">cell_length</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No previous character to change the size of.</span>
+                    <span class="c1"># Shouldn't occur in practice.</span>
+                    <span class="c1"># But handle it, we must.</span>
+                    <span class="n">start</span><span class="p">,</span> <span class="n">_end</span><span class="p">,</span> <span class="n">cell_length</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">cell_length</span><span class="p">)</span>
+            <span class="k">continue</span>
+
+        <span class="k">if</span> <span class="n">character_width</span> <span class="o">:=</span> <span class="n">get_character_cell_size</span><span class="p">(</span><span class="n">character</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">):</span>
+            <span class="n">last_measured_character</span> <span class="o">=</span> <span class="n">character</span>
+            <span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">index</span><span class="p">,</span> <span class="n">index</span> <span class="o">:=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">character_width</span><span class="p">))</span>
+            <span class="n">total_width</span> <span class="o">+=</span> <span class="n">character_width</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Character has zero width</span>
+            <span class="k">if</span> <span class="n">spans</span><span class="p">:</span>
+                <span class="c1"># zero width characters are associated with the previous character</span>
+                <span class="n">start</span><span class="p">,</span> <span class="n">_end</span><span class="p">,</span> <span class="n">cell_length</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">spans</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">index</span> <span class="o">:=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cell_length</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># A zero width character with no prior spans</span>
+                <span class="n">spans</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">index</span><span class="p">,</span> <span class="n">index</span> <span class="o">:=</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">spans</span><span class="p">,</span> <span class="n">total_width</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_split_text</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell_position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split text by cell position.</span>
+
+<span class="sd">    If the cell position falls within a double width character, it is converted to two spaces.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: Text to split.</span>
+<span class="sd">        cell_position Offset in cells.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple to two split strings.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">cell_position</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span><span class="p">,</span> <span class="n">text</span>
+
+    <span class="n">spans</span><span class="p">,</span> <span class="n">cell_length</span> <span class="o">=</span> <span class="n">split_graphemes</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span>
+
+    <span class="c1"># Guess initial offset</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">cell_position</span> <span class="o">/</span> <span class="n">cell_length</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">spans</span><span class="p">))</span>
+    <span class="n">left_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">_span_get_cell_len</span><span class="p">,</span> <span class="n">spans</span><span class="p">[:</span><span class="n">offset</span><span class="p">]))</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">left_size</span> <span class="o">==</span> <span class="n">cell_position</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">offset</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">spans</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="s2">""</span>
+            <span class="n">split_index</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="n">offset</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">split_index</span><span class="p">],</span> <span class="n">text</span><span class="p">[</span><span class="n">split_index</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">left_size</span> <span class="o">&lt;</span> <span class="n">cell_position</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cell_size</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="n">offset</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">left_size</span> <span class="o">+</span> <span class="n">cell_size</span> <span class="o">&gt;</span> <span class="n">cell_position</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">start</span><span class="p">]</span> <span class="o">+</span> <span class="s2">" "</span><span class="p">,</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">end</span><span class="p">:]</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">left_size</span> <span class="o">+=</span> <span class="n">cell_size</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># left_size &gt; cell_position</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cell_size</span> <span class="o">=</span> <span class="n">spans</span><span class="p">[</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">left_size</span> <span class="o">-</span> <span class="n">cell_size</span> <span class="o">&lt;</span> <span class="n">cell_position</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">start</span><span class="p">]</span> <span class="o">+</span> <span class="s2">" "</span><span class="p">,</span> <span class="s2">" "</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">end</span><span class="p">:]</span>
+            <span class="n">offset</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">left_size</span> <span class="o">-=</span> <span class="n">cell_size</span>
+
+
+<div class="viewcode-block" id="split_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.split_text">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">split_text</span><span class="p">(</span>
+    <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">cell_position</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split text by cell position.</span>
+
+<span class="sd">    If the cell position falls within a double width character, it is converted to two spaces.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: Text to split.</span>
+<span class="sd">        cell_position Offset in cells.</span>
+<span class="sd">        unicode_version: Unicode version, `"auto"` to auto detect, `"latest"` for the latest unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Tuple to two split strings.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">_is_single_cell_widths</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">cell_position</span><span class="p">],</span> <span class="n">text</span><span class="p">[</span><span class="n">cell_position</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="n">_split_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">cell_position</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="set_cell_size">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.set_cell_size">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">set_cell_size</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Adjust a string by cropping or padding with spaces such that it fits within the given number of cells.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: String to adjust.</span>
+<span class="sd">        total: Desired size in cells.</span>
+<span class="sd">        unicode_version: Unicode version.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string with cell size equal to total.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">_is_single_cell_widths</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">" "</span> <span class="o">*</span> <span class="p">(</span><span class="n">total</span> <span class="o">-</span> <span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">total</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">total</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">""</span>
+    <span class="n">cell_size</span> <span class="o">=</span> <span class="n">cell_len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cell_size</span> <span class="o">==</span> <span class="n">total</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="k">if</span> <span class="n">cell_size</span> <span class="o">&lt;</span> <span class="n">total</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">" "</span> <span class="o">*</span> <span class="p">(</span><span class="n">total</span> <span class="o">-</span> <span class="n">cell_size</span><span class="p">)</span>
+    <span class="n">text</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_split_text</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">total</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="chop_cells">
+<a class="viewcode-back" href="../../api/rich.html#rich.cells.chop_cells">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">chop_cells</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"auto"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Split text into lines such that each line fits within the available (cell) width.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        text: The text to fold such that it fits in the given width.</span>
+<span class="sd">        width: The width available (number of cells).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of strings such that each string in the list has cell width</span>
+<span class="sd">        less than or equal to the available width.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">_is_single_cell_widths</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">text</span><span class="p">[</span><span class="n">index</span> <span class="p">:</span> <span class="n">index</span> <span class="o">+</span> <span class="n">width</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">width</span><span class="p">)]</span>
+    <span class="n">spans</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">split_graphemes</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">unicode_version</span><span class="p">)</span>
+    <span class="n">line_size</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Size of line in cells</span>
+    <span class="n">lines</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">line_offset</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Offset (in codepoints) of start of line</span>
+    <span class="k">for</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">cell_size</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line_size</span> <span class="o">+</span> <span class="n">cell_size</span> <span class="o">&gt;</span> <span class="n">width</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">line_offset</span><span class="p">:</span><span class="n">start</span><span class="p">])</span>
+            <span class="n">line_offset</span> <span class="o">=</span> <span class="n">start</span>
+            <span class="n">line_size</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">line_size</span> <span class="o">+=</span> <span class="n">cell_size</span>
+    <span class="k">if</span> <span class="n">line_size</span><span class="p">:</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">line_offset</span><span class="p">:])</span>
+
+    <span class="k">return</span> <span class="n">lines</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

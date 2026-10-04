@@ -1,0 +1,1054 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.markdown &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.markdown</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.markdown</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">get_args</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">markdown_it</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkdownIt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">markdown_it.token</span><span class="w"> </span><span class="kn">import</span> <span class="n">Token</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">box</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">loop_first</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._stack</span><span class="w"> </span><span class="kn">import</span> <span class="n">Stack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">JustifyMethod</span><span class="p">,</span> <span class="n">RenderResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.containers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Renderables</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.rule</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span><span class="p">,</span> <span class="n">StyleStack</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.syntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">Syntax</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span><span class="p">,</span> <span class="n">TextType</span>
+
+
+<div class="viewcode-block" id="MarkdownElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MarkdownElement</span><span class="p">:</span>
+    <span class="n">new_line</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="MarkdownElement.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MarkdownElement</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Factory to create markdown element,</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            markdown (Markdown): The parent Markdown object.</span>
+<span class="sd">            token (Token): A node from markdown-it.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MarkdownElement: A new markdown element</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MarkdownElement.on_enter">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement.on_enter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_enter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called when the node is entered.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (MarkdownContext): The markdown context.</span>
+<span class="sd">        """</span></div>
+
+
+<div class="viewcode-block" id="MarkdownElement.on_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement.on_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">TextType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called when text is parsed.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (MarkdownContext): The markdown context.</span>
+<span class="sd">        """</span></div>
+
+
+<div class="viewcode-block" id="MarkdownElement.on_leave">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement.on_leave">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called when the parser leaves the element.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (MarkdownContext): [description]</span>
+<span class="sd">        """</span></div>
+
+
+<div class="viewcode-block" id="MarkdownElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called when a child element is closed.</span>
+
+<span class="sd">        This method allows a parent element to take over rendering of its children.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (MarkdownContext): The markdown context.</span>
+<span class="sd">            child (MarkdownElement): The child markdown element.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Return True to render the element, or False to not render the element.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="UnknownElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.UnknownElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UnknownElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""An unknown element.</span>
+
+<span class="sd">    Hopefully there will be no unknown elements, and we will have a MarkdownElement for</span>
+<span class="sd">    everything in the document.</span>
+
+<span class="sd">    """</span></div>
+
+
+
+<div class="viewcode-block" id="TextElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TextElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TextElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Base class for elements that render text."""</span>
+
+    <span class="n">style_name</span> <span class="o">=</span> <span class="s2">"none"</span>
+
+<div class="viewcode-block" id="TextElement.on_enter">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TextElement.on_enter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_enter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">justify</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TextElement.on_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TextElement.on_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">TextType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">current_style</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TextElement.on_leave">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TextElement.on_leave">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_leave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Paragraph">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Paragraph">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Paragraph</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A Paragraph."""</span>
+
+    <span class="n">style_name</span> <span class="o">=</span> <span class="s2">"markdown.paragraph"</span>
+    <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span>
+
+<div class="viewcode-block" id="Paragraph.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Paragraph.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Paragraph</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">justify</span><span class="o">=</span><span class="n">markdown</span><span class="o">.</span><span class="n">justify</span> <span class="ow">or</span> <span class="s2">"left"</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">justify</span> <span class="o">=</span> <span class="n">justify</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">justify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">justify</span>
+        <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="HeadingFormat">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.HeadingFormat">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">HeadingFormat</span><span class="p">:</span>
+    <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span> <span class="o">=</span> <span class="s2">"left"</span>
+    <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span></div>
+
+
+
+<div class="viewcode-block" id="Heading">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Heading">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Heading</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A heading."""</span>
+
+    <span class="n">LEVEL_ALIGN</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">JustifyMethod</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"h1"</span><span class="p">:</span> <span class="s2">"center"</span><span class="p">,</span>
+        <span class="s2">"h2"</span><span class="p">:</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="s2">"h3"</span><span class="p">:</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="s2">"h4"</span><span class="p">:</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="s2">"h5"</span><span class="p">:</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="s2">"h6"</span><span class="p">:</span> <span class="s2">"left"</span><span class="p">,</span>
+    <span class="p">}</span>
+
+<div class="viewcode-block" id="Heading.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Heading.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Heading</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">tag</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Heading.on_enter">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Heading.on_enter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_enter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">()</span>
+        <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style_name</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tag</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tag</span> <span class="o">=</span> <span class="n">tag</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"markdown.</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">heading_justify</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">LEVEL_ALIGN</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="s2">"left"</span><span class="p">)</span>
+        <span class="n">text</span><span class="o">.</span><span class="n">justify</span> <span class="o">=</span> <span class="n">heading_justify</span>
+        <span class="k">yield</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="CodeBlock">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.CodeBlock">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CodeBlock</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A code block with syntax highlighting."""</span>
+
+    <span class="n">style_name</span> <span class="o">=</span> <span class="s2">"markdown.code_block"</span>
+
+<div class="viewcode-block" id="CodeBlock.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.CodeBlock.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CodeBlock</span><span class="p">:</span>
+        <span class="n">node_info</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">info</span> <span class="ow">or</span> <span class="s2">""</span>
+        <span class="n">lexer_name</span> <span class="o">=</span> <span class="n">node_info</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">" "</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">lexer_name</span> <span class="ow">or</span> <span class="s2">"text"</span><span class="p">,</span> <span class="n">markdown</span><span class="o">.</span><span class="n">code_theme</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lexer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lexer_name</span> <span class="o">=</span> <span class="n">lexer_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theme</span> <span class="o">=</span> <span class="n">theme</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+        <span class="n">syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="p">(</span>
+            <span class="n">code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lexer_name</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">theme</span><span class="p">,</span> <span class="n">word_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span>
+        <span class="p">)</span>
+        <span class="k">yield</span> <span class="n">syntax</span></div>
+
+
+
+<div class="viewcode-block" id="BlockQuote">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.BlockQuote">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">BlockQuote</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A block quote."""</span>
+
+    <span class="n">style_name</span> <span class="o">=</span> <span class="s2">"markdown.block_quote"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span> <span class="n">Renderables</span> <span class="o">=</span> <span class="n">Renderables</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BlockQuote.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.BlockQuote.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">render_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">render_options</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"▌ "</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">padding</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">yield</span> <span class="n">new_line</span></div>
+
+
+
+<div class="viewcode-block" id="HorizontalRule">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.HorizontalRule">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">HorizontalRule</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A horizontal rule to divide sections."""</span>
+
+    <span class="n">new_line</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.hr"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Rule</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">characters</span><span class="o">=</span><span class="s2">"-"</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">Text</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="TableElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""MarkdownElement corresponding to `table_open`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="p">:</span> <span class="n">TableHeaderElement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">:</span> <span class="n">TableBodyElement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TableElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">TableHeaderElement</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">child</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">TableBodyElement</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="o">=</span> <span class="n">child</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"Couldn't process markdown table."</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+            <span class="n">box</span><span class="o">=</span><span class="n">box</span><span class="o">.</span><span class="n">SIMPLE</span><span class="p">,</span>
+            <span class="n">pad_edge</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="s2">"markdown.table.border"</span><span class="p">,</span>
+            <span class="n">show_edge</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">collapse_padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">row</span><span class="o">.</span><span class="n">cells</span><span class="p">:</span>
+                <span class="n">heading</span> <span class="o">=</span> <span class="n">column</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="n">heading</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"markdown.table.header"</span><span class="p">)</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">heading</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span>
+                <span class="n">row_content</span> <span class="o">=</span> <span class="p">[</span><span class="n">element</span><span class="o">.</span><span class="n">content</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">cells</span><span class="p">]</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="o">*</span><span class="n">row_content</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">table</span></div>
+
+
+
+<div class="viewcode-block" id="TableHeaderElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableHeaderElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableHeaderElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""MarkdownElement corresponding to `thead_open` and `thead_close`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row</span><span class="p">:</span> <span class="n">TableRowElement</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TableHeaderElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableHeaderElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">TableRowElement</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row</span> <span class="o">=</span> <span class="n">child</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TableBodyElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableBodyElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableBodyElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""MarkdownElement corresponding to `tbody_open` and `tbody_close`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TableRowElement</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="TableBodyElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableBodyElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">TableRowElement</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TableRowElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableRowElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableRowElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""MarkdownElement corresponding to `tr_open` and `tr_close`."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">TableDataElement</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="TableRowElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableRowElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">TableDataElement</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TableDataElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableDataElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableDataElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""MarkdownElement corresponding to `td_open` and `td_close`</span>
+<span class="sd">    and `th_open` and `th_close`."""</span>
+
+<div class="viewcode-block" id="TableDataElement.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableDataElement.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MarkdownElement</span><span class="p">:</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"style"</span><span class="p">))</span> <span class="ow">or</span> <span class="s2">""</span>
+
+        <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span>
+        <span class="k">if</span> <span class="s2">"text-align:right"</span> <span class="ow">in</span> <span class="n">style</span><span class="p">:</span>
+            <span class="n">justify</span> <span class="o">=</span> <span class="s2">"right"</span>
+        <span class="k">elif</span> <span class="s2">"text-align:center"</span> <span class="ow">in</span> <span class="n">style</span><span class="p">:</span>
+            <span class="n">justify</span> <span class="o">=</span> <span class="s2">"center"</span>
+        <span class="k">elif</span> <span class="s2">"text-align:left"</span> <span class="ow">in</span> <span class="n">style</span><span class="p">:</span>
+            <span class="n">justify</span> <span class="o">=</span> <span class="s2">"left"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">justify</span> <span class="o">=</span> <span class="s2">"default"</span>
+
+        <span class="k">assert</span> <span class="n">justify</span> <span class="ow">in</span> <span class="n">get_args</span><span class="p">(</span><span class="n">JustifyMethod</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">justify</span><span class="o">=</span><span class="n">justify</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="p">:</span> <span class="n">Text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="n">justify</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">justify</span> <span class="o">=</span> <span class="n">justify</span>
+
+<div class="viewcode-block" id="TableDataElement.on_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.TableDataElement.on_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">TextType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">current_style</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">content</span><span class="o">.</span><span class="n">append_text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ListElement">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListElement">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ListElement</span><span class="p">(</span><span class="n">MarkdownElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A list element."""</span>
+
+<div class="viewcode-block" id="ListElement.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListElement.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ListElement</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"start"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">list_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">list_start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ListItem</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_type</span> <span class="o">=</span> <span class="n">list_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_start</span> <span class="o">=</span> <span class="n">list_start</span>
+
+<div class="viewcode-block" id="ListElement.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListElement.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">ListItem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_type</span> <span class="o">==</span> <span class="s2">"bullet_list_open"</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="n">item</span><span class="o">.</span><span class="n">render_bullet</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">number</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_start</span>
+            <span class="n">last_number</span> <span class="o">=</span> <span class="n">number</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">):</span>
+                <span class="k">yield from</span> <span class="n">item</span><span class="o">.</span><span class="n">render_number</span><span class="p">(</span>
+                    <span class="n">console</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">number</span> <span class="o">+</span> <span class="n">index</span><span class="p">,</span> <span class="n">last_number</span>
+                <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="ListItem">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListItem">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ListItem</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""An item in a list."""</span>
+
+    <span class="n">style_name</span> <span class="o">=</span> <span class="s2">"markdown.item"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">:</span> <span class="n">Renderables</span> <span class="o">=</span> <span class="n">Renderables</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ListItem.on_child_close">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListItem.on_child_close">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_child_close</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">MarkdownElement</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="ListItem.render_bullet">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListItem.render_bullet">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_bullet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">render_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">render_options</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">bullet_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.item.bullet"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+
+        <span class="n">bullet</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" • "</span><span class="p">,</span> <span class="n">bullet_style</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">3</span><span class="p">,</span> <span class="n">bullet_style</span><span class="p">)</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">loop_first</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">bullet</span> <span class="k">if</span> <span class="n">first</span> <span class="k">else</span> <span class="n">padding</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">yield</span> <span class="n">new_line</span></div>
+
+
+<div class="viewcode-block" id="ListItem.render_number">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ListItem.render_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render_number</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">last_number</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">number_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">last_number</span><span class="p">))</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">render_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="n">number_width</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="p">,</span> <span class="n">render_options</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">number_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.item.number"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="n">number_width</span><span class="p">,</span> <span class="n">number_style</span><span class="p">)</span>
+        <span class="n">numeral</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">number</span><span class="si">}</span><span class="s2">"</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">number_width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">number_style</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">loop_first</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">numeral</span> <span class="k">if</span> <span class="n">first</span> <span class="k">else</span> <span class="n">padding</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">yield</span> <span class="n">new_line</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Link">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Link">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Link</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<div class="viewcode-block" id="Link.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Link.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MarkdownElement</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"href"</span><span class="p">,</span> <span class="s2">"#"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">))</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">href</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">href</span> <span class="o">=</span> <span class="n">href</span></div>
+
+
+
+<div class="viewcode-block" id="ImageItem">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ImageItem">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ImageItem</span><span class="p">(</span><span class="n">TextElement</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Renders a placeholder for an image."""</span>
+
+    <span class="n">new_line</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="ImageItem.create">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ImageItem.create">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">markdown</span><span class="p">:</span> <span class="n">Markdown</span><span class="p">,</span> <span class="n">token</span><span class="p">:</span> <span class="n">Token</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MarkdownElement</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Factory to create markdown element,</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            markdown (Markdown): The parent Markdown object.</span>
+<span class="sd">            token (Any): A token from markdown-it.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            MarkdownElement: A new markdown element</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"src"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)),</span> <span class="n">markdown</span><span class="o">.</span><span class="n">hyperlinks</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">hyperlinks</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">destination</span> <span class="o">=</span> <span class="n">destination</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperlinks</span> <span class="o">=</span> <span class="n">hyperlinks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+<div class="viewcode-block" id="ImageItem.on_enter">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.ImageItem.on_enter">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_enter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">MarkdownContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">current_style</span><span class="o">.</span><span class="n">link</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span><span class="n">justify</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">on_enter</span><span class="p">(</span><span class="n">context</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">link_style</span> <span class="o">=</span> <span class="n">Style</span><span class="p">(</span><span class="n">link</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">link</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="ow">or</span> <span class="n">Text</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">destination</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"/"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperlinks</span><span class="p">:</span>
+            <span class="n">title</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="n">link_style</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="s2">"🌆 "</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span>
+        <span class="k">yield</span> <span class="n">text</span></div>
+
+
+
+<div class="viewcode-block" id="MarkdownContext">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownContext">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MarkdownContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Manages the console render state."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span>
+        <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span><span class="p">,</span>
+        <span class="n">inline_code_lexer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">inline_code_theme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"monokai"</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span> <span class="o">=</span> <span class="n">console</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_stack</span><span class="p">:</span> <span class="n">StyleStack</span> <span class="o">=</span> <span class="n">StyleStack</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">:</span> <span class="n">Stack</span><span class="p">[</span><span class="n">MarkdownElement</span><span class="p">]</span> <span class="o">=</span> <span class="n">Stack</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_syntax</span><span class="p">:</span> <span class="n">Syntax</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">inline_code_lexer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">inline_code_lexer</span><span class="p">,</span> <span class="n">theme</span><span class="o">=</span><span class="n">inline_code_theme</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Current style which is the product of all styles on the stack."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_stack</span><span class="o">.</span><span class="n">current</span>
+
+<div class="viewcode-block" id="MarkdownContext.on_text">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownContext.on_text">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">node_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Called when the parser visits text."""</span>
+        <span class="k">if</span> <span class="n">node_type</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"fence"</span><span class="p">,</span> <span class="s2">"code_inline"</span><span class="p">}</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_syntax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">highlight_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_syntax</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+            <span class="n">highlight_text</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="n">highlight_text</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">style_stack</span><span class="o">.</span><span class="n">current</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MarkdownContext.enter_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownContext.enter_style">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">enter_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Style</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Enter a style context."""</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="n">style_name</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_style</span></div>
+
+
+<div class="viewcode-block" id="MarkdownContext.leave_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.MarkdownContext.leave_style">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">leave_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Leave a style context."""</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Markdown">
+<a class="viewcode-back" href="../../api/rich.html#rich.markdown.Markdown">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Markdown</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A Markdown renderable.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        markup (str): A string containing markdown.</span>
+<span class="sd">        code_theme (str, optional): Pygments theme for code blocks. Defaults to "monokai". See https://pygments.org/styles/ for code themes.</span>
+<span class="sd">        justify (JustifyMethod, optional): Justify value for paragraphs. Defaults to None.</span>
+<span class="sd">        style (Union[str, Style], optional): Optional style to apply to markdown.</span>
+<span class="sd">        hyperlinks (bool, optional): Enable hyperlinks. Defaults to ``True``.</span>
+<span class="sd">        inline_code_lexer: (str, optional): Lexer to use if inline code highlighting is</span>
+<span class="sd">            enabled. Defaults to None.</span>
+<span class="sd">        inline_code_theme: (Optional[str], optional): Pygments theme for inline code</span>
+<span class="sd">            highlighting, or None for no highlighting. Defaults to None.</span>
+<span class="sd">    """</span>
+
+    <span class="n">elements</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">[</span><span class="n">MarkdownElement</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"paragraph_open"</span><span class="p">:</span> <span class="n">Paragraph</span><span class="p">,</span>
+        <span class="s2">"heading_open"</span><span class="p">:</span> <span class="n">Heading</span><span class="p">,</span>
+        <span class="s2">"fence"</span><span class="p">:</span> <span class="n">CodeBlock</span><span class="p">,</span>
+        <span class="s2">"code_block"</span><span class="p">:</span> <span class="n">CodeBlock</span><span class="p">,</span>
+        <span class="s2">"blockquote_open"</span><span class="p">:</span> <span class="n">BlockQuote</span><span class="p">,</span>
+        <span class="s2">"hr"</span><span class="p">:</span> <span class="n">HorizontalRule</span><span class="p">,</span>
+        <span class="s2">"bullet_list_open"</span><span class="p">:</span> <span class="n">ListElement</span><span class="p">,</span>
+        <span class="s2">"ordered_list_open"</span><span class="p">:</span> <span class="n">ListElement</span><span class="p">,</span>
+        <span class="s2">"list_item_open"</span><span class="p">:</span> <span class="n">ListItem</span><span class="p">,</span>
+        <span class="s2">"image"</span><span class="p">:</span> <span class="n">ImageItem</span><span class="p">,</span>
+        <span class="s2">"table_open"</span><span class="p">:</span> <span class="n">TableElement</span><span class="p">,</span>
+        <span class="s2">"tbody_open"</span><span class="p">:</span> <span class="n">TableBodyElement</span><span class="p">,</span>
+        <span class="s2">"thead_open"</span><span class="p">:</span> <span class="n">TableHeaderElement</span><span class="p">,</span>
+        <span class="s2">"tr_open"</span><span class="p">:</span> <span class="n">TableRowElement</span><span class="p">,</span>
+        <span class="s2">"td_open"</span><span class="p">:</span> <span class="n">TableDataElement</span><span class="p">,</span>
+        <span class="s2">"th_open"</span><span class="p">:</span> <span class="n">TableDataElement</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">inlines</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"em"</span><span class="p">,</span> <span class="s2">"strong"</span><span class="p">,</span> <span class="s2">"code"</span><span class="p">,</span> <span class="s2">"s"</span><span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">markup</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">code_theme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"monokai"</span><span class="p">,</span>
+        <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Style</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">hyperlinks</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">inline_code_lexer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">inline_code_theme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">MarkdownIt</span><span class="p">()</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"strikethrough"</span><span class="p">)</span><span class="o">.</span><span class="n">enable</span><span class="p">(</span><span class="s2">"table"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">markup</span> <span class="o">=</span> <span class="n">markup</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">markup</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_theme</span> <span class="o">=</span> <span class="n">code_theme</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">justify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hyperlinks</span> <span class="o">=</span> <span class="n">hyperlinks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inline_code_lexer</span> <span class="o">=</span> <span class="n">inline_code_lexer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inline_code_theme</span> <span class="o">=</span> <span class="n">inline_code_theme</span> <span class="ow">or</span> <span class="n">code_theme</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_flatten_tokens</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tokens</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Token</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Token</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Flattens the token stream."""</span>
+        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+            <span class="n">is_fence</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">"fence"</span>
+            <span class="n">is_image</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">tag</span> <span class="o">==</span> <span class="s2">"img"</span>
+            <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">children</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="n">is_image</span> <span class="ow">or</span> <span class="n">is_fence</span><span class="p">):</span>
+                <span class="k">yield from</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_tokens</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">token</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Render markdown to the console."""</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="n">MarkdownContext</span><span class="p">(</span>
+            <span class="n">console</span><span class="p">,</span>
+            <span class="n">options</span><span class="p">,</span>
+            <span class="n">style</span><span class="p">,</span>
+            <span class="n">inline_code_lexer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inline_code_lexer</span><span class="p">,</span>
+            <span class="n">inline_code_theme</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">inline_code_theme</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parsed</span>
+        <span class="n">inline_style_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inlines</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">_new_line_segment</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flatten_tokens</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+            <span class="n">node_type</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">type</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">tag</span>
+
+            <span class="n">entering</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">nesting</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">exiting</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">nesting</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">self_closing</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">nesting</span> <span class="o">==</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"text"</span><span class="p">:</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"hardbreak"</span><span class="p">:</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"softbreak"</span><span class="p">:</span>
+                <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"link_open"</span><span class="p">:</span>
+                <span class="n">href</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"href"</span><span class="p">,</span> <span class="s2">""</span><span class="p">))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperlinks</span><span class="p">:</span>
+                    <span class="n">link_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.link_url"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+                    <span class="n">link_style</span> <span class="o">+=</span> <span class="n">Style</span><span class="p">(</span><span class="n">link</span><span class="o">=</span><span class="n">href</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="n">link_style</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">Link</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"html_inline"</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">content</span> <span class="o">==</span> <span class="s2">"&lt;kbd&gt;"</span><span class="p">:</span>
+                    <span class="n">kbd_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.kbd"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"bold"</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="n">kbd_style</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">token</span><span class="o">.</span><span class="n">content</span> <span class="o">==</span> <span class="s2">"&lt;/kbd&gt;"</span><span class="p">:</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">node_type</span> <span class="o">==</span> <span class="s2">"link_close"</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hyperlinks</span><span class="p">:</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">element</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">Link</span><span class="p">)</span>
+                    <span class="n">link_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="s2">"markdown.link"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="n">link_style</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">plain</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">" ("</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+                    <span class="n">link_url_style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span>
+                        <span class="s2">"markdown.link_url"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"none"</span>
+                    <span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="n">link_url_style</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">element</span><span class="o">.</span><span class="n">href</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="s2">")"</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="n">tag</span> <span class="ow">in</span> <span class="n">inline_style_tags</span>
+                <span class="ow">and</span> <span class="n">node_type</span> <span class="o">!=</span> <span class="s2">"fence"</span>
+                <span class="ow">and</span> <span class="n">node_type</span> <span class="o">!=</span> <span class="s2">"code_block"</span>
+            <span class="p">):</span>
+                <span class="k">if</span> <span class="n">entering</span><span class="p">:</span>
+                    <span class="c1"># If it's an opening inline token e.g. strong, em, etc.</span>
+                    <span class="c1"># Then we move into a style context i.e. push to stack.</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="sa">f</span><span class="s2">"markdown.</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">exiting</span><span class="p">:</span>
+                    <span class="c1"># If it's a closing inline style, then we pop the style</span>
+                    <span class="c1"># off of the stack, to move out of the context of it...</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># If it's a self-closing inline style e.g. `code_inline`</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">enter_style</span><span class="p">(</span><span class="sa">f</span><span class="s2">"markdown.</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">content</span><span class="p">:</span>
+                        <span class="n">context</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="n">node_type</span><span class="p">)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">leave_style</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Map the markdown tag -&gt; MarkdownElement renderable</span>
+                <span class="n">element_class</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">elements</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="ow">or</span> <span class="n">UnknownElement</span>
+                <span class="n">element</span> <span class="o">=</span> <span class="n">element_class</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">entering</span> <span class="ow">or</span> <span class="n">self_closing</span><span class="p">:</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">element</span><span class="p">)</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">on_enter</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">exiting</span><span class="p">:</span>  <span class="c1"># CLOSING tag</span>
+                    <span class="n">element</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+                    <span class="n">should_render</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span> <span class="ow">or</span> <span class="p">(</span>
+                        <span class="n">context</span><span class="o">.</span><span class="n">stack</span>
+                        <span class="ow">and</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">on_child_close</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">should_render</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">new_line</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">_new_line_segment</span>
+
+                        <span class="k">yield from</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">self_closing</span><span class="p">:</span>  <span class="c1"># SELF-CLOSING tags (e.g. text, code, image)</span>
+                    <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                    <span class="n">text</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">content</span>
+                    <span class="k">if</span> <span class="n">text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">element</span><span class="o">.</span><span class="n">on_text</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+
+                    <span class="n">should_render</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="ow">not</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span>
+                        <span class="ow">or</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span>
+                        <span class="ow">and</span> <span class="n">context</span><span class="o">.</span><span class="n">stack</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">on_child_close</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">should_render</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">new_line</span> <span class="ow">and</span> <span class="n">node_type</span> <span class="o">!=</span> <span class="s2">"inline"</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">_new_line_segment</span>
+                        <span class="k">yield from</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">options</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">exiting</span> <span class="ow">or</span> <span class="n">self_closing</span><span class="p">:</span>
+                    <span class="n">element</span><span class="o">.</span><span class="n">on_leave</span><span class="p">(</span><span class="n">context</span><span class="p">)</span>
+                    <span class="n">new_line</span> <span class="o">=</span> <span class="n">element</span><span class="o">.</span><span class="n">new_line</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Render Markdown to the console with Rich"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"path"</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"PATH"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"path to markdown file, or - for stdin"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-c"</span><span class="p">,</span>
+        <span class="s2">"--force-color"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"force_color"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"force color for non-terminals"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-t"</span><span class="p">,</span>
+        <span class="s2">"--code-theme"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"code_theme"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s2">"monokai"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"pygments code theme"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-i"</span><span class="p">,</span>
+        <span class="s2">"--inline-code-lexer"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"inline_code_lexer"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"inline_code_lexer"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-y"</span><span class="p">,</span>
+        <span class="s2">"--hyperlinks"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"hyperlinks"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"enable hyperlinks"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-w"</span><span class="p">,</span>
+        <span class="s2">"--width"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"width"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"width of output (default will auto-detect)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-j"</span><span class="p">,</span>
+        <span class="s2">"--justify"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"justify"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"enable full text justify"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-p"</span><span class="p">,</span>
+        <span class="s2">"--page"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"page"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"use pager to scroll output"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
+        <span class="n">markdown_body</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">markdown_file</span><span class="p">:</span>
+            <span class="n">markdown_body</span> <span class="o">=</span> <span class="n">markdown_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+    <span class="n">markdown</span> <span class="o">=</span> <span class="n">Markdown</span><span class="p">(</span>
+        <span class="n">markdown_body</span><span class="p">,</span>
+        <span class="n">justify</span><span class="o">=</span><span class="s2">"full"</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">justify</span> <span class="k">else</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="n">code_theme</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">code_theme</span><span class="p">,</span>
+        <span class="n">hyperlinks</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">hyperlinks</span><span class="p">,</span>
+        <span class="n">inline_code_lexer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">inline_code_lexer</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">page</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pydoc</span>
+
+        <span class="n">fileio</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+        <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span>
+            <span class="n">file</span><span class="o">=</span><span class="n">fileio</span><span class="p">,</span> <span class="n">force_terminal</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">force_color</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">width</span>
+        <span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">markdown</span><span class="p">)</span>
+        <span class="n">pydoc</span><span class="o">.</span><span class="n">pager</span><span class="p">(</span><span class="n">fileio</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span>
+            <span class="n">force_terminal</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">force_color</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">record</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">markdown</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

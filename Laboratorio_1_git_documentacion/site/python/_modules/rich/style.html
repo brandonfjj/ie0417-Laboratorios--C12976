@@ -1,0 +1,955 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.style &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.style</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.style</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">count</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">operator</span><span class="w"> </span><span class="kn">import</span> <span class="n">attrgetter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pickle</span><span class="w"> </span><span class="kn">import</span> <span class="n">dumps</span><span class="p">,</span> <span class="n">loads</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">getrandbits</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">errors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">ColorParseError</span><span class="p">,</span> <span class="n">ColorSystem</span><span class="p">,</span> <span class="n">blend_rgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.repr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Result</span><span class="p">,</span> <span class="n">rich_repr</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.terminal_theme</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_TERMINAL_THEME</span><span class="p">,</span> <span class="n">TerminalTheme</span>
+
+<span class="n">_hash_getter</span> <span class="o">=</span> <span class="n">attrgetter</span><span class="p">(</span>
+    <span class="s2">"_color"</span><span class="p">,</span> <span class="s2">"_bgcolor"</span><span class="p">,</span> <span class="s2">"_attributes"</span><span class="p">,</span> <span class="s2">"_set_attributes"</span><span class="p">,</span> <span class="s2">"_link"</span><span class="p">,</span> <span class="s2">"_meta"</span>
+<span class="p">)</span>
+
+<span class="c1"># Style instances and style definitions are often interchangeable</span>
+<span class="n">StyleType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">"Style"</span><span class="p">]</span>
+
+
+<span class="n">_id_generator</span> <span class="o">=</span> <span class="n">count</span><span class="p">(</span><span class="n">getrandbits</span><span class="p">(</span><span class="mi">24</span><span class="p">))</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_Bit</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A descriptor to get/set a style attribute bit."""</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"bit"</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bit_no</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bit</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit_no</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="s2">"Style"</span><span class="p">,</span> <span class="n">objtype</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="s2">"Style"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit</span> <span class="o">!=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="Style">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style">[docs]</a>
+<span class="nd">@rich_repr</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Style</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A terminal style.</span>
+
+<span class="sd">    A terminal style consists of a color (`color`), a background color (`bgcolor`), and a number of attributes, such</span>
+<span class="sd">    as bold, italic etc. The attributes have 3 states: they can either be on</span>
+<span class="sd">    (``True``), off (``False``), or not set (``None``).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        color (Union[Color, str], optional): Color of terminal text. Defaults to None.</span>
+<span class="sd">        bgcolor (Union[Color, str], optional): Color of terminal background. Defaults to None.</span>
+<span class="sd">        bold (bool, optional): Enable bold text. Defaults to None.</span>
+<span class="sd">        dim (bool, optional): Enable dim text. Defaults to None.</span>
+<span class="sd">        italic (bool, optional): Enable italic text. Defaults to None.</span>
+<span class="sd">        underline (bool, optional): Enable underlined text. Defaults to None.</span>
+<span class="sd">        blink (bool, optional): Enabled blinking text. Defaults to None.</span>
+<span class="sd">        blink2 (bool, optional): Enable fast blinking text. Defaults to None.</span>
+<span class="sd">        reverse (bool, optional): Enabled reverse text. Defaults to None.</span>
+<span class="sd">        conceal (bool, optional): Enable concealed text. Defaults to None.</span>
+<span class="sd">        strike (bool, optional): Enable strikethrough text. Defaults to None.</span>
+<span class="sd">        underline2 (bool, optional): Enable doubly underlined text. Defaults to None.</span>
+<span class="sd">        frame (bool, optional): Enable framed text. Defaults to None.</span>
+<span class="sd">        encircle (bool, optional): Enable encircled text. Defaults to None.</span>
+<span class="sd">        overline (bool, optional): Enable overlined text. Defaults to None.</span>
+<span class="sd">        link (str, link): Link URL. Defaults to None.</span>
+
+<span class="sd">    """</span>
+
+    <span class="n">_color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span>
+    <span class="n">_bgcolor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span>
+    <span class="n">_attributes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">_set_attributes</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+    <span class="n">_null</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">_meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bytes</span><span class="p">]</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"_color"</span><span class="p">,</span>
+        <span class="s2">"_bgcolor"</span><span class="p">,</span>
+        <span class="s2">"_attributes"</span><span class="p">,</span>
+        <span class="s2">"_set_attributes"</span><span class="p">,</span>
+        <span class="s2">"_link"</span><span class="p">,</span>
+        <span class="s2">"_link_id"</span><span class="p">,</span>
+        <span class="s2">"_ansi"</span><span class="p">,</span>
+        <span class="s2">"_style_definition"</span><span class="p">,</span>
+        <span class="s2">"_hash"</span><span class="p">,</span>
+        <span class="s2">"_null"</span><span class="p">,</span>
+        <span class="s2">"_meta"</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="c1"># maps bits on to SGR parameter</span>
+    <span class="n">_style_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mi">0</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="s2">"2"</span><span class="p">,</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="s2">"3"</span><span class="p">,</span>
+        <span class="mi">3</span><span class="p">:</span> <span class="s2">"4"</span><span class="p">,</span>
+        <span class="mi">4</span><span class="p">:</span> <span class="s2">"5"</span><span class="p">,</span>
+        <span class="mi">5</span><span class="p">:</span> <span class="s2">"6"</span><span class="p">,</span>
+        <span class="mi">6</span><span class="p">:</span> <span class="s2">"7"</span><span class="p">,</span>
+        <span class="mi">7</span><span class="p">:</span> <span class="s2">"8"</span><span class="p">,</span>
+        <span class="mi">8</span><span class="p">:</span> <span class="s2">"9"</span><span class="p">,</span>
+        <span class="mi">9</span><span class="p">:</span> <span class="s2">"21"</span><span class="p">,</span>
+        <span class="mi">10</span><span class="p">:</span> <span class="s2">"51"</span><span class="p">,</span>
+        <span class="mi">11</span><span class="p">:</span> <span class="s2">"52"</span><span class="p">,</span>
+        <span class="mi">12</span><span class="p">:</span> <span class="s2">"53"</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">STYLE_ATTRIBUTES</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"dim"</span><span class="p">:</span> <span class="s2">"dim"</span><span class="p">,</span>
+        <span class="s2">"d"</span><span class="p">:</span> <span class="s2">"dim"</span><span class="p">,</span>
+        <span class="s2">"bold"</span><span class="p">:</span> <span class="s2">"bold"</span><span class="p">,</span>
+        <span class="s2">"b"</span><span class="p">:</span> <span class="s2">"bold"</span><span class="p">,</span>
+        <span class="s2">"italic"</span><span class="p">:</span> <span class="s2">"italic"</span><span class="p">,</span>
+        <span class="s2">"i"</span><span class="p">:</span> <span class="s2">"italic"</span><span class="p">,</span>
+        <span class="s2">"underline"</span><span class="p">:</span> <span class="s2">"underline"</span><span class="p">,</span>
+        <span class="s2">"u"</span><span class="p">:</span> <span class="s2">"underline"</span><span class="p">,</span>
+        <span class="s2">"blink"</span><span class="p">:</span> <span class="s2">"blink"</span><span class="p">,</span>
+        <span class="s2">"blink2"</span><span class="p">:</span> <span class="s2">"blink2"</span><span class="p">,</span>
+        <span class="s2">"reverse"</span><span class="p">:</span> <span class="s2">"reverse"</span><span class="p">,</span>
+        <span class="s2">"r"</span><span class="p">:</span> <span class="s2">"reverse"</span><span class="p">,</span>
+        <span class="s2">"conceal"</span><span class="p">:</span> <span class="s2">"conceal"</span><span class="p">,</span>
+        <span class="s2">"c"</span><span class="p">:</span> <span class="s2">"conceal"</span><span class="p">,</span>
+        <span class="s2">"strike"</span><span class="p">:</span> <span class="s2">"strike"</span><span class="p">,</span>
+        <span class="s2">"s"</span><span class="p">:</span> <span class="s2">"strike"</span><span class="p">,</span>
+        <span class="s2">"underline2"</span><span class="p">:</span> <span class="s2">"underline2"</span><span class="p">,</span>
+        <span class="s2">"uu"</span><span class="p">:</span> <span class="s2">"underline2"</span><span class="p">,</span>
+        <span class="s2">"frame"</span><span class="p">:</span> <span class="s2">"frame"</span><span class="p">,</span>
+        <span class="s2">"encircle"</span><span class="p">:</span> <span class="s2">"encircle"</span><span class="p">,</span>
+        <span class="s2">"overline"</span><span class="p">:</span> <span class="s2">"overline"</span><span class="p">,</span>
+        <span class="s2">"o"</span><span class="p">:</span> <span class="s2">"overline"</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Color</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bgcolor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Color</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">bold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">italic</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">underline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">blink</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">blink2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">conceal</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">strike</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">underline2</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">frame</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">encircle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">overline</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">link</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">_make_color</span><span class="p">(</span><span class="n">color</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Color</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Color</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">color</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">Color</span><span class="p">)</span> <span class="k">else</span> <span class="n">Color</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_make_color</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">bgcolor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_make_color</span><span class="p">(</span><span class="n">bgcolor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">bold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="n">dim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="n">italic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="n">underline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">8</span><span class="p">,</span>
+                <span class="n">blink</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">16</span><span class="p">,</span>
+                <span class="n">blink2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">32</span><span class="p">,</span>
+                <span class="n">reverse</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">64</span><span class="p">,</span>
+                <span class="n">conceal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">128</span><span class="p">,</span>
+                <span class="n">strike</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">256</span><span class="p">,</span>
+                <span class="n">underline2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">512</span><span class="p">,</span>
+                <span class="n">frame</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">1024</span><span class="p">,</span>
+                <span class="n">encircle</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">2048</span><span class="p">,</span>
+                <span class="n">overline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="mi">4096</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">sum</span><span class="p">(</span>
+                <span class="p">(</span>
+                    <span class="n">bold</span> <span class="ow">and</span> <span class="mi">1</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">dim</span> <span class="ow">and</span> <span class="mi">2</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">italic</span> <span class="ow">and</span> <span class="mi">4</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">underline</span> <span class="ow">and</span> <span class="mi">8</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">blink</span> <span class="ow">and</span> <span class="mi">16</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">blink2</span> <span class="ow">and</span> <span class="mi">32</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">reverse</span> <span class="ow">and</span> <span class="mi">64</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">conceal</span> <span class="ow">and</span> <span class="mi">128</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">strike</span> <span class="ow">and</span> <span class="mi">256</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">underline2</span> <span class="ow">and</span> <span class="mi">512</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">frame</span> <span class="ow">and</span> <span class="mi">1024</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">encircle</span> <span class="ow">and</span> <span class="mi">2048</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">overline</span> <span class="ow">and</span> <span class="mi">4096</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+            <span class="k">else</span> <span class="mi">0</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="n">link</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">dumps</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="n">_id_generator</span><span class="p">)</span><span class="si">}{</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="p">(</span><span class="n">link</span> <span class="ow">or</span> <span class="n">meta</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="ow">or</span> <span class="n">color</span> <span class="ow">or</span> <span class="n">bgcolor</span> <span class="ow">or</span> <span class="n">link</span> <span class="ow">or</span> <span class="n">meta</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Style.null">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.null">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">null</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create an 'null' style, equivalent to Style(), but more performant."""</span>
+        <span class="k">return</span> <span class="n">NULL_STYLE</span></div>
+
+
+<div class="viewcode-block" id="Style.from_color">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.from_color">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_color</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">bgcolor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a new style with colors and no attributes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            color (Optional[Color]): A (foreground) color, or None for no color. Defaults to None.</span>
+<span class="sd">            bgcolor (Optional[Color]): A (background) color, or None for no color. Defaults to None.</span>
+<span class="sd">        """</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="n">bgcolor</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">color</span> <span class="ow">or</span> <span class="n">bgcolor</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.from_meta">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.from_meta">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_meta</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a new style with meta data.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            meta (Optional[Dict[str, Any]]): A dictionary of meta data. Defaults to None.</span>
+<span class="sd">        """</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="n">_id_generator</span><span class="p">)</span><span class="si">}{</span><span class="nb">hash</span><span class="p">(</span><span class="n">style</span><span class="o">.</span><span class="n">_meta</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="ow">not</span> <span class="p">(</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.on">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.on">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">on</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">meta</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">handlers</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a blank style with meta information.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">            style = Style.on(click=self.on_click)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            meta (Optional[Dict[str, Any]], optional): An optional dict of meta information.</span>
+<span class="sd">            **handlers (Any): Keyword arguments are translated in to handlers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: A Style with meta information attached.</span>
+<span class="sd">        """</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">meta</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="sa">f</span><span class="s2">"@</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">handlers</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_meta</span><span class="p">(</span><span class="n">meta</span><span class="p">)</span></div>
+
+
+    <span class="n">bold</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">italic</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">underline</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">blink</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">blink2</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">reverse</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+    <span class="n">conceal</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+    <span class="n">strike</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">underline2</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">encircle</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">overline</span> <span class="o">=</span> <span class="n">_Bit</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">link_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a link id, used in ansi code for links."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_id</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Re-generate style definition from attributes."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">attributes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">append</span> <span class="o">=</span> <span class="n">attributes</span><span class="o">.</span><span class="n">append</span>
+            <span class="n">bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+            <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="mb">0b0000000001111</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"bold"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bold</span> <span class="k">else</span> <span class="s2">"not bold"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"dim"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="k">else</span> <span class="s2">"not dim"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">2</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"italic"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">italic</span> <span class="k">else</span> <span class="s2">"not italic"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"underline"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">underline</span> <span class="k">else</span> <span class="s2">"not underline"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="mb">0b0000111110000</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"blink"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blink</span> <span class="k">else</span> <span class="s2">"not blink"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">5</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"blink2"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">blink2</span> <span class="k">else</span> <span class="s2">"not blink2"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">6</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"reverse"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span> <span class="k">else</span> <span class="s2">"not reverse"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"conceal"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conceal</span> <span class="k">else</span> <span class="s2">"not conceal"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"strike"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strike</span> <span class="k">else</span> <span class="s2">"not strike"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="mb">0b1111000000000</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"underline2"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">underline2</span> <span class="k">else</span> <span class="s2">"not underline2"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">10</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"frame"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="k">else</span> <span class="s2">"not frame"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">11</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"encircle"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">encircle</span> <span class="k">else</span> <span class="s2">"not encircle"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">bits</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="mi">12</span><span class="p">):</span>
+                    <span class="n">append</span><span class="p">(</span><span class="s2">"overline"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overline</span> <span class="k">else</span> <span class="s2">"not overline"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_color</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="s2">"on"</span><span class="p">)</span>
+                <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="s2">"link"</span><span class="p">)</span>
+                <span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_link</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"none"</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A Style is false if it has no attributes, colors, or links."""</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_null</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_make_ansi_codes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color_system</span><span class="p">:</span> <span class="n">ColorSystem</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Generate ANSI codes for this style.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            color_system (ColorSystem): Color system.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: String containing codes.</span>
+<span class="sd">        """</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sgr</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">append</span> <span class="o">=</span> <span class="n">sgr</span><span class="o">.</span><span class="n">append</span>
+            <span class="n">_style_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_map</span>
+            <span class="n">attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">&amp;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+            <span class="k">if</span> <span class="n">attributes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mi">4</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mi">8</span><span class="p">:</span>
+                    <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mb">0b0000111110000</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">):</span>
+                            <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="n">bit</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="mb">0b1111000000000</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">13</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">attributes</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">):</span>
+                            <span class="n">append</span><span class="p">(</span><span class="n">_style_map</span><span class="p">[</span><span class="n">bit</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">sgr</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_color</span><span class="o">.</span><span class="n">downgrade</span><span class="p">(</span><span class="n">color_system</span><span class="p">)</span><span class="o">.</span><span class="n">get_ansi_codes</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">sgr</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span><span class="o">.</span><span class="n">downgrade</span><span class="p">(</span><span class="n">color_system</span><span class="p">)</span><span class="o">.</span><span class="n">get_ansi_codes</span><span class="p">(</span>
+                        <span class="n">foreground</span><span class="o">=</span><span class="kc">False</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="s2">";"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sgr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span>
+
+<div class="viewcode-block" id="Style.normalize">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.normalize">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Normalize a style definition so that styles with the same effect have the same string</span>
+<span class="sd">        representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            style (str): A style definition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Normal form of style definition.</span>
+<span class="sd">        """</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">style</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">style</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Style.pick_first">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.pick_first">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pick_first</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">StyleType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Pick first non-None style."""</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">value</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"expected at least one non-None style"</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="s2">"color"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"bgcolor"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"bold"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bold</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="k">yield</span> <span class="s2">"dim"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="k">yield</span> <span class="s2">"italic"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">italic</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"underline"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">underline</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="k">yield</span> <span class="s2">"blink"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blink</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"blink2"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">blink2</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"reverse"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"conceal"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">conceal</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"strike"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strike</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"underline2"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">underline2</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"frame"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"encircle"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">encircle</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">yield</span> <span class="s2">"link"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">link</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="s2">"meta"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">meta</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Style</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Style</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">NotImplemented</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="fm">__hash__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="nb">hash</span><span class="p">(</span><span class="n">_hash_getter</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">color</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The foreground color or None if it is not set."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bgcolor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The background color or None if it is not set."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">link</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Link text, if set."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">transparent_background</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Check if the style specified a transparent background."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="o">.</span><span class="n">is_default</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">background_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A Style with background only."""</span>
+        <span class="k">return</span> <span class="n">Style</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">meta</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Get meta information (can not be changed after construction)."""</span>
+        <span class="k">return</span> <span class="p">{}</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">cast</span><span class="p">(</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_meta</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">without_color</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a copy of the style with color removed."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_null</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NULL_STYLE</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="n">_id_generator</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">style</span>
+
+<div class="viewcode-block" id="Style.parse">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.parse">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">style_definition</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Parse a style definition.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            style_definition (str): A string containing a style.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            errors.StyleSyntaxError: If the style definition syntax is invalid.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            `Style`: A Style instance.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">style_definition</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"none"</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">style_definition</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+
+        <span class="n">STYLE_ATTRIBUTES</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">STYLE_ATTRIBUTES</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">bgcolor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">attributes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">link</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">words</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">style_definition</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">original_word</span> <span class="ow">in</span> <span class="n">words</span><span class="p">:</span>
+            <span class="n">word</span> <span class="o">=</span> <span class="n">original_word</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">word</span> <span class="o">==</span> <span class="s2">"on"</span><span class="p">:</span>
+                <span class="n">word</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">words</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">(</span><span class="s2">"color expected after 'on'"</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">Color</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ColorParseError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"unable to parse </span><span class="si">{</span><span class="n">word</span><span class="si">!r}</span><span class="s2"> as background color; </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                <span class="n">bgcolor</span> <span class="o">=</span> <span class="n">word</span>
+
+            <span class="k">elif</span> <span class="n">word</span> <span class="o">==</span> <span class="s2">"not"</span><span class="p">:</span>
+                <span class="n">word</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">words</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                <span class="n">attribute</span> <span class="o">=</span> <span class="n">STYLE_ATTRIBUTES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">attribute</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"expected style attribute after 'not', found </span><span class="si">{</span><span class="n">word</span><span class="si">!r}</span><span class="s2">"</span>
+                    <span class="p">)</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">elif</span> <span class="n">word</span> <span class="o">==</span> <span class="s2">"link"</span><span class="p">:</span>
+                <span class="n">word</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">words</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">word</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">(</span><span class="s2">"URL expected after 'link'"</span><span class="p">)</span>
+                <span class="n">link</span> <span class="o">=</span> <span class="n">word</span>
+
+            <span class="k">elif</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">STYLE_ATTRIBUTES</span><span class="p">:</span>
+                <span class="n">attributes</span><span class="p">[</span><span class="n">STYLE_ATTRIBUTES</span><span class="p">[</span><span class="n">word</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">Color</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">word</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">ColorParseError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">errors</span><span class="o">.</span><span class="n">StyleSyntaxError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">"unable to parse </span><span class="si">{</span><span class="n">word</span><span class="si">!r}</span><span class="s2"> as color; </span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">word</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">bgcolor</span><span class="o">=</span><span class="n">bgcolor</span><span class="p">,</span> <span class="n">link</span><span class="o">=</span><span class="n">link</span><span class="p">,</span> <span class="o">**</span><span class="n">attributes</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.get_html_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.get_html_style">[docs]</a>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_html_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TerminalTheme</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a CSS style rule."""</span>
+        <span class="n">theme</span> <span class="o">=</span> <span class="n">theme</span> <span class="ow">or</span> <span class="n">DEFAULT_TERMINAL_THEME</span>
+        <span class="n">css</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">css</span><span class="o">.</span><span class="n">append</span>
+
+        <span class="n">color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span>
+        <span class="n">bgcolor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bgcolor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">:</span>
+            <span class="n">color</span><span class="p">,</span> <span class="n">bgcolor</span> <span class="o">=</span> <span class="n">bgcolor</span><span class="p">,</span> <span class="n">color</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+            <span class="n">foreground_color</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">theme</span><span class="o">.</span><span class="n">foreground_color</span> <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_triplet</span><span class="p">(</span>
+                <span class="n">blend_rgb</span><span class="p">(</span><span class="n">foreground_color</span><span class="p">,</span> <span class="n">theme</span><span class="o">.</span><span class="n">background_color</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">theme_color</span> <span class="o">=</span> <span class="n">color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span>
+            <span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"color: </span><span class="si">{</span><span class="n">theme_color</span><span class="o">.</span><span class="n">hex</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"text-decoration-color: </span><span class="si">{</span><span class="n">theme_color</span><span class="o">.</span><span class="n">hex</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bgcolor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">theme_color</span> <span class="o">=</span> <span class="n">bgcolor</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">(</span><span class="n">theme</span><span class="p">,</span> <span class="n">foreground</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">"background-color: </span><span class="si">{</span><span class="n">theme_color</span><span class="o">.</span><span class="n">hex</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bold</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="s2">"font-weight: bold"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">italic</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="s2">"font-style: italic"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">underline</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="s2">"text-decoration: underline"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strike</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="s2">"text-decoration: line-through"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">overline</span><span class="p">:</span>
+            <span class="n">append</span><span class="p">(</span><span class="s2">"text-decoration: overline"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">"; "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">css</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Style.combine">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.combine">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">combine</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">styles</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="s2">"Style"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Combine styles and get result.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            styles (Iterable[Style]): Styles to combine.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: A new style instance.</span>
+<span class="sd">        """</span>
+        <span class="n">iter_styles</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">styles</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">iter_styles</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_styles</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Style.chain">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.chain">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">chain</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">styles</span><span class="p">:</span> <span class="s2">"Style"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Combine styles from positional argument in to a single style.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *styles (Iterable[Style]): Styles to combine.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: A new style instance.</span>
+<span class="sd">        """</span>
+        <span class="n">iter_styles</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">styles</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">iter_styles</span><span class="p">,</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_styles</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="Style.copy">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.copy">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a copy of this style.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: A new Style instance with identical attributes.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_null</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NULL_STYLE</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="n">_id_generator</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.clear_meta_and_links">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.clear_meta_and_links">[docs]</a>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_meta_and_links</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a copy of this style with link and meta information removed.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: New style object.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_null</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">NULL_STYLE</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.update_link">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.update_link">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_link</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">link</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a copy with a different value for link.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            link (str, optional): New value for link. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: A new Style instance.</span>
+<span class="sd">        """</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_definition</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="n">link</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">next</span><span class="p">(</span><span class="n">_id_generator</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">link</span> <span class="k">else</span> <span class="s2">""</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="Style.render">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.render">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">text</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">color_system</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ColorSystem</span><span class="p">]</span> <span class="o">=</span> <span class="n">ColorSystem</span><span class="o">.</span><span class="n">TRUECOLOR</span><span class="p">,</span>
+        <span class="n">legacy_windows</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Render the ANSI codes for the style.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (str, optional): A string to style. Defaults to "".</span>
+<span class="sd">            color_system (Optional[ColorSystem], optional): Color system to render to. Defaults to ColorSystem.TRUECOLOR.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: A string containing ANSI style codes.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span> <span class="ow">or</span> <span class="n">color_system</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">text</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ansi</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_ansi_codes</span><span class="p">(</span><span class="n">color_system</span><span class="p">)</span>
+        <span class="n">rendered</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">[</span><span class="si">{</span><span class="n">attrs</span><span class="si">}</span><span class="s2">m</span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="se">\x1b</span><span class="s2">[0m"</span> <span class="k">if</span> <span class="n">attrs</span> <span class="k">else</span> <span class="n">text</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">legacy_windows</span><span class="p">:</span>
+            <span class="n">rendered</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"</span><span class="se">\x1b</span><span class="s2">]8;id=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_link_id</span><span class="si">}</span><span class="s2">;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_link</span><span class="si">}</span><span class="se">\x1b\\</span><span class="si">{</span><span class="n">rendered</span><span class="si">}</span><span class="se">\x1b</span><span class="s2">]8;;</span><span class="se">\x1b\\</span><span class="s2">"</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">rendered</span></div>
+
+
+<div class="viewcode-block" id="Style.test">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.Style.test">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Write text with style directly to terminal.</span>
+
+<span class="sd">        This method is for testing purposes only.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (Optional[str], optional): Text to style or None for style name.</span>
+
+<span class="sd">        """</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span> <span class="ow">or</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">text</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"Style"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">style</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">style</span><span class="o">.</span><span class="n">_null</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_null</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">style</span>
+        <span class="n">new_style</span><span class="p">:</span> <span class="n">Style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Style</span><span class="p">)</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_ansi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_style_definition</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_color</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">_color</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_color</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">_bgcolor</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bgcolor</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span>
+            <span class="n">style</span><span class="o">.</span><span class="n">_attributes</span> <span class="o">&amp;</span> <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="p">)</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_attributes</span> <span class="o">|</span> <span class="n">style</span><span class="o">.</span><span class="n">_set_attributes</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_link</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">_link</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_link_id</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">_link_id</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_link_id</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_null</span> <span class="o">=</span> <span class="n">style</span><span class="o">.</span><span class="n">_null</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="ow">and</span> <span class="n">style</span><span class="o">.</span><span class="n">_meta</span><span class="p">:</span>
+            <span class="n">new_style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="n">dumps</span><span class="p">({</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">meta</span><span class="p">,</span> <span class="o">**</span><span class="n">style</span><span class="o">.</span><span class="n">meta</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_style</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="ow">or</span> <span class="n">style</span><span class="o">.</span><span class="n">_meta</span>
+        <span class="n">new_style</span><span class="o">.</span><span class="n">_hash</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">new_style</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">"Style"</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s2">"Style"</span><span class="p">:</span>
+        <span class="n">combined_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">combined_style</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">combined_style</span><span class="o">.</span><span class="n">link</span> <span class="k">else</span> <span class="n">combined_style</span></div>
+
+
+
+<span class="n">NULL_STYLE</span> <span class="o">=</span> <span class="n">Style</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="StyleStack">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.StyleStack">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StyleStack</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A stack of styles."""</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_stack"</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">default_style</span><span class="p">:</span> <span class="s2">"Style"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">default_style</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"&lt;stylestack </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="si">!r}</span><span class="s2">&gt;"</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">current</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the Style at the top of the stack."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="StyleStack.push">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.StyleStack.push">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Style</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Push a new style on to the stack.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            style (Style): New style to combine with current style.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">style</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="StyleStack.pop">
+<a class="viewcode-back" href="../../api/rich.html#rich.style.StyleStack.pop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Pop last style and discard.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Style: New current style (also available as stack.current)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

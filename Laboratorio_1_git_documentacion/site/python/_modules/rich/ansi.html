@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.ansi &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.ansi</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.ansi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">suppress</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">NamedTuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="n">re_ansi</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">"""</span>
+<span class="sd">(?:\x1b[0-?])|</span>
+<span class="sd">(?:\x1b\](.*?)\x1b\\)|</span>
+<span class="sd">(?:\x1b([(@-Z\\-_]|\[[0-?]*[ -/]*[@-~]))</span>
+<span class="sd">"""</span><span class="p">,</span>
+    <span class="n">re</span><span class="o">.</span><span class="n">VERBOSE</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_AnsiToken</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Result of ansi tokenized string."""</span>
+
+    <span class="n">plain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">sgr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">osc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">""</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ansi_tokenize</span><span class="p">(</span><span class="n">ansi_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">_AnsiToken</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Tokenize a string in to plain text and ANSI codes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ansi_text (str): A String containing ANSI codes.</span>
+
+<span class="sd">    Yields:</span>
+<span class="sd">        AnsiToken: A named tuple of (plain, sgr, osc)</span>
+<span class="sd">    """</span>
+
+    <span class="n">position</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sgr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">osc</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re_ansi</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">ansi_text</span><span class="p">):</span>
+        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">span</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">osc</span><span class="p">,</span> <span class="n">sgr</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">position</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_AnsiToken</span><span class="p">(</span><span class="n">ansi_text</span><span class="p">[</span><span class="n">position</span><span class="p">:</span><span class="n">start</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sgr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sgr</span> <span class="o">==</span> <span class="s2">"("</span><span class="p">:</span>
+                <span class="n">position</span> <span class="o">=</span> <span class="n">end</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">sgr</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"m"</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">_AnsiToken</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">sgr</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">osc</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">_AnsiToken</span><span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="n">sgr</span><span class="p">,</span> <span class="n">osc</span><span class="p">)</span>
+        <span class="n">position</span> <span class="o">=</span> <span class="n">end</span>
+    <span class="k">if</span> <span class="n">position</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ansi_text</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">_AnsiToken</span><span class="p">(</span><span class="n">ansi_text</span><span class="p">[</span><span class="n">position</span><span class="p">:])</span>
+
+
+<span class="n">SGR_STYLE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="s2">"bold"</span><span class="p">,</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="s2">"dim"</span><span class="p">,</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="s2">"italic"</span><span class="p">,</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="s2">"underline"</span><span class="p">,</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="s2">"blink"</span><span class="p">,</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="s2">"blink2"</span><span class="p">,</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="s2">"reverse"</span><span class="p">,</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="s2">"conceal"</span><span class="p">,</span>
+    <span class="mi">9</span><span class="p">:</span> <span class="s2">"strike"</span><span class="p">,</span>
+    <span class="mi">21</span><span class="p">:</span> <span class="s2">"underline2"</span><span class="p">,</span>
+    <span class="mi">22</span><span class="p">:</span> <span class="s2">"not dim not bold"</span><span class="p">,</span>
+    <span class="mi">23</span><span class="p">:</span> <span class="s2">"not italic"</span><span class="p">,</span>
+    <span class="mi">24</span><span class="p">:</span> <span class="s2">"not underline"</span><span class="p">,</span>
+    <span class="mi">25</span><span class="p">:</span> <span class="s2">"not blink"</span><span class="p">,</span>
+    <span class="mi">26</span><span class="p">:</span> <span class="s2">"not blink2"</span><span class="p">,</span>
+    <span class="mi">27</span><span class="p">:</span> <span class="s2">"not reverse"</span><span class="p">,</span>
+    <span class="mi">28</span><span class="p">:</span> <span class="s2">"not conceal"</span><span class="p">,</span>
+    <span class="mi">29</span><span class="p">:</span> <span class="s2">"not strike"</span><span class="p">,</span>
+    <span class="mi">30</span><span class="p">:</span> <span class="s2">"color(0)"</span><span class="p">,</span>
+    <span class="mi">31</span><span class="p">:</span> <span class="s2">"color(1)"</span><span class="p">,</span>
+    <span class="mi">32</span><span class="p">:</span> <span class="s2">"color(2)"</span><span class="p">,</span>
+    <span class="mi">33</span><span class="p">:</span> <span class="s2">"color(3)"</span><span class="p">,</span>
+    <span class="mi">34</span><span class="p">:</span> <span class="s2">"color(4)"</span><span class="p">,</span>
+    <span class="mi">35</span><span class="p">:</span> <span class="s2">"color(5)"</span><span class="p">,</span>
+    <span class="mi">36</span><span class="p">:</span> <span class="s2">"color(6)"</span><span class="p">,</span>
+    <span class="mi">37</span><span class="p">:</span> <span class="s2">"color(7)"</span><span class="p">,</span>
+    <span class="mi">39</span><span class="p">:</span> <span class="s2">"default"</span><span class="p">,</span>
+    <span class="mi">40</span><span class="p">:</span> <span class="s2">"on color(0)"</span><span class="p">,</span>
+    <span class="mi">41</span><span class="p">:</span> <span class="s2">"on color(1)"</span><span class="p">,</span>
+    <span class="mi">42</span><span class="p">:</span> <span class="s2">"on color(2)"</span><span class="p">,</span>
+    <span class="mi">43</span><span class="p">:</span> <span class="s2">"on color(3)"</span><span class="p">,</span>
+    <span class="mi">44</span><span class="p">:</span> <span class="s2">"on color(4)"</span><span class="p">,</span>
+    <span class="mi">45</span><span class="p">:</span> <span class="s2">"on color(5)"</span><span class="p">,</span>
+    <span class="mi">46</span><span class="p">:</span> <span class="s2">"on color(6)"</span><span class="p">,</span>
+    <span class="mi">47</span><span class="p">:</span> <span class="s2">"on color(7)"</span><span class="p">,</span>
+    <span class="mi">49</span><span class="p">:</span> <span class="s2">"on default"</span><span class="p">,</span>
+    <span class="mi">51</span><span class="p">:</span> <span class="s2">"frame"</span><span class="p">,</span>
+    <span class="mi">52</span><span class="p">:</span> <span class="s2">"encircle"</span><span class="p">,</span>
+    <span class="mi">53</span><span class="p">:</span> <span class="s2">"overline"</span><span class="p">,</span>
+    <span class="mi">54</span><span class="p">:</span> <span class="s2">"not frame not encircle"</span><span class="p">,</span>
+    <span class="mi">55</span><span class="p">:</span> <span class="s2">"not overline"</span><span class="p">,</span>
+    <span class="mi">90</span><span class="p">:</span> <span class="s2">"color(8)"</span><span class="p">,</span>
+    <span class="mi">91</span><span class="p">:</span> <span class="s2">"color(9)"</span><span class="p">,</span>
+    <span class="mi">92</span><span class="p">:</span> <span class="s2">"color(10)"</span><span class="p">,</span>
+    <span class="mi">93</span><span class="p">:</span> <span class="s2">"color(11)"</span><span class="p">,</span>
+    <span class="mi">94</span><span class="p">:</span> <span class="s2">"color(12)"</span><span class="p">,</span>
+    <span class="mi">95</span><span class="p">:</span> <span class="s2">"color(13)"</span><span class="p">,</span>
+    <span class="mi">96</span><span class="p">:</span> <span class="s2">"color(14)"</span><span class="p">,</span>
+    <span class="mi">97</span><span class="p">:</span> <span class="s2">"color(15)"</span><span class="p">,</span>
+    <span class="mi">100</span><span class="p">:</span> <span class="s2">"on color(8)"</span><span class="p">,</span>
+    <span class="mi">101</span><span class="p">:</span> <span class="s2">"on color(9)"</span><span class="p">,</span>
+    <span class="mi">102</span><span class="p">:</span> <span class="s2">"on color(10)"</span><span class="p">,</span>
+    <span class="mi">103</span><span class="p">:</span> <span class="s2">"on color(11)"</span><span class="p">,</span>
+    <span class="mi">104</span><span class="p">:</span> <span class="s2">"on color(12)"</span><span class="p">,</span>
+    <span class="mi">105</span><span class="p">:</span> <span class="s2">"on color(13)"</span><span class="p">,</span>
+    <span class="mi">106</span><span class="p">:</span> <span class="s2">"on color(14)"</span><span class="p">,</span>
+    <span class="mi">107</span><span class="p">:</span> <span class="s2">"on color(15)"</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="AnsiDecoder">
+<a class="viewcode-back" href="../../api/rich.html#rich.ansi.AnsiDecoder">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AnsiDecoder</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Translate ANSI code in to styled Text."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+
+<div class="viewcode-block" id="AnsiDecoder.decode">
+<a class="viewcode-back" href="../../api/rich.html#rich.ansi.AnsiDecoder.decode">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">terminal_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Text</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Decode ANSI codes in an iterable of lines.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            terminal_text: Output potentially containing ANSI escape sequences.</span>
+
+<span class="sd">        Yields:</span>
+<span class="sd">            Text: Marked up Text.</span>
+<span class="sd">        """</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(?&lt;=\n)"</span><span class="p">,</span> <span class="n">terminal_text</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode_line</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="AnsiDecoder.decode_line">
+<a class="viewcode-back" href="../../api/rich.html#rich.ansi.AnsiDecoder.decode_line">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decode_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Decode a line containing ansi codes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            line (str): A line of terminal output.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Text: A Text instance marked up according to ansi codes.</span>
+<span class="sd">        """</span>
+        <span class="n">from_ansi</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_ansi</span>
+        <span class="n">from_rgb</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_rgb</span>
+        <span class="n">_Style</span> <span class="o">=</span> <span class="n">Style</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">()</span>
+        <span class="n">append</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">append</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">"</span><span class="se">\r</span><span class="s2">"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">plain_text</span><span class="p">,</span> <span class="n">sgr</span><span class="p">,</span> <span class="n">osc</span> <span class="ow">in</span> <span class="n">_ansi_tokenize</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">plain_text</span><span class="p">:</span>
+                <span class="n">append</span><span class="p">(</span><span class="n">plain_text</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">osc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">osc</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"8;"</span><span class="p">):</span>
+                    <span class="n">_params</span><span class="p">,</span> <span class="n">semicolon</span><span class="p">,</span> <span class="n">link</span> <span class="o">=</span> <span class="n">osc</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">";"</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">semicolon</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">update_link</span><span class="p">(</span><span class="n">link</span> <span class="ow">or</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">sgr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Translate in to semi-colon separated codes</span>
+                <span class="c1"># Ignore invalid codes, because we want to be lenient</span>
+                <span class="n">codes</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="nb">min</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">_code</span><span class="p">)</span> <span class="k">if</span> <span class="n">_code</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_code</span> <span class="ow">in</span> <span class="n">sgr</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">";"</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">_code</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="ow">or</span> <span class="n">_code</span> <span class="o">==</span> <span class="s2">""</span>
+                <span class="p">]</span>
+                <span class="n">iter_codes</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">iter_codes</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="c1"># reset</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+                    <span class="k">elif</span> <span class="n">code</span> <span class="ow">in</span> <span class="n">SGR_STYLE_MAP</span><span class="p">:</span>
+                        <span class="c1"># styles</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">+=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">SGR_STYLE_MAP</span><span class="p">[</span><span class="n">code</span><span class="p">])</span>
+                    <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">38</span><span class="p">:</span>
+                        <span class="c1">#  Foreground</span>
+                        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">StopIteration</span><span class="p">):</span>
+                            <span class="n">color_type</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">color_type</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">+=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">from_color</span><span class="p">(</span>
+                                    <span class="n">from_ansi</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">))</span>
+                                <span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">color_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">+=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">from_color</span><span class="p">(</span>
+                                    <span class="n">from_rgb</span><span class="p">(</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">48</span><span class="p">:</span>
+                        <span class="c1"># Background</span>
+                        <span class="k">with</span> <span class="n">suppress</span><span class="p">(</span><span class="ne">StopIteration</span><span class="p">):</span>
+                            <span class="n">color_type</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">color_type</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">+=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">from_color</span><span class="p">(</span>
+                                    <span class="kc">None</span><span class="p">,</span> <span class="n">from_ansi</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">))</span>
+                                <span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">color_type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">+=</span> <span class="n">_Style</span><span class="o">.</span><span class="n">from_color</span><span class="p">(</span>
+                                    <span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">from_rgb</span><span class="p">(</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                        <span class="nb">next</span><span class="p">(</span><span class="n">iter_codes</span><span class="p">),</span>
+                                    <span class="p">),</span>
+                                <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">!=</span> <span class="s2">"win32"</span> <span class="ow">and</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">pty</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="n">decoder</span> <span class="o">=</span> <span class="n">AnsiDecoder</span><span class="p">()</span>
+
+    <span class="n">stdout</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="n">fd</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+        <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="n">pty</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">read</span><span class="p">)</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">stdout_result</span> <span class="o">=</span> <span class="n">stdout</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s2">"utf-8"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">stdout_result</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">decoder</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">stdout_result</span><span class="p">):</span>
+        <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">save_html</span><span class="p">(</span><span class="s2">"stdout.html"</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

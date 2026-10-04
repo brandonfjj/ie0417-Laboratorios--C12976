@@ -1,0 +1,258 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.terminal_theme &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.terminal_theme</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.terminal_theme</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color_triplet</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorTriplet</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.palette</span><span class="w"> </span><span class="kn">import</span> <span class="n">Palette</span>
+
+<span class="n">_ColorTuple</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="TerminalTheme">
+<a class="viewcode-back" href="../../api/rich.html#rich.terminal_theme.TerminalTheme">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TerminalTheme</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A color theme used when exporting console content.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        background (Tuple[int, int, int]): The background color.</span>
+<span class="sd">        foreground (Tuple[int, int, int]): The foreground (text) color.</span>
+<span class="sd">        normal (List[Tuple[int, int, int]]): A list of 8 normal intensity colors.</span>
+<span class="sd">        bright (List[Tuple[int, int, int]], optional): A list of 8 bright colors, or None</span>
+<span class="sd">            to repeat normal intensity. Defaults to None.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">background</span><span class="p">:</span> <span class="n">_ColorTuple</span><span class="p">,</span>
+        <span class="n">foreground</span><span class="p">:</span> <span class="n">_ColorTuple</span><span class="p">,</span>
+        <span class="n">normal</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_ColorTuple</span><span class="p">],</span>
+        <span class="n">bright</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">_ColorTuple</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background_color</span> <span class="o">=</span> <span class="n">ColorTriplet</span><span class="p">(</span><span class="o">*</span><span class="n">background</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">foreground_color</span> <span class="o">=</span> <span class="n">ColorTriplet</span><span class="p">(</span><span class="o">*</span><span class="n">foreground</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ansi_colors</span> <span class="o">=</span> <span class="n">Palette</span><span class="p">(</span><span class="n">normal</span> <span class="o">+</span> <span class="p">(</span><span class="n">bright</span> <span class="ow">or</span> <span class="n">normal</span><span class="p">))</span></div>
+
+
+
+<span class="n">DEFAULT_TERMINAL_THEME</span> <span class="o">=</span> <span class="n">TerminalTheme</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">192</span><span class="p">,</span> <span class="mi">192</span><span class="p">,</span> <span class="mi">192</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">MONOKAI</span> <span class="o">=</span> <span class="n">TerminalTheme</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">217</span><span class="p">,</span> <span class="mi">217</span><span class="p">,</span> <span class="mi">217</span><span class="p">),</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">26</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">244</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">152</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">36</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">253</span><span class="p">,</span> <span class="mi">151</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">157</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">244</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">88</span><span class="p">,</span> <span class="mi">209</span><span class="p">,</span> <span class="mi">235</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">196</span><span class="p">,</span> <span class="mi">197</span><span class="p">,</span> <span class="mi">181</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">98</span><span class="p">,</span> <span class="mi">94</span><span class="p">,</span> <span class="mi">76</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">244</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">152</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">36</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">213</span><span class="p">,</span> <span class="mi">97</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">157</span><span class="p">,</span> <span class="mi">101</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">244</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">95</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">88</span><span class="p">,</span> <span class="mi">209</span><span class="p">,</span> <span class="mi">235</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">246</span><span class="p">,</span> <span class="mi">246</span><span class="p">,</span> <span class="mi">239</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">DIMMED_MONOKAI</span> <span class="o">=</span> <span class="n">TerminalTheme</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">185</span><span class="p">,</span> <span class="mi">188</span><span class="p">,</span> <span class="mi">186</span><span class="p">),</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">58</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">67</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">190</span><span class="p">,</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">72</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">135</span><span class="p">,</span> <span class="mi">154</span><span class="p">,</span> <span class="mi">59</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">197</span><span class="p">,</span> <span class="mi">166</span><span class="p">,</span> <span class="mi">53</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">79</span><span class="p">,</span> <span class="mi">118</span><span class="p">,</span> <span class="mi">161</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">133</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">141</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">87</span><span class="p">,</span> <span class="mi">143</span><span class="p">,</span> <span class="mi">164</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">185</span><span class="p">,</span> <span class="mi">188</span><span class="p">,</span> <span class="mi">186</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">136</span><span class="p">,</span> <span class="mi">137</span><span class="p">,</span> <span class="mi">135</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">251</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">31</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="mi">47</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">196</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">51</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">109</span><span class="p">,</span> <span class="mi">227</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">251</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">103</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">46</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">109</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">253</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">185</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+<span class="n">NIGHT_OWLISH</span> <span class="o">=</span> <span class="n">TerminalTheme</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">83</span><span class="p">),</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">39</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">211</span><span class="p">,</span> <span class="mi">66</span><span class="p">,</span> <span class="mi">62</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mi">162</span><span class="p">,</span> <span class="mi">152</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">218</span><span class="p">,</span> <span class="mi">170</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">72</span><span class="p">,</span> <span class="mi">118</span><span class="p">,</span> <span class="mi">214</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">63</span><span class="p">,</span> <span class="mi">83</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">145</span><span class="p">,</span> <span class="mi">106</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="mi">129</span><span class="p">,</span> <span class="mi">129</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">122</span><span class="p">,</span> <span class="mi">129</span><span class="p">,</span> <span class="mi">129</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">247</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">73</span><span class="p">,</span> <span class="mi">208</span><span class="p">,</span> <span class="mi">197</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">218</span><span class="p">,</span> <span class="mi">194</span><span class="p">,</span> <span class="mi">107</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">92</span><span class="p">,</span> <span class="mi">167</span><span class="p">,</span> <span class="mi">228</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">105</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">152</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">144</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">152</span><span class="p">,</span> <span class="mi">159</span><span class="p">,</span> <span class="mi">177</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">SVG_EXPORT_THEME</span> <span class="o">=</span> <span class="n">TerminalTheme</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">41</span><span class="p">,</span> <span class="mi">41</span><span class="p">,</span> <span class="mi">41</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">197</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">198</span><span class="p">),</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">75</span><span class="p">,</span> <span class="mi">78</span><span class="p">,</span> <span class="mi">85</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">204</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">152</span><span class="p">,</span> <span class="mi">168</span><span class="p">,</span> <span class="mi">75</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">208</span><span class="p">,</span> <span class="mi">179</span><span class="p">,</span> <span class="mi">68</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">96</span><span class="p">,</span> <span class="mi">138</span><span class="p">,</span> <span class="mi">177</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">152</span><span class="p">,</span> <span class="mi">114</span><span class="p">,</span> <span class="mi">159</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">104</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">179</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">197</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">198</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">154</span><span class="p">,</span> <span class="mi">155</span><span class="p">,</span> <span class="mi">153</span><span class="p">),</span>
+    <span class="p">],</span>
+    <span class="p">[</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">38</span><span class="p">,</span> <span class="mi">39</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">61</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">208</span><span class="p">,</span> <span class="mi">132</span><span class="p">,</span> <span class="mi">66</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">132</span><span class="p">,</span> <span class="mi">233</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">44</span><span class="p">,</span> <span class="mi">122</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">57</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+        <span class="p">(</span><span class="mi">253</span><span class="p">,</span> <span class="mi">253</span><span class="p">,</span> <span class="mi">197</span><span class="p">),</span>
+    <span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+<map id="leveldb::VersionSet::MaxNextLevelOverlappingBytes" name="leveldb::VersionSet::MaxNextLevelOverlappingBytes">
+<area shape="rect" id="node1" title=" " alt="" coords="5,119,245,161"/>
+<area shape="rect" id="node2" href="$classleveldb_1_1Version.html#afd86dffba7ce5229778bddd546517392" title=" " alt="" coords="293,90,529,131"/>
+<area shape="rect" id="node10" href="$namespaceleveldb.html#a8d7291b08be6643bcfb46c475f779f9e" title=" " alt="" coords="332,156,491,183"/>
+<area shape="rect" id="node3" href="$classleveldb_1_1Slice.html#ab9b6e340e8a483a5cf713f6be17709e3" title=" " alt="" coords="617,5,767,32"/>
+<area shape="rect" id="node4" href="$classleveldb_1_1Comparator.html#a05dae6edcad3c7db23827c0233d74039" title=" " alt="" coords="615,57,769,98"/>
+<area shape="rect" id="node5" href="$classleveldb_1_1InternalKeyComparator.html#ac8c5db699e5defed74c6b17ddadf90f8" title=" " alt="" coords="577,122,807,163"/>
+<area shape="rect" id="node6" href="$classleveldb_1_1InternalKey.html#a9673dbb181eaa977e6f09c45b02938bc" title=" " alt="" coords="616,187,768,229"/>
+<area shape="rect" id="node7" href="$namespaceleveldb.html#a1c889869840312393b805ad91a41b94f" title=" " alt="" coords="855,195,1033,221"/>
+<area shape="rect" id="node8" href="$classleveldb_1_1Slice.html#a94ccee3d05b66ba0b059f2d9772b782b" title=" " alt="" coords="1081,169,1228,196"/>
+<area shape="rect" id="node9" href="$classleveldb_1_1Slice.html#a7344120beda110de81d0c45d4cfe4b63" title=" " alt="" coords="1083,220,1226,247"/>
+</map>

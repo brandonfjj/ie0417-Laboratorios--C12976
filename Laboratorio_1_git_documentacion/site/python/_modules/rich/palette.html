@@ -1,0 +1,208 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.palette &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.palette</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.palette</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">lru_cache</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color_triplet</span><span class="w"> </span><span class="kn">import</span> <span class="n">ColorTriplet</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+
+<div class="viewcode-block" id="Palette">
+<a class="viewcode-back" href="../../api/rich.html#rich.palette.Palette">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Palette</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A palette of available colors."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colors</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span> <span class="o">=</span> <span class="n">colors</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ColorTriplet</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ColorTriplet</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">[</span><span class="n">number</span><span class="p">])</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Table"</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">rich.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">rich.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">rich.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">rich.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+        <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span>
+            <span class="s2">"index"</span><span class="p">,</span>
+            <span class="s2">"RGB"</span><span class="p">,</span>
+            <span class="s2">"Color"</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">"Palette"</span><span class="p">,</span>
+            <span class="n">caption</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)</span><span class="si">}</span><span class="s2"> colors"</span><span class="p">,</span>
+            <span class="n">highlight</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">caption_justify</span><span class="o">=</span><span class="s2">"right"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">):</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">),</span>
+                <span class="nb">repr</span><span class="p">(</span><span class="n">color</span><span class="p">),</span>
+                <span class="n">Text</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="mi">16</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">Style</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="n">Color</span><span class="o">.</span><span class="n">from_rgb</span><span class="p">(</span><span class="o">*</span><span class="n">color</span><span class="p">))),</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">table</span>
+
+    <span class="c1"># This is somewhat inefficient and needs caching</span>
+<div class="viewcode-block" id="Palette.match">
+<a class="viewcode-back" href="../../api/rich.html#rich.palette.Palette.match">[docs]</a>
+    <span class="nd">@lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Find a color from a palette that most closely matches a given color.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            color (Tuple[int, int, int]): RGB components in range 0 &gt; 255.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Index of closes matching color.</span>
+<span class="sd">        """</span>
+        <span class="n">red1</span><span class="p">,</span> <span class="n">green1</span><span class="p">,</span> <span class="n">blue1</span> <span class="o">=</span> <span class="n">color</span>
+        <span class="n">_sqrt</span> <span class="o">=</span> <span class="n">sqrt</span>
+        <span class="n">get_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="o">.</span><span class="fm">__getitem__</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">get_color_distance</span><span class="p">(</span><span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""Get the distance to a color."""</span>
+            <span class="n">red2</span><span class="p">,</span> <span class="n">green2</span><span class="p">,</span> <span class="n">blue2</span> <span class="o">=</span> <span class="n">get_color</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">red_mean</span> <span class="o">=</span> <span class="p">(</span><span class="n">red1</span> <span class="o">+</span> <span class="n">red2</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">red</span> <span class="o">=</span> <span class="n">red1</span> <span class="o">-</span> <span class="n">red2</span>
+            <span class="n">green</span> <span class="o">=</span> <span class="n">green1</span> <span class="o">-</span> <span class="n">green2</span>
+            <span class="n">blue</span> <span class="o">=</span> <span class="n">blue1</span> <span class="o">-</span> <span class="n">blue2</span>
+            <span class="k">return</span> <span class="n">_sqrt</span><span class="p">(</span>
+                <span class="p">(((</span><span class="mi">512</span> <span class="o">+</span> <span class="n">red_mean</span><span class="p">)</span> <span class="o">*</span> <span class="n">red</span> <span class="o">*</span> <span class="n">red</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span>
+                <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">green</span> <span class="o">*</span> <span class="n">green</span>
+                <span class="o">+</span> <span class="p">(((</span><span class="mi">767</span> <span class="o">-</span> <span class="n">red_mean</span><span class="p">)</span> <span class="o">*</span> <span class="n">blue</span> <span class="o">*</span> <span class="n">blue</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">min_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_colors</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="n">get_color_distance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">min_index</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">colorsys</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Iterable</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">ColorBox</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">3</span>
+            <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">):</span>
+                    <span class="n">h</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span>
+                    <span class="n">l</span> <span class="o">=</span> <span class="n">y</span> <span class="o">/</span> <span class="p">(</span><span class="n">height</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">r1</span><span class="p">,</span> <span class="n">g1</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+                    <span class="n">r2</span><span class="p">,</span> <span class="n">g2</span><span class="p">,</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">colorsys</span><span class="o">.</span><span class="n">hls_to_rgb</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">)</span>
+                    <span class="n">bgcolor</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_rgb</span><span class="p">(</span><span class="n">r1</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="n">g1</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="n">b1</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span>
+                    <span class="n">color</span> <span class="o">=</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_rgb</span><span class="p">(</span><span class="n">r2</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="n">g2</span> <span class="o">*</span> <span class="mi">255</span><span class="p">,</span> <span class="n">b2</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span>
+                    <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"▄"</span><span class="p">,</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">bgcolor</span><span class="o">=</span><span class="n">bgcolor</span><span class="p">))</span>
+                <span class="k">yield</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">ColorBox</span><span class="p">())</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

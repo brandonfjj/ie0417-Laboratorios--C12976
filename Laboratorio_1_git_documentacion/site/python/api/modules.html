@@ -1,0 +1,1289 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rich package" href="rich.html" />
+    <link rel="prev" title="Documentación de Rich" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">rich</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rich.html">rich package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">rich</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rich">
+<h1>rich<a class="headerlink" href="#rich" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rich.html">rich package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.abc">rich.abc module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.abc.RichRenderable"><code class="docutils literal notranslate"><span class="pre">RichRenderable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.align">rich.align module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.align.Align"><code class="docutils literal notranslate"><span class="pre">Align</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.align.Align.center"><code class="docutils literal notranslate"><span class="pre">Align.center()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.align.Align.left"><code class="docutils literal notranslate"><span class="pre">Align.left()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.align.Align.right"><code class="docutils literal notranslate"><span class="pre">Align.right()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.align.VerticalCenter"><code class="docutils literal notranslate"><span class="pre">VerticalCenter</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.ansi">rich.ansi module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.ansi.AnsiDecoder"><code class="docutils literal notranslate"><span class="pre">AnsiDecoder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.ansi.AnsiDecoder.decode"><code class="docutils literal notranslate"><span class="pre">AnsiDecoder.decode()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.ansi.AnsiDecoder.decode_line"><code class="docutils literal notranslate"><span class="pre">AnsiDecoder.decode_line()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.bar">rich.bar module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.bar.Bar"><code class="docutils literal notranslate"><span class="pre">Bar</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.box">rich.box module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.box.Box"><code class="docutils literal notranslate"><span class="pre">Box</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.box.Box.get_bottom"><code class="docutils literal notranslate"><span class="pre">Box.get_bottom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.box.Box.get_plain_headed_box"><code class="docutils literal notranslate"><span class="pre">Box.get_plain_headed_box()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.box.Box.get_row"><code class="docutils literal notranslate"><span class="pre">Box.get_row()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.box.Box.get_top"><code class="docutils literal notranslate"><span class="pre">Box.get_top()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.box.Box.substitute"><code class="docutils literal notranslate"><span class="pre">Box.substitute()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.cells">rich.cells module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.CellTable"><code class="docutils literal notranslate"><span class="pre">CellTable</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.cells.CellTable.narrow_to_wide"><code class="docutils literal notranslate"><span class="pre">CellTable.narrow_to_wide</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.cells.CellTable.unicode_version"><code class="docutils literal notranslate"><span class="pre">CellTable.unicode_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.cells.CellTable.widths"><code class="docutils literal notranslate"><span class="pre">CellTable.widths</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.cached_cell_len"><code class="docutils literal notranslate"><span class="pre">cached_cell_len()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.cell_len"><code class="docutils literal notranslate"><span class="pre">cell_len()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.chop_cells"><code class="docutils literal notranslate"><span class="pre">chop_cells()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.get_character_cell_size"><code class="docutils literal notranslate"><span class="pre">get_character_cell_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.set_cell_size"><code class="docutils literal notranslate"><span class="pre">set_cell_size()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.split_graphemes"><code class="docutils literal notranslate"><span class="pre">split_graphemes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.cells.split_text"><code class="docutils literal notranslate"><span class="pre">split_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.color">rich.color module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.Color"><code class="docutils literal notranslate"><span class="pre">Color</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.default"><code class="docutils literal notranslate"><span class="pre">Color.default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.downgrade"><code class="docutils literal notranslate"><span class="pre">Color.downgrade()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.from_ansi"><code class="docutils literal notranslate"><span class="pre">Color.from_ansi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.from_rgb"><code class="docutils literal notranslate"><span class="pre">Color.from_rgb()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.from_triplet"><code class="docutils literal notranslate"><span class="pre">Color.from_triplet()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.get_ansi_codes"><code class="docutils literal notranslate"><span class="pre">Color.get_ansi_codes()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.get_truecolor"><code class="docutils literal notranslate"><span class="pre">Color.get_truecolor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.is_default"><code class="docutils literal notranslate"><span class="pre">Color.is_default</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.is_system_defined"><code class="docutils literal notranslate"><span class="pre">Color.is_system_defined</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.name"><code class="docutils literal notranslate"><span class="pre">Color.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.number"><code class="docutils literal notranslate"><span class="pre">Color.number</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.parse"><code class="docutils literal notranslate"><span class="pre">Color.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.system"><code class="docutils literal notranslate"><span class="pre">Color.system</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.triplet"><code class="docutils literal notranslate"><span class="pre">Color.triplet</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.Color.type"><code class="docutils literal notranslate"><span class="pre">Color.type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.ColorParseError"><code class="docutils literal notranslate"><span class="pre">ColorParseError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.ColorSystem"><code class="docutils literal notranslate"><span class="pre">ColorSystem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorSystem.EIGHT_BIT"><code class="docutils literal notranslate"><span class="pre">ColorSystem.EIGHT_BIT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorSystem.STANDARD"><code class="docutils literal notranslate"><span class="pre">ColorSystem.STANDARD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorSystem.TRUECOLOR"><code class="docutils literal notranslate"><span class="pre">ColorSystem.TRUECOLOR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorSystem.WINDOWS"><code class="docutils literal notranslate"><span class="pre">ColorSystem.WINDOWS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.ColorType"><code class="docutils literal notranslate"><span class="pre">ColorType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorType.DEFAULT"><code class="docutils literal notranslate"><span class="pre">ColorType.DEFAULT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorType.EIGHT_BIT"><code class="docutils literal notranslate"><span class="pre">ColorType.EIGHT_BIT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorType.STANDARD"><code class="docutils literal notranslate"><span class="pre">ColorType.STANDARD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorType.TRUECOLOR"><code class="docutils literal notranslate"><span class="pre">ColorType.TRUECOLOR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color.ColorType.WINDOWS"><code class="docutils literal notranslate"><span class="pre">ColorType.WINDOWS</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.blend_rgb"><code class="docutils literal notranslate"><span class="pre">blend_rgb()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color.parse_rgb_hex"><code class="docutils literal notranslate"><span class="pre">parse_rgb_hex()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.color_triplet">rich.color_triplet module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet"><code class="docutils literal notranslate"><span class="pre">ColorTriplet</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.blue"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.blue</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.green"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.green</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.hex"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.hex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.normalized"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.normalized</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.red"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.red</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.color_triplet.ColorTriplet.rgb"><code class="docutils literal notranslate"><span class="pre">ColorTriplet.rgb</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.columns">rich.columns module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.columns.Columns"><code class="docutils literal notranslate"><span class="pre">Columns</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.columns.Columns.add_renderable"><code class="docutils literal notranslate"><span class="pre">Columns.add_renderable()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.console">rich.console module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.Capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Capture.get"><code class="docutils literal notranslate"><span class="pre">Capture.get()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.CaptureError"><code class="docutils literal notranslate"><span class="pre">CaptureError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.Console"><code class="docutils literal notranslate"><span class="pre">Console</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.begin_capture"><code class="docutils literal notranslate"><span class="pre">Console.begin_capture()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.bell"><code class="docutils literal notranslate"><span class="pre">Console.bell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.capture"><code class="docutils literal notranslate"><span class="pre">Console.capture()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.clear"><code class="docutils literal notranslate"><span class="pre">Console.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.clear_live"><code class="docutils literal notranslate"><span class="pre">Console.clear_live()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.color_system"><code class="docutils literal notranslate"><span class="pre">Console.color_system</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.control"><code class="docutils literal notranslate"><span class="pre">Console.control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.encoding"><code class="docutils literal notranslate"><span class="pre">Console.encoding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.end_capture"><code class="docutils literal notranslate"><span class="pre">Console.end_capture()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.export_html"><code class="docutils literal notranslate"><span class="pre">Console.export_html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.export_svg"><code class="docutils literal notranslate"><span class="pre">Console.export_svg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.export_text"><code class="docutils literal notranslate"><span class="pre">Console.export_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.file"><code class="docutils literal notranslate"><span class="pre">Console.file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.get_style"><code class="docutils literal notranslate"><span class="pre">Console.get_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.height"><code class="docutils literal notranslate"><span class="pre">Console.height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.input"><code class="docutils literal notranslate"><span class="pre">Console.input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.is_alt_screen"><code class="docutils literal notranslate"><span class="pre">Console.is_alt_screen</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.is_dumb_terminal"><code class="docutils literal notranslate"><span class="pre">Console.is_dumb_terminal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.is_terminal"><code class="docutils literal notranslate"><span class="pre">Console.is_terminal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.line"><code class="docutils literal notranslate"><span class="pre">Console.line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.log"><code class="docutils literal notranslate"><span class="pre">Console.log()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.measure"><code class="docutils literal notranslate"><span class="pre">Console.measure()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.on_broken_pipe"><code class="docutils literal notranslate"><span class="pre">Console.on_broken_pipe()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.options"><code class="docutils literal notranslate"><span class="pre">Console.options</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.out"><code class="docutils literal notranslate"><span class="pre">Console.out()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.pager"><code class="docutils literal notranslate"><span class="pre">Console.pager()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.pop_render_hook"><code class="docutils literal notranslate"><span class="pre">Console.pop_render_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.pop_theme"><code class="docutils literal notranslate"><span class="pre">Console.pop_theme()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.print"><code class="docutils literal notranslate"><span class="pre">Console.print()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.print_exception"><code class="docutils literal notranslate"><span class="pre">Console.print_exception()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.print_json"><code class="docutils literal notranslate"><span class="pre">Console.print_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.push_render_hook"><code class="docutils literal notranslate"><span class="pre">Console.push_render_hook()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.push_theme"><code class="docutils literal notranslate"><span class="pre">Console.push_theme()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.render"><code class="docutils literal notranslate"><span class="pre">Console.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.render_lines"><code class="docutils literal notranslate"><span class="pre">Console.render_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.render_str"><code class="docutils literal notranslate"><span class="pre">Console.render_str()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.rule"><code class="docutils literal notranslate"><span class="pre">Console.rule()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.save_html"><code class="docutils literal notranslate"><span class="pre">Console.save_html()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.save_svg"><code class="docutils literal notranslate"><span class="pre">Console.save_svg()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.save_text"><code class="docutils literal notranslate"><span class="pre">Console.save_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.screen"><code class="docutils literal notranslate"><span class="pre">Console.screen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.set_alt_screen"><code class="docutils literal notranslate"><span class="pre">Console.set_alt_screen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.set_live"><code class="docutils literal notranslate"><span class="pre">Console.set_live()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.set_window_title"><code class="docutils literal notranslate"><span class="pre">Console.set_window_title()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.show_cursor"><code class="docutils literal notranslate"><span class="pre">Console.show_cursor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.size"><code class="docutils literal notranslate"><span class="pre">Console.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.status"><code class="docutils literal notranslate"><span class="pre">Console.status()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.update_screen"><code class="docutils literal notranslate"><span class="pre">Console.update_screen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.update_screen_lines"><code class="docutils literal notranslate"><span class="pre">Console.update_screen_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.use_theme"><code class="docutils literal notranslate"><span class="pre">Console.use_theme()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Console.width"><code class="docutils literal notranslate"><span class="pre">Console.width</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ConsoleDimensions"><code class="docutils literal notranslate"><span class="pre">ConsoleDimensions</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleDimensions.height"><code class="docutils literal notranslate"><span class="pre">ConsoleDimensions.height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleDimensions.width"><code class="docutils literal notranslate"><span class="pre">ConsoleDimensions.width</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.ascii_only"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.ascii_only</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.copy"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.encoding"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.encoding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.height"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.highlight"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.highlight</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.is_terminal"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.is_terminal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.justify"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.justify</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.legacy_windows"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.legacy_windows</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.markup"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.markup</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.max_height"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.max_height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.max_width"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.max_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.min_width"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.min_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.no_wrap"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.no_wrap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.overflow"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.overflow</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.reset_height"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.reset_height()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.size"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.update"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.update_dimensions"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.update_dimensions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.update_height"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.update_height()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleOptions.update_width"><code class="docutils literal notranslate"><span class="pre">ConsoleOptions.update_width()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ConsoleRenderable"><code class="docutils literal notranslate"><span class="pre">ConsoleRenderable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ConsoleThreadLocals"><code class="docutils literal notranslate"><span class="pre">ConsoleThreadLocals</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleThreadLocals.buffer"><code class="docutils literal notranslate"><span class="pre">ConsoleThreadLocals.buffer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleThreadLocals.buffer_index"><code class="docutils literal notranslate"><span class="pre">ConsoleThreadLocals.buffer_index</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ConsoleThreadLocals.theme_stack"><code class="docutils literal notranslate"><span class="pre">ConsoleThreadLocals.theme_stack</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.Group"><code class="docutils literal notranslate"><span class="pre">Group</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.Group.renderables"><code class="docutils literal notranslate"><span class="pre">Group.renderables</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.NewLine"><code class="docutils literal notranslate"><span class="pre">NewLine</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.NoChange"><code class="docutils literal notranslate"><span class="pre">NoChange</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.PagerContext"><code class="docutils literal notranslate"><span class="pre">PagerContext</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.RenderHook"><code class="docutils literal notranslate"><span class="pre">RenderHook</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.RenderHook.process_renderables"><code class="docutils literal notranslate"><span class="pre">RenderHook.process_renderables()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.RenderableType"><code class="docutils literal notranslate"><span class="pre">RenderableType</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.RichCast"><code class="docutils literal notranslate"><span class="pre">RichCast</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ScreenContext"><code class="docutils literal notranslate"><span class="pre">ScreenContext</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.console.ScreenContext.update"><code class="docutils literal notranslate"><span class="pre">ScreenContext.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ScreenUpdate"><code class="docutils literal notranslate"><span class="pre">ScreenUpdate</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.ThemeContext"><code class="docutils literal notranslate"><span class="pre">ThemeContext</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.detect_legacy_windows"><code class="docutils literal notranslate"><span class="pre">detect_legacy_windows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.get_windows_console_features"><code class="docutils literal notranslate"><span class="pre">get_windows_console_features()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.console.group"><code class="docutils literal notranslate"><span class="pre">group()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.constrain">rich.constrain module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.constrain.Constrain"><code class="docutils literal notranslate"><span class="pre">Constrain</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.containers">rich.containers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.containers.Lines"><code class="docutils literal notranslate"><span class="pre">Lines</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.containers.Lines.append"><code class="docutils literal notranslate"><span class="pre">Lines.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.containers.Lines.extend"><code class="docutils literal notranslate"><span class="pre">Lines.extend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.containers.Lines.justify"><code class="docutils literal notranslate"><span class="pre">Lines.justify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.containers.Lines.pop"><code class="docutils literal notranslate"><span class="pre">Lines.pop()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.containers.Renderables"><code class="docutils literal notranslate"><span class="pre">Renderables</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.containers.Renderables.append"><code class="docutils literal notranslate"><span class="pre">Renderables.append()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.control">rich.control module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.control.Control"><code class="docutils literal notranslate"><span class="pre">Control</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.alt_screen"><code class="docutils literal notranslate"><span class="pre">Control.alt_screen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.bell"><code class="docutils literal notranslate"><span class="pre">Control.bell()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.clear"><code class="docutils literal notranslate"><span class="pre">Control.clear()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.home"><code class="docutils literal notranslate"><span class="pre">Control.home()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.move"><code class="docutils literal notranslate"><span class="pre">Control.move()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.move_to"><code class="docutils literal notranslate"><span class="pre">Control.move_to()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.move_to_column"><code class="docutils literal notranslate"><span class="pre">Control.move_to_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.segment"><code class="docutils literal notranslate"><span class="pre">Control.segment</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.show_cursor"><code class="docutils literal notranslate"><span class="pre">Control.show_cursor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.control.Control.title"><code class="docutils literal notranslate"><span class="pre">Control.title()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.control.escape_control_codes"><code class="docutils literal notranslate"><span class="pre">escape_control_codes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.control.strip_control_codes"><code class="docutils literal notranslate"><span class="pre">strip_control_codes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.default_styles">rich.default_styles module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.diagnose">rich.diagnose module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.diagnose.report"><code class="docutils literal notranslate"><span class="pre">report()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.emoji">rich.emoji module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.emoji.Emoji"><code class="docutils literal notranslate"><span class="pre">Emoji</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.emoji.Emoji.VARIANTS"><code class="docutils literal notranslate"><span class="pre">Emoji.VARIANTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.emoji.Emoji.name"><code class="docutils literal notranslate"><span class="pre">Emoji.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.emoji.Emoji.replace"><code class="docutils literal notranslate"><span class="pre">Emoji.replace()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.emoji.Emoji.style"><code class="docutils literal notranslate"><span class="pre">Emoji.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.emoji.Emoji.variant"><code class="docutils literal notranslate"><span class="pre">Emoji.variant</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.emoji.NoEmoji"><code class="docutils literal notranslate"><span class="pre">NoEmoji</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.errors">rich.errors module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.ConsoleError"><code class="docutils literal notranslate"><span class="pre">ConsoleError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.LiveError"><code class="docutils literal notranslate"><span class="pre">LiveError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.MarkupError"><code class="docutils literal notranslate"><span class="pre">MarkupError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.MissingStyle"><code class="docutils literal notranslate"><span class="pre">MissingStyle</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.NoAltScreen"><code class="docutils literal notranslate"><span class="pre">NoAltScreen</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.NotRenderableError"><code class="docutils literal notranslate"><span class="pre">NotRenderableError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.StyleError"><code class="docutils literal notranslate"><span class="pre">StyleError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.StyleStackError"><code class="docutils literal notranslate"><span class="pre">StyleStackError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.errors.StyleSyntaxError"><code class="docutils literal notranslate"><span class="pre">StyleSyntaxError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.file_proxy">rich.file_proxy module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy"><code class="docutils literal notranslate"><span class="pre">FileProxy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy.fileno"><code class="docutils literal notranslate"><span class="pre">FileProxy.fileno()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy.flush"><code class="docutils literal notranslate"><span class="pre">FileProxy.flush()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy.isatty"><code class="docutils literal notranslate"><span class="pre">FileProxy.isatty()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy.rich_proxied_file"><code class="docutils literal notranslate"><span class="pre">FileProxy.rich_proxied_file</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.file_proxy.FileProxy.write"><code class="docutils literal notranslate"><span class="pre">FileProxy.write()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.filesize">rich.filesize module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.filesize.decimal"><code class="docutils literal notranslate"><span class="pre">decimal()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.highlighter">rich.highlighter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.Highlighter"><code class="docutils literal notranslate"><span class="pre">Highlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.Highlighter.highlight"><code class="docutils literal notranslate"><span class="pre">Highlighter.highlight()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.ISO8601Highlighter"><code class="docutils literal notranslate"><span class="pre">ISO8601Highlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.ISO8601Highlighter.base_style"><code class="docutils literal notranslate"><span class="pre">ISO8601Highlighter.base_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.ISO8601Highlighter.highlights"><code class="docutils literal notranslate"><span class="pre">ISO8601Highlighter.highlights</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter.JSON_STR"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter.JSON_STR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter.JSON_WHITESPACE"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter.JSON_WHITESPACE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter.base_style"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter.base_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter.highlight"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter.highlight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.JSONHighlighter.highlights"><code class="docutils literal notranslate"><span class="pre">JSONHighlighter.highlights</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.NullHighlighter"><code class="docutils literal notranslate"><span class="pre">NullHighlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.NullHighlighter.highlight"><code class="docutils literal notranslate"><span class="pre">NullHighlighter.highlight()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.RegexHighlighter"><code class="docutils literal notranslate"><span class="pre">RegexHighlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.RegexHighlighter.base_style"><code class="docutils literal notranslate"><span class="pre">RegexHighlighter.base_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.RegexHighlighter.highlight"><code class="docutils literal notranslate"><span class="pre">RegexHighlighter.highlight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.RegexHighlighter.highlights"><code class="docutils literal notranslate"><span class="pre">RegexHighlighter.highlights</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.highlighter.ReprHighlighter"><code class="docutils literal notranslate"><span class="pre">ReprHighlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.ReprHighlighter.base_style"><code class="docutils literal notranslate"><span class="pre">ReprHighlighter.base_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.highlighter.ReprHighlighter.highlights"><code class="docutils literal notranslate"><span class="pre">ReprHighlighter.highlights</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.json">rich.json module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.json.JSON"><code class="docutils literal notranslate"><span class="pre">JSON</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.json.JSON.from_data"><code class="docutils literal notranslate"><span class="pre">JSON.from_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.jupyter">rich.jupyter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.jupyter.JupyterMixin"><code class="docutils literal notranslate"><span class="pre">JupyterMixin</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.jupyter.JupyterRenderable"><code class="docutils literal notranslate"><span class="pre">JupyterRenderable</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.jupyter.display"><code class="docutils literal notranslate"><span class="pre">display()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.jupyter.print"><code class="docutils literal notranslate"><span class="pre">print()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.layout">rich.layout module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.ColumnSplitter"><code class="docutils literal notranslate"><span class="pre">ColumnSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.ColumnSplitter.divide"><code class="docutils literal notranslate"><span class="pre">ColumnSplitter.divide()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.ColumnSplitter.get_tree_icon"><code class="docutils literal notranslate"><span class="pre">ColumnSplitter.get_tree_icon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.ColumnSplitter.name"><code class="docutils literal notranslate"><span class="pre">ColumnSplitter.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.Layout"><code class="docutils literal notranslate"><span class="pre">Layout</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.add_split"><code class="docutils literal notranslate"><span class="pre">Layout.add_split()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.children"><code class="docutils literal notranslate"><span class="pre">Layout.children</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.get"><code class="docutils literal notranslate"><span class="pre">Layout.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.map"><code class="docutils literal notranslate"><span class="pre">Layout.map</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.refresh_screen"><code class="docutils literal notranslate"><span class="pre">Layout.refresh_screen()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.render"><code class="docutils literal notranslate"><span class="pre">Layout.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.renderable"><code class="docutils literal notranslate"><span class="pre">Layout.renderable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.split"><code class="docutils literal notranslate"><span class="pre">Layout.split()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.split_column"><code class="docutils literal notranslate"><span class="pre">Layout.split_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.split_row"><code class="docutils literal notranslate"><span class="pre">Layout.split_row()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.splitters"><code class="docutils literal notranslate"><span class="pre">Layout.splitters</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.tree"><code class="docutils literal notranslate"><span class="pre">Layout.tree</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.unsplit"><code class="docutils literal notranslate"><span class="pre">Layout.unsplit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Layout.update"><code class="docutils literal notranslate"><span class="pre">Layout.update()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.LayoutError"><code class="docutils literal notranslate"><span class="pre">LayoutError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.LayoutRender"><code class="docutils literal notranslate"><span class="pre">LayoutRender</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.LayoutRender.region"><code class="docutils literal notranslate"><span class="pre">LayoutRender.region</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.LayoutRender.render"><code class="docutils literal notranslate"><span class="pre">LayoutRender.render</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.NoSplitter"><code class="docutils literal notranslate"><span class="pre">NoSplitter</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.RowSplitter"><code class="docutils literal notranslate"><span class="pre">RowSplitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.RowSplitter.divide"><code class="docutils literal notranslate"><span class="pre">RowSplitter.divide()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.RowSplitter.get_tree_icon"><code class="docutils literal notranslate"><span class="pre">RowSplitter.get_tree_icon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.RowSplitter.name"><code class="docutils literal notranslate"><span class="pre">RowSplitter.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.layout.Splitter"><code class="docutils literal notranslate"><span class="pre">Splitter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Splitter.divide"><code class="docutils literal notranslate"><span class="pre">Splitter.divide()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Splitter.get_tree_icon"><code class="docutils literal notranslate"><span class="pre">Splitter.get_tree_icon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.layout.Splitter.name"><code class="docutils literal notranslate"><span class="pre">Splitter.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.live">rich.live module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.live.Live"><code class="docutils literal notranslate"><span class="pre">Live</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.get_renderable"><code class="docutils literal notranslate"><span class="pre">Live.get_renderable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.is_started"><code class="docutils literal notranslate"><span class="pre">Live.is_started</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.process_renderables"><code class="docutils literal notranslate"><span class="pre">Live.process_renderables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.refresh"><code class="docutils literal notranslate"><span class="pre">Live.refresh()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.renderable"><code class="docutils literal notranslate"><span class="pre">Live.renderable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.start"><code class="docutils literal notranslate"><span class="pre">Live.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.stop"><code class="docutils literal notranslate"><span class="pre">Live.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live.Live.update"><code class="docutils literal notranslate"><span class="pre">Live.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.live_render">rich.live_render module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.live_render.LiveRender"><code class="docutils literal notranslate"><span class="pre">LiveRender</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live_render.LiveRender.last_render_height"><code class="docutils literal notranslate"><span class="pre">LiveRender.last_render_height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live_render.LiveRender.position_cursor"><code class="docutils literal notranslate"><span class="pre">LiveRender.position_cursor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live_render.LiveRender.restore_cursor"><code class="docutils literal notranslate"><span class="pre">LiveRender.restore_cursor()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.live_render.LiveRender.set_renderable"><code class="docutils literal notranslate"><span class="pre">LiveRender.set_renderable()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.logging">rich.logging module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.logging.RichHandler"><code class="docutils literal notranslate"><span class="pre">RichHandler</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.HIGHLIGHTER_CLASS"><code class="docutils literal notranslate"><span class="pre">RichHandler.HIGHLIGHTER_CLASS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.KEYWORDS"><code class="docutils literal notranslate"><span class="pre">RichHandler.KEYWORDS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.emit"><code class="docutils literal notranslate"><span class="pre">RichHandler.emit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.get_level_text"><code class="docutils literal notranslate"><span class="pre">RichHandler.get_level_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.render"><code class="docutils literal notranslate"><span class="pre">RichHandler.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.logging.RichHandler.render_message"><code class="docutils literal notranslate"><span class="pre">RichHandler.render_message()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.markdown">rich.markdown module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.BlockQuote"><code class="docutils literal notranslate"><span class="pre">BlockQuote</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.BlockQuote.on_child_close"><code class="docutils literal notranslate"><span class="pre">BlockQuote.on_child_close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.BlockQuote.style_name"><code class="docutils literal notranslate"><span class="pre">BlockQuote.style_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.CodeBlock"><code class="docutils literal notranslate"><span class="pre">CodeBlock</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.CodeBlock.create"><code class="docutils literal notranslate"><span class="pre">CodeBlock.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.CodeBlock.style_name"><code class="docutils literal notranslate"><span class="pre">CodeBlock.style_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.Heading"><code class="docutils literal notranslate"><span class="pre">Heading</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Heading.LEVEL_ALIGN"><code class="docutils literal notranslate"><span class="pre">Heading.LEVEL_ALIGN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Heading.create"><code class="docutils literal notranslate"><span class="pre">Heading.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Heading.on_enter"><code class="docutils literal notranslate"><span class="pre">Heading.on_enter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.HeadingFormat"><code class="docutils literal notranslate"><span class="pre">HeadingFormat</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.HeadingFormat.justify"><code class="docutils literal notranslate"><span class="pre">HeadingFormat.justify</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.HeadingFormat.style"><code class="docutils literal notranslate"><span class="pre">HeadingFormat.style</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.HorizontalRule"><code class="docutils literal notranslate"><span class="pre">HorizontalRule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.HorizontalRule.new_line"><code class="docutils literal notranslate"><span class="pre">HorizontalRule.new_line</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.ImageItem"><code class="docutils literal notranslate"><span class="pre">ImageItem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ImageItem.create"><code class="docutils literal notranslate"><span class="pre">ImageItem.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ImageItem.new_line"><code class="docutils literal notranslate"><span class="pre">ImageItem.new_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ImageItem.on_enter"><code class="docutils literal notranslate"><span class="pre">ImageItem.on_enter()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.Link"><code class="docutils literal notranslate"><span class="pre">Link</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Link.create"><code class="docutils literal notranslate"><span class="pre">Link.create()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.ListElement"><code class="docutils literal notranslate"><span class="pre">ListElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListElement.create"><code class="docutils literal notranslate"><span class="pre">ListElement.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">ListElement.on_child_close()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.ListItem"><code class="docutils literal notranslate"><span class="pre">ListItem</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListItem.on_child_close"><code class="docutils literal notranslate"><span class="pre">ListItem.on_child_close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListItem.render_bullet"><code class="docutils literal notranslate"><span class="pre">ListItem.render_bullet()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListItem.render_number"><code class="docutils literal notranslate"><span class="pre">ListItem.render_number()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.ListItem.style_name"><code class="docutils literal notranslate"><span class="pre">ListItem.style_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.Markdown"><code class="docutils literal notranslate"><span class="pre">Markdown</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Markdown.elements"><code class="docutils literal notranslate"><span class="pre">Markdown.elements</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Markdown.inlines"><code class="docutils literal notranslate"><span class="pre">Markdown.inlines</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.MarkdownContext"><code class="docutils literal notranslate"><span class="pre">MarkdownContext</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownContext.current_style"><code class="docutils literal notranslate"><span class="pre">MarkdownContext.current_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownContext.enter_style"><code class="docutils literal notranslate"><span class="pre">MarkdownContext.enter_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownContext.leave_style"><code class="docutils literal notranslate"><span class="pre">MarkdownContext.leave_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownContext.on_text"><code class="docutils literal notranslate"><span class="pre">MarkdownContext.on_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement"><code class="docutils literal notranslate"><span class="pre">MarkdownElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.create"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.new_line"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.new_line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.on_child_close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.on_enter"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.on_enter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.on_leave"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.on_leave()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.MarkdownElement.on_text"><code class="docutils literal notranslate"><span class="pre">MarkdownElement.on_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.Paragraph"><code class="docutils literal notranslate"><span class="pre">Paragraph</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Paragraph.create"><code class="docutils literal notranslate"><span class="pre">Paragraph.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Paragraph.justify"><code class="docutils literal notranslate"><span class="pre">Paragraph.justify</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.Paragraph.style_name"><code class="docutils literal notranslate"><span class="pre">Paragraph.style_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TableBodyElement"><code class="docutils literal notranslate"><span class="pre">TableBodyElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableBodyElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">TableBodyElement.on_child_close()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TableDataElement"><code class="docutils literal notranslate"><span class="pre">TableDataElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableDataElement.create"><code class="docutils literal notranslate"><span class="pre">TableDataElement.create()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableDataElement.on_text"><code class="docutils literal notranslate"><span class="pre">TableDataElement.on_text()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TableElement"><code class="docutils literal notranslate"><span class="pre">TableElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">TableElement.on_child_close()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TableHeaderElement"><code class="docutils literal notranslate"><span class="pre">TableHeaderElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableHeaderElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">TableHeaderElement.on_child_close()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TableRowElement"><code class="docutils literal notranslate"><span class="pre">TableRowElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TableRowElement.on_child_close"><code class="docutils literal notranslate"><span class="pre">TableRowElement.on_child_close()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.TextElement"><code class="docutils literal notranslate"><span class="pre">TextElement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TextElement.on_enter"><code class="docutils literal notranslate"><span class="pre">TextElement.on_enter()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TextElement.on_leave"><code class="docutils literal notranslate"><span class="pre">TextElement.on_leave()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TextElement.on_text"><code class="docutils literal notranslate"><span class="pre">TextElement.on_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markdown.TextElement.style_name"><code class="docutils literal notranslate"><span class="pre">TextElement.style_name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markdown.UnknownElement"><code class="docutils literal notranslate"><span class="pre">UnknownElement</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.markup">rich.markup module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markup.Tag"><code class="docutils literal notranslate"><span class="pre">Tag</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markup.Tag.markup"><code class="docutils literal notranslate"><span class="pre">Tag.markup</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markup.Tag.name"><code class="docutils literal notranslate"><span class="pre">Tag.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.markup.Tag.parameters"><code class="docutils literal notranslate"><span class="pre">Tag.parameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markup.escape"><code class="docutils literal notranslate"><span class="pre">escape()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.markup.render"><code class="docutils literal notranslate"><span class="pre">render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.measure">rich.measure module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.measure.Measurement"><code class="docutils literal notranslate"><span class="pre">Measurement</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.clamp"><code class="docutils literal notranslate"><span class="pre">Measurement.clamp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.get"><code class="docutils literal notranslate"><span class="pre">Measurement.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.maximum"><code class="docutils literal notranslate"><span class="pre">Measurement.maximum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.minimum"><code class="docutils literal notranslate"><span class="pre">Measurement.minimum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.normalize"><code class="docutils literal notranslate"><span class="pre">Measurement.normalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.span"><code class="docutils literal notranslate"><span class="pre">Measurement.span</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.with_maximum"><code class="docutils literal notranslate"><span class="pre">Measurement.with_maximum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.measure.Measurement.with_minimum"><code class="docutils literal notranslate"><span class="pre">Measurement.with_minimum()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.measure.measure_renderables"><code class="docutils literal notranslate"><span class="pre">measure_renderables()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.padding">rich.padding module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.padding.Padding"><code class="docutils literal notranslate"><span class="pre">Padding</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.padding.Padding.indent"><code class="docutils literal notranslate"><span class="pre">Padding.indent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.padding.Padding.unpack"><code class="docutils literal notranslate"><span class="pre">Padding.unpack()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.pager">rich.pager module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pager.Pager"><code class="docutils literal notranslate"><span class="pre">Pager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pager.Pager.show"><code class="docutils literal notranslate"><span class="pre">Pager.show()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pager.SystemPager"><code class="docutils literal notranslate"><span class="pre">SystemPager</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pager.SystemPager.show"><code class="docutils literal notranslate"><span class="pre">SystemPager.show()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.palette">rich.palette module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.palette.Palette"><code class="docutils literal notranslate"><span class="pre">Palette</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.palette.Palette.match"><code class="docutils literal notranslate"><span class="pre">Palette.match()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.panel">rich.panel module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.panel.Panel"><code class="docutils literal notranslate"><span class="pre">Panel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.panel.Panel.fit"><code class="docutils literal notranslate"><span class="pre">Panel.fit()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.pretty">rich.pretty module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.check_length"><code class="docutils literal notranslate"><span class="pre">Node.check_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.children"><code class="docutils literal notranslate"><span class="pre">Node.children</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.close_brace"><code class="docutils literal notranslate"><span class="pre">Node.close_brace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.empty"><code class="docutils literal notranslate"><span class="pre">Node.empty</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.is_namedtuple"><code class="docutils literal notranslate"><span class="pre">Node.is_namedtuple</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.is_tuple"><code class="docutils literal notranslate"><span class="pre">Node.is_tuple</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.iter_tokens"><code class="docutils literal notranslate"><span class="pre">Node.iter_tokens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.key_repr"><code class="docutils literal notranslate"><span class="pre">Node.key_repr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.key_separator"><code class="docutils literal notranslate"><span class="pre">Node.key_separator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.last"><code class="docutils literal notranslate"><span class="pre">Node.last</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.open_brace"><code class="docutils literal notranslate"><span class="pre">Node.open_brace</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.render"><code class="docutils literal notranslate"><span class="pre">Node.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.separator"><code class="docutils literal notranslate"><span class="pre">Node.separator</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.pretty.Node.value_repr"><code class="docutils literal notranslate"><span class="pre">Node.value_repr</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.Pretty"><code class="docutils literal notranslate"><span class="pre">Pretty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.install"><code class="docutils literal notranslate"><span class="pre">install()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.is_expandable"><code class="docutils literal notranslate"><span class="pre">is_expandable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.pprint"><code class="docutils literal notranslate"><span class="pre">pprint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.pretty_repr"><code class="docutils literal notranslate"><span class="pre">pretty_repr()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.pretty.traverse"><code class="docutils literal notranslate"><span class="pre">traverse()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.progress">rich.progress module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.BarColumn"><code class="docutils literal notranslate"><span class="pre">BarColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.BarColumn.render"><code class="docutils literal notranslate"><span class="pre">BarColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.DownloadColumn"><code class="docutils literal notranslate"><span class="pre">DownloadColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.DownloadColumn.render"><code class="docutils literal notranslate"><span class="pre">DownloadColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.FileSizeColumn"><code class="docutils literal notranslate"><span class="pre">FileSizeColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.FileSizeColumn.render"><code class="docutils literal notranslate"><span class="pre">FileSizeColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.MofNCompleteColumn"><code class="docutils literal notranslate"><span class="pre">MofNCompleteColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.MofNCompleteColumn.render"><code class="docutils literal notranslate"><span class="pre">MofNCompleteColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.Progress"><code class="docutils literal notranslate"><span class="pre">Progress</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.add_task"><code class="docutils literal notranslate"><span class="pre">Progress.add_task()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.advance"><code class="docutils literal notranslate"><span class="pre">Progress.advance()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.console"><code class="docutils literal notranslate"><span class="pre">Progress.console</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.finished"><code class="docutils literal notranslate"><span class="pre">Progress.finished</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.get_default_columns"><code class="docutils literal notranslate"><span class="pre">Progress.get_default_columns()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.get_renderable"><code class="docutils literal notranslate"><span class="pre">Progress.get_renderable()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.get_renderables"><code class="docutils literal notranslate"><span class="pre">Progress.get_renderables()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.make_tasks_table"><code class="docutils literal notranslate"><span class="pre">Progress.make_tasks_table()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.open"><code class="docutils literal notranslate"><span class="pre">Progress.open()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.refresh"><code class="docutils literal notranslate"><span class="pre">Progress.refresh()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.remove_task"><code class="docutils literal notranslate"><span class="pre">Progress.remove_task()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.reset"><code class="docutils literal notranslate"><span class="pre">Progress.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.start"><code class="docutils literal notranslate"><span class="pre">Progress.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.start_task"><code class="docutils literal notranslate"><span class="pre">Progress.start_task()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.stop"><code class="docutils literal notranslate"><span class="pre">Progress.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.stop_task"><code class="docutils literal notranslate"><span class="pre">Progress.stop_task()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.task_ids"><code class="docutils literal notranslate"><span class="pre">Progress.task_ids</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.tasks"><code class="docutils literal notranslate"><span class="pre">Progress.tasks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.track"><code class="docutils literal notranslate"><span class="pre">Progress.track()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.update"><code class="docutils literal notranslate"><span class="pre">Progress.update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Progress.wrap_file"><code class="docutils literal notranslate"><span class="pre">Progress.wrap_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.ProgressColumn"><code class="docutils literal notranslate"><span class="pre">ProgressColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.ProgressColumn.get_table_column"><code class="docutils literal notranslate"><span class="pre">ProgressColumn.get_table_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.ProgressColumn.max_refresh"><code class="docutils literal notranslate"><span class="pre">ProgressColumn.max_refresh</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.ProgressColumn.render"><code class="docutils literal notranslate"><span class="pre">ProgressColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.ProgressSample"><code class="docutils literal notranslate"><span class="pre">ProgressSample</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.ProgressSample.completed"><code class="docutils literal notranslate"><span class="pre">ProgressSample.completed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.ProgressSample.timestamp"><code class="docutils literal notranslate"><span class="pre">ProgressSample.timestamp</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.RenderableColumn"><code class="docutils literal notranslate"><span class="pre">RenderableColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.RenderableColumn.render"><code class="docutils literal notranslate"><span class="pre">RenderableColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.SpinnerColumn"><code class="docutils literal notranslate"><span class="pre">SpinnerColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.SpinnerColumn.render"><code class="docutils literal notranslate"><span class="pre">SpinnerColumn.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.SpinnerColumn.set_spinner"><code class="docutils literal notranslate"><span class="pre">SpinnerColumn.set_spinner()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.Task"><code class="docutils literal notranslate"><span class="pre">Task</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.completed"><code class="docutils literal notranslate"><span class="pre">Task.completed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.description"><code class="docutils literal notranslate"><span class="pre">Task.description</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.elapsed"><code class="docutils literal notranslate"><span class="pre">Task.elapsed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.fields"><code class="docutils literal notranslate"><span class="pre">Task.fields</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.finished"><code class="docutils literal notranslate"><span class="pre">Task.finished</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.finished_speed"><code class="docutils literal notranslate"><span class="pre">Task.finished_speed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.finished_time"><code class="docutils literal notranslate"><span class="pre">Task.finished_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.get_time"><code class="docutils literal notranslate"><span class="pre">Task.get_time()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.id"><code class="docutils literal notranslate"><span class="pre">Task.id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.percentage"><code class="docutils literal notranslate"><span class="pre">Task.percentage</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.remaining"><code class="docutils literal notranslate"><span class="pre">Task.remaining</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.speed"><code class="docutils literal notranslate"><span class="pre">Task.speed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.start_time"><code class="docutils literal notranslate"><span class="pre">Task.start_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.started"><code class="docutils literal notranslate"><span class="pre">Task.started</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.stop_time"><code class="docutils literal notranslate"><span class="pre">Task.stop_time</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.time_remaining"><code class="docutils literal notranslate"><span class="pre">Task.time_remaining</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.total"><code class="docutils literal notranslate"><span class="pre">Task.total</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.Task.visible"><code class="docutils literal notranslate"><span class="pre">Task.visible</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TaskProgressColumn"><code class="docutils literal notranslate"><span class="pre">TaskProgressColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TaskProgressColumn.render"><code class="docutils literal notranslate"><span class="pre">TaskProgressColumn.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TaskProgressColumn.render_speed"><code class="docutils literal notranslate"><span class="pre">TaskProgressColumn.render_speed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TextColumn"><code class="docutils literal notranslate"><span class="pre">TextColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TextColumn.render"><code class="docutils literal notranslate"><span class="pre">TextColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TimeElapsedColumn"><code class="docutils literal notranslate"><span class="pre">TimeElapsedColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TimeElapsedColumn.render"><code class="docutils literal notranslate"><span class="pre">TimeElapsedColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TimeRemainingColumn"><code class="docutils literal notranslate"><span class="pre">TimeRemainingColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TimeRemainingColumn.max_refresh"><code class="docutils literal notranslate"><span class="pre">TimeRemainingColumn.max_refresh</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TimeRemainingColumn.render"><code class="docutils literal notranslate"><span class="pre">TimeRemainingColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TotalFileSizeColumn"><code class="docutils literal notranslate"><span class="pre">TotalFileSizeColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TotalFileSizeColumn.render"><code class="docutils literal notranslate"><span class="pre">TotalFileSizeColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.TransferSpeedColumn"><code class="docutils literal notranslate"><span class="pre">TransferSpeedColumn</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress.TransferSpeedColumn.render"><code class="docutils literal notranslate"><span class="pre">TransferSpeedColumn.render()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.open"><code class="docutils literal notranslate"><span class="pre">open()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.track"><code class="docutils literal notranslate"><span class="pre">track()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress.wrap_file"><code class="docutils literal notranslate"><span class="pre">wrap_file()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.progress_bar">rich.progress_bar module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.progress_bar.ProgressBar"><code class="docutils literal notranslate"><span class="pre">ProgressBar</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress_bar.ProgressBar.percentage_completed"><code class="docutils literal notranslate"><span class="pre">ProgressBar.percentage_completed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.progress_bar.ProgressBar.update"><code class="docutils literal notranslate"><span class="pre">ProgressBar.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.prompt">rich.prompt module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.Confirm"><code class="docutils literal notranslate"><span class="pre">Confirm</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Confirm.choices"><code class="docutils literal notranslate"><span class="pre">Confirm.choices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Confirm.process_response"><code class="docutils literal notranslate"><span class="pre">Confirm.process_response()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Confirm.render_default"><code class="docutils literal notranslate"><span class="pre">Confirm.render_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Confirm.response_type"><code class="docutils literal notranslate"><span class="pre">Confirm.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Confirm.validate_error_message"><code class="docutils literal notranslate"><span class="pre">Confirm.validate_error_message</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.FloatPrompt"><code class="docutils literal notranslate"><span class="pre">FloatPrompt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.FloatPrompt.response_type"><code class="docutils literal notranslate"><span class="pre">FloatPrompt.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.FloatPrompt.validate_error_message"><code class="docutils literal notranslate"><span class="pre">FloatPrompt.validate_error_message</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.IntPrompt"><code class="docutils literal notranslate"><span class="pre">IntPrompt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.IntPrompt.response_type"><code class="docutils literal notranslate"><span class="pre">IntPrompt.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.IntPrompt.validate_error_message"><code class="docutils literal notranslate"><span class="pre">IntPrompt.validate_error_message</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.InvalidResponse"><code class="docutils literal notranslate"><span class="pre">InvalidResponse</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.Prompt"><code class="docutils literal notranslate"><span class="pre">Prompt</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.Prompt.response_type"><code class="docutils literal notranslate"><span class="pre">Prompt.response_type</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.PromptBase"><code class="docutils literal notranslate"><span class="pre">PromptBase</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.ask"><code class="docutils literal notranslate"><span class="pre">PromptBase.ask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.check_choice"><code class="docutils literal notranslate"><span class="pre">PromptBase.check_choice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.choices"><code class="docutils literal notranslate"><span class="pre">PromptBase.choices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.get_input"><code class="docutils literal notranslate"><span class="pre">PromptBase.get_input()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.illegal_choice_message"><code class="docutils literal notranslate"><span class="pre">PromptBase.illegal_choice_message</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.make_prompt"><code class="docutils literal notranslate"><span class="pre">PromptBase.make_prompt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.on_validate_error"><code class="docutils literal notranslate"><span class="pre">PromptBase.on_validate_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.pre_prompt"><code class="docutils literal notranslate"><span class="pre">PromptBase.pre_prompt()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.process_response"><code class="docutils literal notranslate"><span class="pre">PromptBase.process_response()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.prompt_suffix"><code class="docutils literal notranslate"><span class="pre">PromptBase.prompt_suffix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.render_default"><code class="docutils literal notranslate"><span class="pre">PromptBase.render_default()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.response_type"><code class="docutils literal notranslate"><span class="pre">PromptBase.response_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.prompt.PromptBase.validate_error_message"><code class="docutils literal notranslate"><span class="pre">PromptBase.validate_error_message</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.prompt.PromptError"><code class="docutils literal notranslate"><span class="pre">PromptError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.protocol">rich.protocol module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.protocol.is_renderable"><code class="docutils literal notranslate"><span class="pre">is_renderable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.protocol.rich_cast"><code class="docutils literal notranslate"><span class="pre">rich_cast()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.region">rich.region module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.region.Region"><code class="docutils literal notranslate"><span class="pre">Region</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.region.Region.height"><code class="docutils literal notranslate"><span class="pre">Region.height</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.region.Region.width"><code class="docutils literal notranslate"><span class="pre">Region.width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.region.Region.x"><code class="docutils literal notranslate"><span class="pre">Region.x</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.region.Region.y"><code class="docutils literal notranslate"><span class="pre">Region.y</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.repr">rich.repr module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.repr.ReprError"><code class="docutils literal notranslate"><span class="pre">ReprError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.repr.auto"><code class="docutils literal notranslate"><span class="pre">auto()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.repr.rich_repr"><code class="docutils literal notranslate"><span class="pre">rich_repr()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.rule">rich.rule module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.rule.Rule"><code class="docutils literal notranslate"><span class="pre">Rule</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.scope">rich.scope module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.scope.render_scope"><code class="docutils literal notranslate"><span class="pre">render_scope()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.screen">rich.screen module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.screen.Screen"><code class="docutils literal notranslate"><span class="pre">Screen</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.screen.Screen.renderable"><code class="docutils literal notranslate"><span class="pre">Screen.renderable</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.segment">rich.segment module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.segment.ControlType"><code class="docutils literal notranslate"><span class="pre">ControlType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.BELL"><code class="docutils literal notranslate"><span class="pre">ControlType.BELL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CARRIAGE_RETURN"><code class="docutils literal notranslate"><span class="pre">ControlType.CARRIAGE_RETURN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CLEAR"><code class="docutils literal notranslate"><span class="pre">ControlType.CLEAR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_BACKWARD"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_BACKWARD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_DOWN"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_DOWN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_FORWARD"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_FORWARD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_MOVE_TO"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_MOVE_TO</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_MOVE_TO_COLUMN"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_MOVE_TO_COLUMN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.CURSOR_UP"><code class="docutils literal notranslate"><span class="pre">ControlType.CURSOR_UP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.DISABLE_ALT_SCREEN"><code class="docutils literal notranslate"><span class="pre">ControlType.DISABLE_ALT_SCREEN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.ENABLE_ALT_SCREEN"><code class="docutils literal notranslate"><span class="pre">ControlType.ENABLE_ALT_SCREEN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.ERASE_IN_LINE"><code class="docutils literal notranslate"><span class="pre">ControlType.ERASE_IN_LINE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.HIDE_CURSOR"><code class="docutils literal notranslate"><span class="pre">ControlType.HIDE_CURSOR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.HOME"><code class="docutils literal notranslate"><span class="pre">ControlType.HOME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.SET_WINDOW_TITLE"><code class="docutils literal notranslate"><span class="pre">ControlType.SET_WINDOW_TITLE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.ControlType.SHOW_CURSOR"><code class="docutils literal notranslate"><span class="pre">ControlType.SHOW_CURSOR</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.segment.Segment"><code class="docutils literal notranslate"><span class="pre">Segment</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.cell_length"><code class="docutils literal notranslate"><span class="pre">Segment.cell_length</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.adjust_line_length"><code class="docutils literal notranslate"><span class="pre">Segment.adjust_line_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.align_bottom"><code class="docutils literal notranslate"><span class="pre">Segment.align_bottom()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.align_middle"><code class="docutils literal notranslate"><span class="pre">Segment.align_middle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.align_top"><code class="docutils literal notranslate"><span class="pre">Segment.align_top()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.apply_style"><code class="docutils literal notranslate"><span class="pre">Segment.apply_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#id0"><code class="docutils literal notranslate"><span class="pre">Segment.cell_length</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.control"><code class="docutils literal notranslate"><span class="pre">Segment.control</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.divide"><code class="docutils literal notranslate"><span class="pre">Segment.divide()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.filter_control"><code class="docutils literal notranslate"><span class="pre">Segment.filter_control()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.get_line_length"><code class="docutils literal notranslate"><span class="pre">Segment.get_line_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.get_shape"><code class="docutils literal notranslate"><span class="pre">Segment.get_shape()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.is_control"><code class="docutils literal notranslate"><span class="pre">Segment.is_control</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.line"><code class="docutils literal notranslate"><span class="pre">Segment.line()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.remove_color"><code class="docutils literal notranslate"><span class="pre">Segment.remove_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.set_shape"><code class="docutils literal notranslate"><span class="pre">Segment.set_shape()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.simplify"><code class="docutils literal notranslate"><span class="pre">Segment.simplify()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.split_and_crop_lines"><code class="docutils literal notranslate"><span class="pre">Segment.split_and_crop_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.split_cells"><code class="docutils literal notranslate"><span class="pre">Segment.split_cells()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.split_lines"><code class="docutils literal notranslate"><span class="pre">Segment.split_lines()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.split_lines_terminator"><code class="docutils literal notranslate"><span class="pre">Segment.split_lines_terminator()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.strip_links"><code class="docutils literal notranslate"><span class="pre">Segment.strip_links()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.strip_styles"><code class="docutils literal notranslate"><span class="pre">Segment.strip_styles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.style"><code class="docutils literal notranslate"><span class="pre">Segment.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.segment.Segment.text"><code class="docutils literal notranslate"><span class="pre">Segment.text</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.segment.SegmentLines"><code class="docutils literal notranslate"><span class="pre">SegmentLines</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.segment.Segments"><code class="docutils literal notranslate"><span class="pre">Segments</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.spinner">rich.spinner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.spinner.Spinner"><code class="docutils literal notranslate"><span class="pre">Spinner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.spinner.Spinner.render"><code class="docutils literal notranslate"><span class="pre">Spinner.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.spinner.Spinner.update"><code class="docutils literal notranslate"><span class="pre">Spinner.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.status">rich.status module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.status.Status"><code class="docutils literal notranslate"><span class="pre">Status</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.status.Status.console"><code class="docutils literal notranslate"><span class="pre">Status.console</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.status.Status.renderable"><code class="docutils literal notranslate"><span class="pre">Status.renderable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.status.Status.start"><code class="docutils literal notranslate"><span class="pre">Status.start()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.status.Status.stop"><code class="docutils literal notranslate"><span class="pre">Status.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.status.Status.update"><code class="docutils literal notranslate"><span class="pre">Status.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.style">rich.style module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.style.Style"><code class="docutils literal notranslate"><span class="pre">Style</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.STYLE_ATTRIBUTES"><code class="docutils literal notranslate"><span class="pre">Style.STYLE_ATTRIBUTES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.background_style"><code class="docutils literal notranslate"><span class="pre">Style.background_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.bgcolor"><code class="docutils literal notranslate"><span class="pre">Style.bgcolor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.blink"><code class="docutils literal notranslate"><span class="pre">Style.blink</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.blink2"><code class="docutils literal notranslate"><span class="pre">Style.blink2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.bold"><code class="docutils literal notranslate"><span class="pre">Style.bold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.chain"><code class="docutils literal notranslate"><span class="pre">Style.chain()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.clear_meta_and_links"><code class="docutils literal notranslate"><span class="pre">Style.clear_meta_and_links()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.color"><code class="docutils literal notranslate"><span class="pre">Style.color</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.combine"><code class="docutils literal notranslate"><span class="pre">Style.combine()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.conceal"><code class="docutils literal notranslate"><span class="pre">Style.conceal</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.copy"><code class="docutils literal notranslate"><span class="pre">Style.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.dim"><code class="docutils literal notranslate"><span class="pre">Style.dim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.encircle"><code class="docutils literal notranslate"><span class="pre">Style.encircle</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.frame"><code class="docutils literal notranslate"><span class="pre">Style.frame</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.from_color"><code class="docutils literal notranslate"><span class="pre">Style.from_color()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.from_meta"><code class="docutils literal notranslate"><span class="pre">Style.from_meta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.get_html_style"><code class="docutils literal notranslate"><span class="pre">Style.get_html_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.italic"><code class="docutils literal notranslate"><span class="pre">Style.italic</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.link"><code class="docutils literal notranslate"><span class="pre">Style.link</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.link_id"><code class="docutils literal notranslate"><span class="pre">Style.link_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.meta"><code class="docutils literal notranslate"><span class="pre">Style.meta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.normalize"><code class="docutils literal notranslate"><span class="pre">Style.normalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.null"><code class="docutils literal notranslate"><span class="pre">Style.null()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.on"><code class="docutils literal notranslate"><span class="pre">Style.on()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.overline"><code class="docutils literal notranslate"><span class="pre">Style.overline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.parse"><code class="docutils literal notranslate"><span class="pre">Style.parse()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.pick_first"><code class="docutils literal notranslate"><span class="pre">Style.pick_first()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.render"><code class="docutils literal notranslate"><span class="pre">Style.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.reverse"><code class="docutils literal notranslate"><span class="pre">Style.reverse</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.strike"><code class="docutils literal notranslate"><span class="pre">Style.strike</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.test"><code class="docutils literal notranslate"><span class="pre">Style.test()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.transparent_background"><code class="docutils literal notranslate"><span class="pre">Style.transparent_background</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.underline"><code class="docutils literal notranslate"><span class="pre">Style.underline</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.underline2"><code class="docutils literal notranslate"><span class="pre">Style.underline2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.update_link"><code class="docutils literal notranslate"><span class="pre">Style.update_link()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.Style.without_color"><code class="docutils literal notranslate"><span class="pre">Style.without_color</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.style.StyleStack"><code class="docutils literal notranslate"><span class="pre">StyleStack</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.StyleStack.current"><code class="docutils literal notranslate"><span class="pre">StyleStack.current</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.StyleStack.pop"><code class="docutils literal notranslate"><span class="pre">StyleStack.pop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.style.StyleStack.push"><code class="docutils literal notranslate"><span class="pre">StyleStack.push()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.style.getrandbits"><code class="docutils literal notranslate"><span class="pre">getrandbits()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.styled">rich.styled module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.styled.Styled"><code class="docutils literal notranslate"><span class="pre">Styled</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.syntax">rich.syntax module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.syntax.ANSISyntaxTheme"><code class="docutils literal notranslate"><span class="pre">ANSISyntaxTheme</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.ANSISyntaxTheme.get_background_style"><code class="docutils literal notranslate"><span class="pre">ANSISyntaxTheme.get_background_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.ANSISyntaxTheme.get_style_for_token"><code class="docutils literal notranslate"><span class="pre">ANSISyntaxTheme.get_style_for_token()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.syntax.PaddingProperty"><code class="docutils literal notranslate"><span class="pre">PaddingProperty</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.syntax.PygmentsSyntaxTheme"><code class="docutils literal notranslate"><span class="pre">PygmentsSyntaxTheme</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.PygmentsSyntaxTheme.get_background_style"><code class="docutils literal notranslate"><span class="pre">PygmentsSyntaxTheme.get_background_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.PygmentsSyntaxTheme.get_style_for_token"><code class="docutils literal notranslate"><span class="pre">PygmentsSyntaxTheme.get_style_for_token()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.syntax.Syntax"><code class="docutils literal notranslate"><span class="pre">Syntax</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.default_lexer"><code class="docutils literal notranslate"><span class="pre">Syntax.default_lexer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.from_path"><code class="docutils literal notranslate"><span class="pre">Syntax.from_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.get_theme"><code class="docutils literal notranslate"><span class="pre">Syntax.get_theme()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.guess_lexer"><code class="docutils literal notranslate"><span class="pre">Syntax.guess_lexer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.highlight"><code class="docutils literal notranslate"><span class="pre">Syntax.highlight()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.lexer"><code class="docutils literal notranslate"><span class="pre">Syntax.lexer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.padding"><code class="docutils literal notranslate"><span class="pre">Syntax.padding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.Syntax.stylize_range"><code class="docutils literal notranslate"><span class="pre">Syntax.stylize_range()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.syntax.SyntaxTheme"><code class="docutils literal notranslate"><span class="pre">SyntaxTheme</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.SyntaxTheme.get_background_style"><code class="docutils literal notranslate"><span class="pre">SyntaxTheme.get_background_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.syntax.SyntaxTheme.get_style_for_token"><code class="docutils literal notranslate"><span class="pre">SyntaxTheme.get_style_for_token()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.table">rich.table module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.table.Column"><code class="docutils literal notranslate"><span class="pre">Column</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.cells"><code class="docutils literal notranslate"><span class="pre">Column.cells</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.copy"><code class="docutils literal notranslate"><span class="pre">Column.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.flexible"><code class="docutils literal notranslate"><span class="pre">Column.flexible</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.footer"><code class="docutils literal notranslate"><span class="pre">Column.footer</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.footer_style"><code class="docutils literal notranslate"><span class="pre">Column.footer_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.header"><code class="docutils literal notranslate"><span class="pre">Column.header</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.header_style"><code class="docutils literal notranslate"><span class="pre">Column.header_style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.highlight"><code class="docutils literal notranslate"><span class="pre">Column.highlight</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.justify"><code class="docutils literal notranslate"><span class="pre">Column.justify</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.max_width"><code class="docutils literal notranslate"><span class="pre">Column.max_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.min_width"><code class="docutils literal notranslate"><span class="pre">Column.min_width</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.no_wrap"><code class="docutils literal notranslate"><span class="pre">Column.no_wrap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.overflow"><code class="docutils literal notranslate"><span class="pre">Column.overflow</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.ratio"><code class="docutils literal notranslate"><span class="pre">Column.ratio</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.style"><code class="docutils literal notranslate"><span class="pre">Column.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.vertical"><code class="docutils literal notranslate"><span class="pre">Column.vertical</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Column.width"><code class="docutils literal notranslate"><span class="pre">Column.width</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.table.Row"><code class="docutils literal notranslate"><span class="pre">Row</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Row.end_section"><code class="docutils literal notranslate"><span class="pre">Row.end_section</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Row.style"><code class="docutils literal notranslate"><span class="pre">Row.style</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.table.Table"><code class="docutils literal notranslate"><span class="pre">Table</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.add_column"><code class="docutils literal notranslate"><span class="pre">Table.add_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.add_row"><code class="docutils literal notranslate"><span class="pre">Table.add_row()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.add_section"><code class="docutils literal notranslate"><span class="pre">Table.add_section()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.columns"><code class="docutils literal notranslate"><span class="pre">Table.columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.expand"><code class="docutils literal notranslate"><span class="pre">Table.expand</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.get_row_style"><code class="docutils literal notranslate"><span class="pre">Table.get_row_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.grid"><code class="docutils literal notranslate"><span class="pre">Table.grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.padding"><code class="docutils literal notranslate"><span class="pre">Table.padding</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.row_count"><code class="docutils literal notranslate"><span class="pre">Table.row_count</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.table.Table.rows"><code class="docutils literal notranslate"><span class="pre">Table.rows</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.terminal_theme">rich.terminal_theme module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.terminal_theme.TerminalTheme"><code class="docutils literal notranslate"><span class="pre">TerminalTheme</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.text">rich.text module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.text.Span"><code class="docutils literal notranslate"><span class="pre">Span</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.end"><code class="docutils literal notranslate"><span class="pre">Span.end</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.extend"><code class="docutils literal notranslate"><span class="pre">Span.extend()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.move"><code class="docutils literal notranslate"><span class="pre">Span.move()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.right_crop"><code class="docutils literal notranslate"><span class="pre">Span.right_crop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.split"><code class="docutils literal notranslate"><span class="pre">Span.split()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.start"><code class="docutils literal notranslate"><span class="pre">Span.start</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Span.style"><code class="docutils literal notranslate"><span class="pre">Span.style</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.text.Text"><code class="docutils literal notranslate"><span class="pre">Text</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.align"><code class="docutils literal notranslate"><span class="pre">Text.align()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.append"><code class="docutils literal notranslate"><span class="pre">Text.append()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.append_text"><code class="docutils literal notranslate"><span class="pre">Text.append_text()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.append_tokens"><code class="docutils literal notranslate"><span class="pre">Text.append_tokens()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.apply_meta"><code class="docutils literal notranslate"><span class="pre">Text.apply_meta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.assemble"><code class="docutils literal notranslate"><span class="pre">Text.assemble()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.blank_copy"><code class="docutils literal notranslate"><span class="pre">Text.blank_copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.cell_len"><code class="docutils literal notranslate"><span class="pre">Text.cell_len</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.copy"><code class="docutils literal notranslate"><span class="pre">Text.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.copy_styles"><code class="docutils literal notranslate"><span class="pre">Text.copy_styles()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.detect_indentation"><code class="docutils literal notranslate"><span class="pre">Text.detect_indentation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.divide"><code class="docutils literal notranslate"><span class="pre">Text.divide()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.end"><code class="docutils literal notranslate"><span class="pre">Text.end</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.expand_tabs"><code class="docutils literal notranslate"><span class="pre">Text.expand_tabs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.extend_style"><code class="docutils literal notranslate"><span class="pre">Text.extend_style()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.fit"><code class="docutils literal notranslate"><span class="pre">Text.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.from_ansi"><code class="docutils literal notranslate"><span class="pre">Text.from_ansi()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.from_markup"><code class="docutils literal notranslate"><span class="pre">Text.from_markup()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.get_style_at_offset"><code class="docutils literal notranslate"><span class="pre">Text.get_style_at_offset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.highlight_regex"><code class="docutils literal notranslate"><span class="pre">Text.highlight_regex()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.highlight_words"><code class="docutils literal notranslate"><span class="pre">Text.highlight_words()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.join"><code class="docutils literal notranslate"><span class="pre">Text.join()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.justify"><code class="docutils literal notranslate"><span class="pre">Text.justify</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.markup"><code class="docutils literal notranslate"><span class="pre">Text.markup</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.no_wrap"><code class="docutils literal notranslate"><span class="pre">Text.no_wrap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.on"><code class="docutils literal notranslate"><span class="pre">Text.on()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.overflow"><code class="docutils literal notranslate"><span class="pre">Text.overflow</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.pad"><code class="docutils literal notranslate"><span class="pre">Text.pad()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.pad_left"><code class="docutils literal notranslate"><span class="pre">Text.pad_left()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.pad_right"><code class="docutils literal notranslate"><span class="pre">Text.pad_right()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.plain"><code class="docutils literal notranslate"><span class="pre">Text.plain</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.remove_suffix"><code class="docutils literal notranslate"><span class="pre">Text.remove_suffix()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.render"><code class="docutils literal notranslate"><span class="pre">Text.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.right_crop"><code class="docutils literal notranslate"><span class="pre">Text.right_crop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.rstrip"><code class="docutils literal notranslate"><span class="pre">Text.rstrip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.rstrip_end"><code class="docutils literal notranslate"><span class="pre">Text.rstrip_end()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.set_length"><code class="docutils literal notranslate"><span class="pre">Text.set_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.spans"><code class="docutils literal notranslate"><span class="pre">Text.spans</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.split"><code class="docutils literal notranslate"><span class="pre">Text.split()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.style"><code class="docutils literal notranslate"><span class="pre">Text.style</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.styled"><code class="docutils literal notranslate"><span class="pre">Text.styled()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.stylize"><code class="docutils literal notranslate"><span class="pre">Text.stylize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.stylize_before"><code class="docutils literal notranslate"><span class="pre">Text.stylize_before()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.tab_size"><code class="docutils literal notranslate"><span class="pre">Text.tab_size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.truncate"><code class="docutils literal notranslate"><span class="pre">Text.truncate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.with_indent_guides"><code class="docutils literal notranslate"><span class="pre">Text.with_indent_guides()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.text.Text.wrap"><code class="docutils literal notranslate"><span class="pre">Text.wrap()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.text.TextType"><code class="docutils literal notranslate"><span class="pre">TextType</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.theme">rich.theme module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.theme.Theme"><code class="docutils literal notranslate"><span class="pre">Theme</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.Theme.config"><code class="docutils literal notranslate"><span class="pre">Theme.config</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.Theme.from_file"><code class="docutils literal notranslate"><span class="pre">Theme.from_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.Theme.read"><code class="docutils literal notranslate"><span class="pre">Theme.read()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.Theme.styles"><code class="docutils literal notranslate"><span class="pre">Theme.styles</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.theme.ThemeStack"><code class="docutils literal notranslate"><span class="pre">ThemeStack</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.ThemeStack.pop_theme"><code class="docutils literal notranslate"><span class="pre">ThemeStack.pop_theme()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.theme.ThemeStack.push_theme"><code class="docutils literal notranslate"><span class="pre">ThemeStack.push_theme()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.theme.ThemeStackError"><code class="docutils literal notranslate"><span class="pre">ThemeStackError</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.themes">rich.themes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.traceback">rich.traceback module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.Frame"><code class="docutils literal notranslate"><span class="pre">Frame</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.filename"><code class="docutils literal notranslate"><span class="pre">Frame.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.last_instruction"><code class="docutils literal notranslate"><span class="pre">Frame.last_instruction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.line"><code class="docutils literal notranslate"><span class="pre">Frame.line</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.lineno"><code class="docutils literal notranslate"><span class="pre">Frame.lineno</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.locals"><code class="docutils literal notranslate"><span class="pre">Frame.locals</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Frame.name"><code class="docutils literal notranslate"><span class="pre">Frame.name</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.PathHighlighter"><code class="docutils literal notranslate"><span class="pre">PathHighlighter</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.PathHighlighter.highlights"><code class="docutils literal notranslate"><span class="pre">PathHighlighter.highlights</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.Stack"><code class="docutils literal notranslate"><span class="pre">Stack</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.exc_type"><code class="docutils literal notranslate"><span class="pre">Stack.exc_type</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.exc_value"><code class="docutils literal notranslate"><span class="pre">Stack.exc_value</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.exceptions"><code class="docutils literal notranslate"><span class="pre">Stack.exceptions</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.frames"><code class="docutils literal notranslate"><span class="pre">Stack.frames</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.is_cause"><code class="docutils literal notranslate"><span class="pre">Stack.is_cause</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.is_group"><code class="docutils literal notranslate"><span class="pre">Stack.is_group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.notes"><code class="docutils literal notranslate"><span class="pre">Stack.notes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Stack.syntax_error"><code class="docutils literal notranslate"><span class="pre">Stack.syntax_error</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.Trace"><code class="docutils literal notranslate"><span class="pre">Trace</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Trace.stacks"><code class="docutils literal notranslate"><span class="pre">Trace.stacks</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.Traceback"><code class="docutils literal notranslate"><span class="pre">Traceback</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Traceback.LEXERS"><code class="docutils literal notranslate"><span class="pre">Traceback.LEXERS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Traceback.extract"><code class="docutils literal notranslate"><span class="pre">Traceback.extract()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.traceback.Traceback.from_exception"><code class="docutils literal notranslate"><span class="pre">Traceback.from_exception()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.traceback.install"><code class="docutils literal notranslate"><span class="pre">install()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich.tree">rich.tree module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.tree.Tree"><code class="docutils literal notranslate"><span class="pre">Tree</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.tree.Tree.ASCII_GUIDES"><code class="docutils literal notranslate"><span class="pre">Tree.ASCII_GUIDES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.tree.Tree.TREE_GUIDES"><code class="docutils literal notranslate"><span class="pre">Tree.TREE_GUIDES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#id3"><code class="docutils literal notranslate"><span class="pre">Tree.ASCII_GUIDES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#id4"><code class="docutils literal notranslate"><span class="pre">Tree.TREE_GUIDES</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="rich.html#rich.tree.Tree.add"><code class="docutils literal notranslate"><span class="pre">Tree.add()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rich.html#module-rich">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.get_console"><code class="docutils literal notranslate"><span class="pre">get_console()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.inspect"><code class="docutils literal notranslate"><span class="pre">inspect()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.print"><code class="docutils literal notranslate"><span class="pre">print()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.print_json"><code class="docutils literal notranslate"><span class="pre">print_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rich.html#rich.reconfigure"><code class="docutils literal notranslate"><span class="pre">reconfigure()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Documentación de Rich" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rich.html" class="btn btn-neutral float-right" title="rich package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

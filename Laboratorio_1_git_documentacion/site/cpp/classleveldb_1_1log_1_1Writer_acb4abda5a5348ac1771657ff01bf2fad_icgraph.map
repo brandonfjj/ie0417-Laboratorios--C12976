@@ -1,0 +1,16 @@
+<map id="leveldb::log::Writer::AddRecord" name="leveldb::log::Writer::AddRecord">
+<area shape="rect" id="node1" title=" " alt="" coords="936,104,1083,145"/>
+<area shape="rect" id="node2" href="$classleveldb_1_1VersionSet.html#ac1d014901be7095ace1aaec0cf391fb6" title=" " alt="" coords="730,5,877,47"/>
+<area shape="rect" id="node3" href="$classleveldb_1_1RecoveryTest.html#a361c575ee0f6531b95fb58878b1c69bf" title=" " alt="" coords="721,71,886,112"/>
+<area shape="rect" id="node4" href="$classleveldb_1_1log_1_1LogTest.html#ab8af1c9335e7fbb42e06a6c01de2d0fc" title=" " alt="" coords="726,136,881,177"/>
+<area shape="rect" id="node8" href="$classleveldb_1_1DBImpl.html#aeb03de682c82e133575013d7688448e1" title=" " alt="" coords="719,222,888,249"/>
+<area shape="rect" id="node5" href="$classleveldb_1_1log_1_1LogTest.html#af0053e30c5ccaa5e2e10d595a4f48565" title=" " alt="" coords="505,116,669,157"/>
+<area shape="rect" id="node6" href="$classleveldb_1_1log_1_1LogTest.html#ab9ca8c2014e78611d66d884f7b46e4ff" title=" " alt="" coords="255,43,446,84"/>
+<area shape="rect" id="node7" href="$classleveldb_1_1log_1_1LogTest.html#a2bf9cdf3b3f722c300f65a7752c0e101" title=" " alt="" coords="245,109,456,165"/>
+<area shape="rect" id="node9" href="$classleveldb_1_1DBImpl.html#a8642703fd1398cd8e3f5f24ee0b9da23" title=" " alt="" coords="504,255,671,296"/>
+<area shape="rect" id="node10" href="$classleveldb_1_1RecoveryTest.html#ae356f5bfb63f57c36ce5763c8bf82495" title=" " alt="" coords="268,189,433,231"/>
+<area shape="rect" id="node11" href="$classleveldb_1_1DBImpl.html#a645ec8e324553b9d868c9cf43b26389b" title=" " alt="" coords="255,255,447,296"/>
+<area shape="rect" id="node12" href="$classleveldb_1_1AutoCompactTest.html#a1d1feea1aef1257e461c35eb5b51fa52" title=" " alt="" coords="255,320,447,361"/>
+<area shape="rect" id="node13" href="$classleveldb_1_1DBTest.html#a962e6b3e357913e2819cf8584958e31a" title=" " alt="" coords="247,386,454,413"/>
+<area shape="rect" id="node14" href="$classleveldb_1_1DBTest.html#ac291d06db907f5fee7caf04f44f65493" title=" " alt="" coords="5,386,197,413"/>
+</map>

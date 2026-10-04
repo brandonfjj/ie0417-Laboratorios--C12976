@@ -1,0 +1,1138 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.syntax &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.syntax</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.syntax</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">TYPE_CHECKING</span><span class="p">,</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">NamedTuple</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.lexer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lexer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.lexers</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_lexer_by_name</span><span class="p">,</span> <span class="n">guess_lexer_for_filename</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span> <span class="k">as</span> <span class="n">PygmentsStyle</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.styles</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_style_by_name</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.token</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Comment</span><span class="p">,</span>
+    <span class="n">Error</span><span class="p">,</span>
+    <span class="n">Generic</span><span class="p">,</span>
+    <span class="n">Keyword</span><span class="p">,</span>
+    <span class="n">Name</span><span class="p">,</span>
+    <span class="n">Number</span><span class="p">,</span>
+    <span class="n">Operator</span><span class="p">,</span>
+    <span class="n">String</span><span class="p">,</span>
+    <span class="n">Token</span><span class="p">,</span>
+    <span class="n">Whitespace</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassNotFound</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">JustifyMethod</span><span class="p">,</span> <span class="n">RenderResult</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.containers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lines</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rich.padding</span><span class="w"> </span><span class="kn">import</span> <span class="n">Padding</span><span class="p">,</span> <span class="n">PaddingDimensions</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">loop_first</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cells</span><span class="w"> </span><span class="kn">import</span> <span class="n">cell_len</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.color</span><span class="w"> </span><span class="kn">import</span> <span class="n">Color</span><span class="p">,</span> <span class="n">blend_rgb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Measurement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span><span class="p">,</span> <span class="n">Segments</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span><span class="p">,</span> <span class="n">StyleType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="n">TokenType</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="n">WINDOWS</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">"win32"</span>
+<span class="n">DEFAULT_THEME</span> <span class="o">=</span> <span class="s2">"monokai"</span>
+
+<span class="c1"># The following styles are based on https://github.com/pygments/pygments/blob/master/pygments/formatters/terminal.py</span>
+<span class="c1"># A few modifications were made</span>
+
+<span class="n">ANSI_LIGHT</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Token</span><span class="p">:</span> <span class="n">Style</span><span class="p">(),</span>
+    <span class="n">Whitespace</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"white"</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"magenta"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Exception</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Decorator</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"magenta"</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Tag</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_blue"</span><span class="p">),</span>
+    <span class="n">String</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"yellow"</span><span class="p">),</span>
+    <span class="n">Number</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Deleted</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Heading</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Subheading</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"magenta"</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Error</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">ANSI_DARK</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">Token</span><span class="p">:</span> <span class="n">Style</span><span class="p">(),</span>
+    <span class="n">Whitespace</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_black"</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Comment</span><span class="o">.</span><span class="n">Preproc</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_blue"</span><span class="p">),</span>
+    <span class="n">Keyword</span><span class="o">.</span><span class="n">Type</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">),</span>
+    <span class="n">Operator</span><span class="o">.</span><span class="n">Word</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_magenta"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Builtin</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_green"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Namespace</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Class</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_green"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Exception</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Decorator</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_magenta"</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Variable</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Attribute</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_cyan"</span><span class="p">),</span>
+    <span class="n">Name</span><span class="o">.</span><span class="n">Tag</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_blue"</span><span class="p">),</span>
+    <span class="n">String</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"yellow"</span><span class="p">),</span>
+    <span class="n">Number</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_blue"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Deleted</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Inserted</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_green"</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Heading</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Subheading</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_magenta"</span><span class="p">,</span> <span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Prompt</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="n">Generic</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"bright_red"</span><span class="p">),</span>
+    <span class="n">Error</span><span class="p">:</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span> <span class="n">underline</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">RICH_SYNTAX_THEMES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"ansi_light"</span><span class="p">:</span> <span class="n">ANSI_LIGHT</span><span class="p">,</span> <span class="s2">"ansi_dark"</span><span class="p">:</span> <span class="n">ANSI_DARK</span><span class="p">}</span>
+<span class="n">NUMBERS_COLUMN_DEFAULT_PADDING</span> <span class="o">=</span> <span class="mi">2</span>
+
+
+<div class="viewcode-block" id="SyntaxTheme">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.SyntaxTheme">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SyntaxTheme</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Base class for a syntax theme."""</span>
+
+<div class="viewcode-block" id="SyntaxTheme.get_style_for_token">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.SyntaxTheme.get_style_for_token">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_style_for_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_type</span><span class="p">:</span> <span class="n">TokenType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a style for a given Pygments token."""</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>  <span class="c1"># pragma: no cover</span></div>
+
+
+<div class="viewcode-block" id="SyntaxTheme.get_background_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.SyntaxTheme.get_background_style">[docs]</a>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_background_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the background color."""</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>  <span class="c1"># pragma: no cover</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PygmentsSyntaxTheme">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.PygmentsSyntaxTheme">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PygmentsSyntaxTheme</span><span class="p">(</span><span class="n">SyntaxTheme</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Syntax theme that delegates to Pygments theme."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theme</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">PygmentsStyle</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">theme</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pygments_style_class</span> <span class="o">=</span> <span class="n">get_style_by_name</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pygments_style_class</span> <span class="o">=</span> <span class="n">get_style_by_name</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pygments_style_class</span> <span class="o">=</span> <span class="n">theme</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pygments_style_class</span><span class="o">.</span><span class="n">background_color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_style</span> <span class="o">=</span> <span class="n">Style</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_background_color</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PygmentsSyntaxTheme.get_style_for_token">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.PygmentsSyntaxTheme.get_style_for_token">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_style_for_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_type</span><span class="p">:</span> <span class="n">TokenType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a style from a Pygments class."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">[</span><span class="n">token_type</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pygments_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pygments_style_class</span><span class="o">.</span><span class="n">style_for_token</span><span class="p">(</span><span class="n">token_type</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">color</span> <span class="o">=</span> <span class="n">pygments_style</span><span class="p">[</span><span class="s2">"color"</span><span class="p">]</span>
+                <span class="n">bgcolor</span> <span class="o">=</span> <span class="n">pygments_style</span><span class="p">[</span><span class="s2">"bgcolor"</span><span class="p">]</span>
+                <span class="n">style</span> <span class="o">=</span> <span class="n">Style</span><span class="p">(</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">"#"</span> <span class="o">+</span> <span class="n">color</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="s2">"#000000"</span><span class="p">,</span>
+                    <span class="n">bgcolor</span><span class="o">=</span><span class="s2">"#"</span> <span class="o">+</span> <span class="n">bgcolor</span> <span class="k">if</span> <span class="n">bgcolor</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_color</span><span class="p">,</span>
+                    <span class="n">bold</span><span class="o">=</span><span class="n">pygments_style</span><span class="p">[</span><span class="s2">"bold"</span><span class="p">],</span>
+                    <span class="n">italic</span><span class="o">=</span><span class="n">pygments_style</span><span class="p">[</span><span class="s2">"italic"</span><span class="p">],</span>
+                    <span class="n">underline</span><span class="o">=</span><span class="n">pygments_style</span><span class="p">[</span><span class="s2">"underline"</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">[</span><span class="n">token_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="PygmentsSyntaxTheme.get_background_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.PygmentsSyntaxTheme.get_background_style">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_background_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_style</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ANSISyntaxTheme">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.ANSISyntaxTheme">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ANSISyntaxTheme</span><span class="p">(</span><span class="n">SyntaxTheme</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Syntax theme to use standard colors."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style_map</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">Style</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style_map</span> <span class="o">=</span> <span class="n">style_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_missing_style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_background_style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">TokenType</span><span class="p">,</span> <span class="n">Style</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="ANSISyntaxTheme.get_style_for_token">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.ANSISyntaxTheme.get_style_for_token">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_style_for_token</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_type</span><span class="p">:</span> <span class="n">TokenType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Look up style in the style map."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">[</span><span class="n">token_type</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># Styles form a hierarchy</span>
+            <span class="c1"># We need to go from most to least specific</span>
+            <span class="c1"># e.g. ("foo", "bar", "baz") to ("foo", "bar")  to ("foo",)</span>
+            <span class="n">get_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">style_map</span><span class="o">.</span><span class="n">get</span>
+            <span class="n">token</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">token_type</span><span class="p">)</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_missing_style</span>
+            <span class="k">while</span> <span class="n">token</span><span class="p">:</span>
+                <span class="n">_style</span> <span class="o">=</span> <span class="n">get_style</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">_style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">style</span> <span class="o">=</span> <span class="n">_style</span>
+                    <span class="k">break</span>
+                <span class="n">token</span> <span class="o">=</span> <span class="n">token</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_style_cache</span><span class="p">[</span><span class="n">token_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">style</span>
+            <span class="k">return</span> <span class="n">style</span></div>
+
+
+<div class="viewcode-block" id="ANSISyntaxTheme.get_background_style">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.ANSISyntaxTheme.get_background_style">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_background_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_background_style</span></div>
+</div>
+
+
+
+<span class="n">SyntaxPosition</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_SyntaxHighlightRange</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A range to highlight in a Syntax object.</span>
+<span class="sd">    `start` and `end` are 2-integers tuples, where the first integer is the line number</span>
+<span class="sd">    (starting from 1) and the second integer is the column index (starting from 0).</span>
+<span class="sd">    """</span>
+
+    <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">SyntaxPosition</span>
+    <span class="n">end</span><span class="p">:</span> <span class="n">SyntaxPosition</span>
+    <span class="n">style_before</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="PaddingProperty">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.PaddingProperty">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PaddingProperty</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Descriptor to get and set padding."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Syntax</span><span class="p">,</span> <span class="n">objtype</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Syntax</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Space around the Syntax."""</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">_padding</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Syntax</span><span class="p">,</span> <span class="n">padding</span><span class="p">:</span> <span class="n">PaddingDimensions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="n">Padding</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Syntax">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Syntax</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Construct a Syntax object to render syntax highlighted code.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        code (str): Code to highlight.</span>
+<span class="sd">        lexer (Lexer | str): Lexer to use (see https://pygments.org/docs/lexers/)</span>
+<span class="sd">        theme (str, optional): Color theme, aka Pygments style (see https://pygments.org/docs/styles/#getting-a-list-of-available-styles). Defaults to "monokai".</span>
+<span class="sd">        dedent (bool, optional): Enable stripping of initial whitespace. Defaults to False.</span>
+<span class="sd">        line_numbers (bool, optional): Enable rendering of line numbers. Defaults to False.</span>
+<span class="sd">        start_line (int, optional): Starting number for line numbers. Defaults to 1.</span>
+<span class="sd">        line_range (Tuple[int | None, int | None], optional): If given should be a tuple of the start and end line to render.</span>
+<span class="sd">            A value of None in the tuple indicates the range is open in that direction.</span>
+<span class="sd">        highlight_lines (Set[int]): A set of line numbers to highlight.</span>
+<span class="sd">        code_width: Width of code to render (not including line numbers), or ``None`` to use all available width.</span>
+<span class="sd">        tab_size (int, optional): Size of tabs. Defaults to 4.</span>
+<span class="sd">        word_wrap (bool, optional): Enable word wrapping.</span>
+<span class="sd">        background_color (str, optional): Optional background color, or None to use theme color. Defaults to None.</span>
+<span class="sd">        indent_guides (bool, optional): Show indent guides. Defaults to False.</span>
+<span class="sd">        padding (PaddingDimensions): Padding to apply around the syntax. Defaults to 0 (no padding).</span>
+<span class="sd">    """</span>
+
+    <span class="n">_pygments_style_class</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">PygmentsStyle</span><span class="p">]</span>
+    <span class="n">_theme</span><span class="p">:</span> <span class="n">SyntaxTheme</span>
+
+<div class="viewcode-block" id="Syntax.get_theme">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax.get_theme">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_theme</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SyntaxTheme</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">SyntaxTheme</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get a syntax theme instance."""</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">SyntaxTheme</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name</span>
+        <span class="n">theme</span><span class="p">:</span> <span class="n">SyntaxTheme</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">RICH_SYNTAX_THEMES</span><span class="p">:</span>
+            <span class="n">theme</span> <span class="o">=</span> <span class="n">ANSISyntaxTheme</span><span class="p">(</span><span class="n">RICH_SYNTAX_THEMES</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">theme</span> <span class="o">=</span> <span class="n">PygmentsSyntaxTheme</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">theme</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">lexer</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Lexer</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">theme</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SyntaxTheme</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_THEME</span><span class="p">,</span>
+        <span class="n">dedent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">line_numbers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">start_line</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">line_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">highlight_lines</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tab_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">background_color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">indent_guides</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">PaddingDimensions</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lexer</span> <span class="o">=</span> <span class="n">lexer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dedent</span> <span class="o">=</span> <span class="n">dedent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span> <span class="o">=</span> <span class="n">line_numbers</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_line</span> <span class="o">=</span> <span class="n">start_line</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">line_range</span> <span class="o">=</span> <span class="n">line_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highlight_lines</span> <span class="o">=</span> <span class="n">highlight_lines</span> <span class="ow">or</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span> <span class="o">=</span> <span class="n">code_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span> <span class="o">=</span> <span class="n">tab_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span> <span class="o">=</span> <span class="n">word_wrap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background_color</span> <span class="o">=</span> <span class="n">background_color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Style</span><span class="p">(</span><span class="n">bgcolor</span><span class="o">=</span><span class="n">background_color</span><span class="p">)</span> <span class="k">if</span> <span class="n">background_color</span> <span class="k">else</span> <span class="n">Style</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span> <span class="o">=</span> <span class="n">indent_guides</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_padding</span> <span class="o">=</span> <span class="n">Padding</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_theme</span><span class="p">(</span><span class="n">theme</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stylized_ranges</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">_SyntaxHighlightRange</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">padding</span> <span class="o">=</span> <span class="n">PaddingProperty</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Syntax.from_path">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax.from_path">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_path</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">encoding</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"utf-8"</span><span class="p">,</span>
+        <span class="n">lexer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Lexer</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">theme</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SyntaxTheme</span><span class="p">]</span> <span class="o">=</span> <span class="n">DEFAULT_THEME</span><span class="p">,</span>
+        <span class="n">dedent</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">line_numbers</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">line_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">start_line</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">highlight_lines</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">tab_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">background_color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">indent_guides</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">PaddingDimensions</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Syntax"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Construct a Syntax object from a file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str): Path to file to highlight.</span>
+<span class="sd">            encoding (str): Encoding of file.</span>
+<span class="sd">            lexer (str | Lexer, optional): Lexer to use. If None, lexer will be auto-detected from path/file content.</span>
+<span class="sd">            theme (str, optional): Color theme, aka Pygments style (see https://pygments.org/docs/styles/#getting-a-list-of-available-styles). Defaults to "emacs".</span>
+<span class="sd">            dedent (bool, optional): Enable stripping of initial whitespace. Defaults to True.</span>
+<span class="sd">            line_numbers (bool, optional): Enable rendering of line numbers. Defaults to False.</span>
+<span class="sd">            start_line (int, optional): Starting number for line numbers. Defaults to 1.</span>
+<span class="sd">            line_range (Tuple[int, int], optional): If given should be a tuple of the start and end line to render.</span>
+<span class="sd">            highlight_lines (Set[int]): A set of line numbers to highlight.</span>
+<span class="sd">            code_width: Width of code to render (not including line numbers), or ``None`` to use all available width.</span>
+<span class="sd">            tab_size (int, optional): Size of tabs. Defaults to 4.</span>
+<span class="sd">            word_wrap (bool, optional): Enable word wrapping of code.</span>
+<span class="sd">            background_color (str, optional): Optional background color, or None to use theme color. Defaults to None.</span>
+<span class="sd">            indent_guides (bool, optional): Show indent guides. Defaults to False.</span>
+<span class="sd">            padding (PaddingDimensions): Padding to apply around the syntax. Defaults to 0 (no padding).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            [Syntax]: A Syntax object that may be printed to the console</span>
+<span class="sd">        """</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lexer</span><span class="p">:</span>
+            <span class="n">lexer</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">guess_lexer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">code</span><span class="p">,</span>
+            <span class="n">lexer</span><span class="p">,</span>
+            <span class="n">theme</span><span class="o">=</span><span class="n">theme</span><span class="p">,</span>
+            <span class="n">dedent</span><span class="o">=</span><span class="n">dedent</span><span class="p">,</span>
+            <span class="n">line_numbers</span><span class="o">=</span><span class="n">line_numbers</span><span class="p">,</span>
+            <span class="n">line_range</span><span class="o">=</span><span class="n">line_range</span><span class="p">,</span>
+            <span class="n">start_line</span><span class="o">=</span><span class="n">start_line</span><span class="p">,</span>
+            <span class="n">highlight_lines</span><span class="o">=</span><span class="n">highlight_lines</span><span class="p">,</span>
+            <span class="n">code_width</span><span class="o">=</span><span class="n">code_width</span><span class="p">,</span>
+            <span class="n">tab_size</span><span class="o">=</span><span class="n">tab_size</span><span class="p">,</span>
+            <span class="n">word_wrap</span><span class="o">=</span><span class="n">word_wrap</span><span class="p">,</span>
+            <span class="n">background_color</span><span class="o">=</span><span class="n">background_color</span><span class="p">,</span>
+            <span class="n">indent_guides</span><span class="o">=</span><span class="n">indent_guides</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Syntax.guess_lexer">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax.guess_lexer">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">guess_lexer</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Guess the alias of the Pygments lexer to use based on a path and an optional string of code.</span>
+<span class="sd">        If code is supplied, it will use a combination of the code and the filename to determine the</span>
+<span class="sd">        best lexer to use. For example, if the file is ``index.html`` and the file contains Django</span>
+<span class="sd">        templating syntax, then "html+django" will be returned. If the file is ``index.html``, and no</span>
+<span class="sd">        templating language is used, the "html" lexer will be used. If no string of code</span>
+<span class="sd">        is supplied, the lexer will be chosen based on the file extension..</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (AnyStr): The path to the file containing the code you wish to know the lexer for.</span>
+<span class="sd">            code (str, optional): Optional string of code that will be used as a fallback if no lexer</span>
+<span class="sd">                is found for the supplied path.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The name of the Pygments lexer that best matches the supplied path/code.</span>
+<span class="sd">        """</span>
+        <span class="n">lexer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Lexer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">lexer_name</span> <span class="o">=</span> <span class="s2">"default"</span>
+        <span class="k">if</span> <span class="n">code</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">lexer</span> <span class="o">=</span> <span class="n">guess_lexer_for_filename</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">lexer</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ext</span><span class="p">:</span>
+                    <span class="n">extension</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="n">lexer</span> <span class="o">=</span> <span class="n">get_lexer_by_name</span><span class="p">(</span><span class="n">extension</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="k">if</span> <span class="n">lexer</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">lexer</span><span class="o">.</span><span class="n">aliases</span><span class="p">:</span>
+                <span class="n">lexer_name</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">aliases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lexer_name</span> <span class="o">=</span> <span class="n">lexer</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">return</span> <span class="n">lexer_name</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_base_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Style</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the base style."""</span>
+        <span class="n">default_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_background_style</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span>
+        <span class="k">return</span> <span class="n">default_style</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_token_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">token_type</span><span class="p">:</span> <span class="n">TokenType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Color</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Get a color (if any) for the given token.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            token_type (TokenType): A token type tuple from Pygments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Optional[Color]: Color from theme, or None for no color.</span>
+<span class="sd">        """</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span><span class="p">(</span><span class="n">token_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">style</span><span class="o">.</span><span class="n">color</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lexer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Lexer</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""The lexer for this syntax, or None if no lexer was found.</span>
+
+<span class="sd">        Tries to find the lexer by name if a string was passed to the constructor.</span>
+<span class="sd">        """</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lexer</span><span class="p">,</span> <span class="n">Lexer</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lexer</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">get_lexer_by_name</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lexer</span><span class="p">,</span>
+                <span class="n">stripnl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">ensurenl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">tabsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_lexer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Lexer</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""A Pygments Lexer to use if one is not specified or invalid."""</span>
+        <span class="k">return</span> <span class="n">get_lexer_by_name</span><span class="p">(</span>
+            <span class="s2">"text"</span><span class="p">,</span>
+            <span class="n">stripnl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">ensurenl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">tabsize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">,</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="Syntax.highlight">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax.highlight">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">highlight</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">line_range</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Highlight code and return a Text instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            code (str): Code to highlight.</span>
+<span class="sd">            line_range(Tuple[int, int], optional): Optional line range to highlight.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Text: A text instance containing highlighted syntax.</span>
+<span class="sd">        """</span>
+
+        <span class="n">base_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">()</span>
+        <span class="n">justify</span><span class="p">:</span> <span class="n">JustifyMethod</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">"default"</span> <span class="k">if</span> <span class="n">base_style</span><span class="o">.</span><span class="n">transparent_background</span> <span class="k">else</span> <span class="s2">"left"</span>
+        <span class="p">)</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span>
+            <span class="n">justify</span><span class="o">=</span><span class="n">justify</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">base_style</span><span class="p">,</span>
+            <span class="n">tab_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">,</span>
+            <span class="n">no_wrap</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">_get_theme_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span>
+
+        <span class="n">lexer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lexer</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_lexer</span>
+
+        <span class="k">if</span> <span class="n">lexer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line_range</span><span class="p">:</span>
+                <span class="c1"># More complicated path to only stylize a portion of the code</span>
+                <span class="c1"># This speeds up further operations as there are less spans to process</span>
+                <span class="n">line_start</span><span class="p">,</span> <span class="n">line_end</span> <span class="o">=</span> <span class="n">line_range</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">line_tokenize</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">                    </span><span class="sd">"""Split tokens to one per line."""</span>
+                    <span class="k">assert</span> <span class="n">lexer</span>  <span class="c1"># required to make MyPy happy - we know lexer is not None at this point</span>
+
+                    <span class="k">for</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">lexer</span><span class="o">.</span><span class="n">get_tokens</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+                        <span class="k">while</span> <span class="n">token</span><span class="p">:</span>
+                            <span class="n">line_token</span><span class="p">,</span> <span class="n">new_line</span><span class="p">,</span> <span class="n">token</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                            <span class="k">yield</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">line_token</span> <span class="o">+</span> <span class="n">new_line</span>
+
+                <span class="k">def</span><span class="w"> </span><span class="nf">tokens_to_spans</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Style</span><span class="p">]]]:</span>
+<span class="w">                    </span><span class="sd">"""Convert tokens to spans."""</span>
+                    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">line_tokenize</span><span class="p">())</span>
+                    <span class="n">line_no</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">_line_start</span> <span class="o">=</span> <span class="n">line_start</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">line_start</span> <span class="k">else</span> <span class="mi">0</span>
+
+                    <span class="c1"># Skip over tokens until line start</span>
+                    <span class="k">while</span> <span class="n">line_no</span> <span class="o">&lt;</span> <span class="n">_line_start</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="n">_token_type</span><span class="p">,</span> <span class="n">token</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+                        <span class="k">except</span> <span class="ne">StopIteration</span><span class="p">:</span>
+                            <span class="k">break</span>
+                        <span class="k">yield</span> <span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">):</span>
+                            <span class="n">line_no</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="c1"># Generate spans until line end</span>
+                    <span class="k">for</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">_get_theme_style</span><span class="p">(</span><span class="n">token_type</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="n">token</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">):</span>
+                            <span class="n">line_no</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="k">if</span> <span class="n">line_end</span> <span class="ow">and</span> <span class="n">line_no</span> <span class="o">&gt;=</span> <span class="n">line_end</span><span class="p">:</span>
+                                <span class="k">break</span>
+
+                <span class="n">text</span><span class="o">.</span><span class="n">append_tokens</span><span class="p">(</span><span class="n">tokens_to_spans</span><span class="p">())</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">append_tokens</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">_get_theme_style</span><span class="p">(</span><span class="n">token_type</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">token_type</span><span class="p">,</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">lexer</span><span class="o">.</span><span class="n">get_tokens</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">background_color</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="sa">f</span><span class="s2">"on </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">background_color</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stylized_ranges</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_stylized_ranges</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">text</span></div>
+
+
+<div class="viewcode-block" id="Syntax.stylize_range">
+<a class="viewcode-back" href="../../api/rich.html#rich.syntax.Syntax.stylize_range">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stylize_range</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span><span class="p">,</span>
+        <span class="n">start</span><span class="p">:</span> <span class="n">SyntaxPosition</span><span class="p">,</span>
+        <span class="n">end</span><span class="p">:</span> <span class="n">SyntaxPosition</span><span class="p">,</span>
+        <span class="n">style_before</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Adds a custom style on a part of the code, that will be applied to the syntax display when it's rendered.</span>
+<span class="sd">        Line numbers are 1-based, while column indexes are 0-based.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            style (StyleType): The style to apply.</span>
+<span class="sd">            start (Tuple[int, int]): The start of the range, in the form `[line number, column index]`.</span>
+<span class="sd">            end (Tuple[int, int]): The end of the range, in the form `[line number, column index]`.</span>
+<span class="sd">            style_before (bool): Apply the style before any existing styles.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stylized_ranges</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">_SyntaxHighlightRange</span><span class="p">(</span><span class="n">style</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">style_before</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_line_numbers_color</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blend</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Color</span><span class="p">:</span>
+        <span class="n">background_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_background_style</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span>
+        <span class="n">background_color</span> <span class="o">=</span> <span class="n">background_style</span><span class="o">.</span><span class="n">bgcolor</span>
+        <span class="k">if</span> <span class="n">background_color</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">background_color</span><span class="o">.</span><span class="n">is_system_defined</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Color</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+        <span class="n">foreground_color</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_token_color</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">Text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">foreground_color</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">foreground_color</span><span class="o">.</span><span class="n">is_system_defined</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">foreground_color</span> <span class="ow">or</span> <span class="n">Color</span><span class="o">.</span><span class="n">default</span><span class="p">()</span>
+        <span class="n">new_color</span> <span class="o">=</span> <span class="n">blend_rgb</span><span class="p">(</span>
+            <span class="n">background_color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">(),</span>
+            <span class="n">foreground_color</span><span class="o">.</span><span class="n">get_truecolor</span><span class="p">(),</span>
+            <span class="n">cross_fade</span><span class="o">=</span><span class="n">blend</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Color</span><span class="o">.</span><span class="n">from_triplet</span><span class="p">(</span><span class="n">new_color</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_numbers_column_width</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the number of characters used to render the numbers column."""</span>
+        <span class="n">column_width</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span><span class="p">:</span>
+            <span class="n">column_width</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">start_line</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)))</span>
+                <span class="o">+</span> <span class="n">NUMBERS_COLUMN_DEFAULT_PADDING</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">column_width</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_number_styles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Style</span><span class="p">,</span> <span class="n">Style</span><span class="p">,</span> <span class="n">Style</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Get background, number, and highlight styles for line numbers."""</span>
+        <span class="n">background_style</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">background_style</span><span class="o">.</span><span class="n">transparent_background</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">(),</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">Style</span><span class="o">.</span><span class="n">null</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">console</span><span class="o">.</span><span class="n">color_system</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"256"</span><span class="p">,</span> <span class="s2">"truecolor"</span><span class="p">):</span>
+            <span class="n">number_style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                <span class="n">background_style</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">Text</span><span class="p">),</span>
+                <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line_numbers_color</span><span class="p">()),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">highlight_number_style</span> <span class="o">=</span> <span class="n">Style</span><span class="o">.</span><span class="n">chain</span><span class="p">(</span>
+                <span class="n">background_style</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span><span class="p">(</span><span class="n">Token</span><span class="o">.</span><span class="n">Text</span><span class="p">),</span>
+                <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_line_numbers_color</span><span class="p">(</span><span class="mf">0.9</span><span class="p">)),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">number_style</span> <span class="o">=</span> <span class="n">background_style</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">highlight_number_style</span> <span class="o">=</span> <span class="n">background_style</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">background_style</span><span class="p">,</span> <span class="n">number_style</span><span class="p">,</span> <span class="n">highlight_number_style</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_measure__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Measurement"</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span> <span class="o">+</span> <span class="n">padding</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">return</span> <span class="n">Measurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span>
+            <span class="o">+</span> <span class="n">padding</span>
+            <span class="o">+</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">cell_len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">)</span> <span class="k">if</span> <span class="n">lines</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">Measurement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">segments</span> <span class="o">=</span> <span class="n">Segments</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_syntax</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">options</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">Padding</span><span class="p">(</span><span class="n">segments</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">(),</span> <span class="n">pad</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">segments</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_syntax</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span>
+        <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the Segments for the Syntax object, excluding any vertical/horizontal padding</span>
+<span class="sd">        """</span>
+        <span class="n">transparent_background</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">()</span><span class="o">.</span><span class="n">transparent_background</span>
+        <span class="n">_pad_top</span><span class="p">,</span> <span class="n">pad_right</span><span class="p">,</span> <span class="n">_pad_bottom</span><span class="p">,</span> <span class="n">pad_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span>
+        <span class="n">horizontal_padding</span> <span class="o">=</span> <span class="n">pad_left</span> <span class="o">+</span> <span class="n">pad_right</span>
+        <span class="n">code_width</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="p">(</span>
+                <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span>
+                <span class="k">else</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span>
+            <span class="p">)</span>
+            <span class="o">-</span> <span class="n">horizontal_padding</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span>
+        <span class="p">)</span>
+        <span class="n">code_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">code_width</span><span class="p">)</span>
+
+        <span class="n">ends_on_nl</span><span class="p">,</span> <span class="n">processed_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_code</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">)</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">highlight</span><span class="p">(</span><span class="n">processed_code</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_range</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_range</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ends_on_nl</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">remove_suffix</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+            <span class="c1"># Simple case of just rendering text</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">()</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span><span class="p">(</span><span class="n">Comment</span><span class="p">)</span>
+                <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">ascii_only</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">with_indent_guides</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">overflow</span> <span class="o">=</span> <span class="s2">"crop"</span>
+            <span class="k">if</span> <span class="n">style</span><span class="o">.</span><span class="n">transparent_background</span><span class="p">:</span>
+                <span class="k">yield from</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                    <span class="n">text</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">code_width</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">syntax_lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span>
+                    <span class="n">text</span><span class="p">,</span>
+                    <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">code_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"left"</span><span class="p">),</span>
+                    <span class="n">style</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">background_style</span><span class="p">,</span>
+                    <span class="n">pad</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">new_lines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">syntax_line</span> <span class="ow">in</span> <span class="n">syntax_lines</span><span class="p">:</span>
+                    <span class="k">yield from</span> <span class="n">syntax_line</span>
+            <span class="k">return</span>
+
+        <span class="n">start_line</span><span class="p">,</span> <span class="n">end_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_range</span> <span class="ow">or</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">line_offset</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">start_line</span><span class="p">:</span>
+            <span class="n">line_offset</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start_line</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">lines</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Text</span><span class="p">],</span> <span class="n">Lines</span><span class="p">]</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">allow_blank</span><span class="o">=</span><span class="n">ends_on_nl</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_range</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line_offset</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+                <span class="k">return</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">line_offset</span><span class="p">:</span><span class="n">end_line</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">options</span><span class="o">.</span><span class="n">ascii_only</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_base_style</span><span class="p">()</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_theme</span><span class="o">.</span><span class="n">get_style_for_token</span><span class="p">(</span><span class="n">Comment</span><span class="p">)</span>
+                <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">background_style</span>
+            <span class="p">)</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Text</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">with_indent_guides</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">italic</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                <span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">allow_blank</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">numbers_column_width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_numbers_column_width</span>
+        <span class="n">render_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">code_width</span><span class="p">)</span>
+
+        <span class="n">highlight_line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">highlight_lines</span><span class="o">.</span><span class="fm">__contains__</span>
+        <span class="n">_Segment</span> <span class="o">=</span> <span class="n">Segment</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">_Segment</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">line_pointer</span> <span class="o">=</span> <span class="s2">"&gt; "</span> <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">legacy_windows</span> <span class="k">else</span> <span class="s2">"❱ "</span>
+
+        <span class="p">(</span>
+            <span class="n">background_style</span><span class="p">,</span>
+            <span class="n">number_style</span><span class="p">,</span>
+            <span class="n">highlight_number_style</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_number_styles</span><span class="p">(</span><span class="n">console</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">line_no</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">start_line</span> <span class="o">+</span> <span class="n">line_offset</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span><span class="p">:</span>
+                <span class="n">wrapped_lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span>
+                    <span class="n">line</span><span class="p">,</span>
+                    <span class="n">render_options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">justify</span><span class="o">=</span><span class="s2">"left"</span><span class="p">),</span>
+                    <span class="n">style</span><span class="o">=</span><span class="n">background_style</span><span class="p">,</span>
+                    <span class="n">pad</span><span class="o">=</span><span class="ow">not</span> <span class="n">transparent_background</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">segments</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">no_wrap</span><span class="p">:</span>
+                    <span class="n">wrapped_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">segments</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">wrapped_lines</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">_Segment</span><span class="o">.</span><span class="n">adjust_line_length</span><span class="p">(</span>
+                            <span class="n">segments</span><span class="p">,</span>
+                            <span class="n">render_options</span><span class="o">.</span><span class="n">max_width</span><span class="p">,</span>
+                            <span class="n">style</span><span class="o">=</span><span class="n">background_style</span><span class="p">,</span>
+                            <span class="n">pad</span><span class="o">=</span><span class="ow">not</span> <span class="n">transparent_background</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">]</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">line_numbers</span><span class="p">:</span>
+                <span class="n">wrapped_line_left_pad</span> <span class="o">=</span> <span class="n">_Segment</span><span class="p">(</span>
+                    <span class="s2">" "</span> <span class="o">*</span> <span class="n">numbers_column_width</span> <span class="o">+</span> <span class="s2">" "</span><span class="p">,</span> <span class="n">background_style</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">wrapped_line</span> <span class="ow">in</span> <span class="n">loop_first</span><span class="p">(</span><span class="n">wrapped_lines</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                        <span class="n">line_column</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">line_no</span><span class="p">)</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">numbers_column_width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s2">" "</span>
+                        <span class="k">if</span> <span class="n">highlight_line</span><span class="p">(</span><span class="n">line_no</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">line_pointer</span><span class="p">,</span> <span class="n">Style</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">))</span>
+                            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">line_column</span><span class="p">,</span> <span class="n">highlight_number_style</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="s2">"  "</span><span class="p">,</span> <span class="n">highlight_number_style</span><span class="p">)</span>
+                            <span class="k">yield</span> <span class="n">_Segment</span><span class="p">(</span><span class="n">line_column</span><span class="p">,</span> <span class="n">number_style</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">wrapped_line_left_pad</span>
+                    <span class="k">yield from</span> <span class="n">wrapped_line</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">wrapped_line</span> <span class="ow">in</span> <span class="n">wrapped_lines</span><span class="p">:</span>
+                    <span class="k">yield from</span> <span class="n">wrapped_line</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_apply_stylized_ranges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Apply stylized ranges to a text instance,</span>
+<span class="sd">        using the given code to determine the right portion to apply the style to.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            text (Text): Text instance to apply the style to.</span>
+<span class="sd">        """</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">plain</span>
+        <span class="n">newlines_offsets</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="c1"># Let's add outer boundaries at each side of the list:</span>
+            <span class="mi">0</span><span class="p">,</span>
+            <span class="c1"># N.B. using "\n" here is much faster than using metacharacters such as "^" or "\Z":</span>
+            <span class="o">*</span><span class="p">[</span>
+                <span class="k">match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">code</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+            <span class="p">],</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">stylized_range</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stylized_ranges</span><span class="p">:</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">_get_code_index_for_syntax_position</span><span class="p">(</span>
+                <span class="n">newlines_offsets</span><span class="p">,</span> <span class="n">stylized_range</span><span class="o">.</span><span class="n">start</span>
+            <span class="p">)</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">_get_code_index_for_syntax_position</span><span class="p">(</span>
+                <span class="n">newlines_offsets</span><span class="p">,</span> <span class="n">stylized_range</span><span class="o">.</span><span class="n">end</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stylized_range</span><span class="o">.</span><span class="n">style_before</span><span class="p">:</span>
+                    <span class="n">text</span><span class="o">.</span><span class="n">stylize_before</span><span class="p">(</span><span class="n">stylized_range</span><span class="o">.</span><span class="n">style</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="n">stylized_range</span><span class="o">.</span><span class="n">style</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Applies various processing to a raw code string</span>
+<span class="sd">        (normalises it so it always ends with a line return, dedents it if necessary, etc.)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            code (str): The raw code string to process</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[bool, str]: the boolean indicates whether the raw code ends with a line return,</span>
+<span class="sd">                while the string is the processed code.</span>
+<span class="sd">        """</span>
+        <span class="n">ends_on_nl</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">processed_code</span> <span class="o">=</span> <span class="n">code</span> <span class="k">if</span> <span class="n">ends_on_nl</span> <span class="k">else</span> <span class="n">code</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span>
+        <span class="n">processed_code</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="n">processed_code</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dedent</span> <span class="k">else</span> <span class="n">processed_code</span>
+        <span class="p">)</span>
+        <span class="n">processed_code</span> <span class="o">=</span> <span class="n">processed_code</span><span class="o">.</span><span class="n">expandtabs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ends_on_nl</span><span class="p">,</span> <span class="n">processed_code</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_code_index_for_syntax_position</span><span class="p">(</span>
+    <span class="n">newlines_offsets</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">position</span><span class="p">:</span> <span class="n">SyntaxPosition</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Returns the index of the code string for the given positions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        newlines_offsets (Sequence[int]): The offset of each newline character found in the code snippet.</span>
+<span class="sd">        position (SyntaxPosition): The position to search for.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Optional[int]: The index of the code string for this position, or `None`</span>
+<span class="sd">            if the given position's line number is out of range (if it's the column that is out of range</span>
+<span class="sd">            we silently clamp its value so that it reaches the end of the line)</span>
+<span class="sd">    """</span>
+    <span class="n">lines_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">newlines_offsets</span><span class="p">)</span>
+
+    <span class="n">line_number</span><span class="p">,</span> <span class="n">column_index</span> <span class="o">=</span> <span class="n">position</span>
+    <span class="k">if</span> <span class="n">line_number</span> <span class="o">&gt;</span> <span class="n">lines_count</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">newlines_offsets</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">line_number</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>  <span class="c1"># `line_number` is out of range</span>
+    <span class="n">line_index</span> <span class="o">=</span> <span class="n">line_number</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">line_length</span> <span class="o">=</span> <span class="n">newlines_offsets</span><span class="p">[</span><span class="n">line_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">newlines_offsets</span><span class="p">[</span><span class="n">line_index</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="c1"># If `column_index` is out of range: let's silently clamp it:</span>
+    <span class="n">column_index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">line_length</span><span class="p">,</span> <span class="n">column_index</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">newlines_offsets</span><span class="p">[</span><span class="n">line_index</span><span class="p">]</span> <span class="o">+</span> <span class="n">column_index</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">"Render syntax to the console with Rich"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"path"</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">"PATH"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"path to file, or - for stdin"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-c"</span><span class="p">,</span>
+        <span class="s2">"--force-color"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"force_color"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"force color for non-terminals"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-i"</span><span class="p">,</span>
+        <span class="s2">"--indent-guides"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"indent_guides"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"display indent guides"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-l"</span><span class="p">,</span>
+        <span class="s2">"--line-numbers"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"line_numbers"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"render line numbers"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-w"</span><span class="p">,</span>
+        <span class="s2">"--width"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"width"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"width of output (default will auto-detect)"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-r"</span><span class="p">,</span>
+        <span class="s2">"--wrap"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"word_wrap"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"word wrap long lines"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-s"</span><span class="p">,</span>
+        <span class="s2">"--soft-wrap"</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">"store_true"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"soft_wrap"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"enable soft wrapping mode"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-t"</span><span class="p">,</span> <span class="s2">"--theme"</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">"theme"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"monokai"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"pygments theme"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-b"</span><span class="p">,</span>
+        <span class="s2">"--background-color"</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"background_color"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Override background color"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-x"</span><span class="p">,</span>
+        <span class="s2">"--lexer"</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"lexer_name"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"Lexer name"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"-p"</span><span class="p">,</span> <span class="s2">"--padding"</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dest</span><span class="o">=</span><span class="s2">"padding"</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">"Padding"</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">"--highlight-line"</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">"highlight_line"</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">"The line number (not index!) to highlight"</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span><span class="n">force_terminal</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">force_color</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">path</span> <span class="o">==</span> <span class="s2">"-"</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="p">(</span>
+            <span class="n">code</span><span class="o">=</span><span class="n">code</span><span class="p">,</span>
+            <span class="n">lexer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">lexer_name</span><span class="p">,</span>
+            <span class="n">line_numbers</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">line_numbers</span><span class="p">,</span>
+            <span class="n">word_wrap</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">word_wrap</span><span class="p">,</span>
+            <span class="n">theme</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">theme</span><span class="p">,</span>
+            <span class="n">background_color</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">background_color</span><span class="p">,</span>
+            <span class="n">indent_guides</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">indent_guides</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span>
+            <span class="n">highlight_lines</span><span class="o">=</span><span class="p">{</span><span class="n">args</span><span class="o">.</span><span class="n">highlight_line</span><span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="o">.</span><span class="n">from_path</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+            <span class="n">lexer</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">lexer_name</span><span class="p">,</span>
+            <span class="n">line_numbers</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">line_numbers</span><span class="p">,</span>
+            <span class="n">word_wrap</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">word_wrap</span><span class="p">,</span>
+            <span class="n">theme</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">theme</span><span class="p">,</span>
+            <span class="n">background_color</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">background_color</span><span class="p">,</span>
+            <span class="n">indent_guides</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">indent_guides</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span>
+            <span class="n">highlight_lines</span><span class="o">=</span><span class="p">{</span><span class="n">args</span><span class="o">.</span><span class="n">highlight_line</span><span class="p">},</span>
+        <span class="p">)</span>
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">syntax</span><span class="p">,</span> <span class="n">soft_wrap</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">soft_wrap</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+<map id="leveldb::Compaction::IsBaseLevelForKey" name="leveldb::Compaction::IsBaseLevelForKey">
+<area shape="rect" id="node1" title=" " alt="" coords="5,71,161,112"/>
+<area shape="rect" id="node2" href="$classleveldb_1_1Comparator.html#a05dae6edcad3c7db23827c0233d74039" title=" " alt="" coords="247,5,401,47"/>
+<area shape="rect" id="node3" href="$classleveldb_1_1InternalKeyComparator.html#ac8c5db699e5defed74c6b17ddadf90f8" title=" " alt="" coords="209,71,439,112"/>
+<area shape="rect" id="node4" href="$classleveldb_1_1InternalKey.html#a9673dbb181eaa977e6f09c45b02938bc" title=" " alt="" coords="248,136,400,177"/>
+<area shape="rect" id="node5" href="$namespaceleveldb.html#a1c889869840312393b805ad91a41b94f" title=" " alt="" coords="487,143,665,170"/>
+<area shape="rect" id="node6" href="$classleveldb_1_1Slice.html#a94ccee3d05b66ba0b059f2d9772b782b" title=" " alt="" coords="713,118,860,145"/>
+<area shape="rect" id="node7" href="$classleveldb_1_1Slice.html#a7344120beda110de81d0c45d4cfe4b63" title=" " alt="" coords="715,169,858,195"/>
+</map>

@@ -1,0 +1,230 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.live_render &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.live_render</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.live_render</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">._loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">loop_last</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">RenderableType</span><span class="p">,</span> <span class="n">RenderResult</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.control</span><span class="w"> </span><span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">ControlType</span><span class="p">,</span> <span class="n">Segment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">StyleType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="n">VerticalOverflowMethod</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"crop"</span><span class="p">,</span> <span class="s2">"ellipsis"</span><span class="p">,</span> <span class="s2">"visible"</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="LiveRender">
+<a class="viewcode-back" href="../../api/rich.html#rich.live_render.LiveRender">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LiveRender</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Creates a renderable that may be updated.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable (RenderableType): Any renderable object.</span>
+<span class="sd">        style (StyleType, optional): An optional style to apply to the renderable. Defaults to "".</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="n">RenderableType</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+        <span class="n">vertical_overflow</span><span class="p">:</span> <span class="n">VerticalOverflowMethod</span> <span class="o">=</span> <span class="s2">"ellipsis"</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">=</span> <span class="n">vertical_overflow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">last_render_height</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""The number of lines in the last render (may be 0 if nothing was rendered).</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Height in lines</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<div class="viewcode-block" id="LiveRender.set_renderable">
+<a class="viewcode-back" href="../../api/rich.html#rich.live_render.LiveRender.set_renderable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_renderable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renderable</span><span class="p">:</span> <span class="n">RenderableType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Set a new renderable.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            renderable (RenderableType): Any renderable object, including str.</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span> <span class="o">=</span> <span class="n">renderable</span></div>
+
+
+<div class="viewcode-block" id="LiveRender.position_cursor">
+<a class="viewcode-back" href="../../api/rich.html#rich.live_render.LiveRender.position_cursor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">position_cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Control</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get control codes to move cursor to beginning of live render.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Control: A control instance that may be printed.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+            <span class="k">return</span> <span class="n">Control</span><span class="p">(</span>
+                <span class="n">ControlType</span><span class="o">.</span><span class="n">CARRIAGE_RETURN</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">ERASE_IN_LINE</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                <span class="o">*</span><span class="p">(</span>
+                    <span class="p">(</span>
+                        <span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_UP</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                        <span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">ERASE_IN_LINE</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="o">*</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Control</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LiveRender.restore_cursor">
+<a class="viewcode-back" href="../../api/rich.html#rich.live_render.LiveRender.restore_cursor">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">restore_cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Control</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get control codes to clear the render and restore the cursor to its previous position.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Control: A Control instance that may be printed.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span>
+            <span class="k">return</span> <span class="n">Control</span><span class="p">(</span>
+                <span class="n">ControlType</span><span class="o">.</span><span class="n">CARRIAGE_RETURN</span><span class="p">,</span>
+                <span class="o">*</span><span class="p">((</span><span class="n">ControlType</span><span class="o">.</span><span class="n">CURSOR_UP</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">ControlType</span><span class="o">.</span><span class="n">ERASE_IN_LINE</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">height</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">Control</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span><span class="n">renderable</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">get_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+        <span class="n">_</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="n">options</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">==</span> <span class="s2">"crop"</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[:</span> <span class="n">options</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span><span class="p">]</span>
+                <span class="n">shape</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">get_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">==</span> <span class="s2">"ellipsis"</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[:</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+                <span class="n">overflow_text</span> <span class="o">=</span> <span class="n">Text</span><span class="p">(</span>
+                    <span class="s2">"..."</span><span class="p">,</span>
+                    <span class="n">overflow</span><span class="o">=</span><span class="s2">"crop"</span><span class="p">,</span>
+                    <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span>
+                    <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">"live.ellipsis"</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">overflow_text</span><span class="p">)))</span>
+                <span class="n">shape</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">get_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="n">shape</span>
+
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">new_line</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

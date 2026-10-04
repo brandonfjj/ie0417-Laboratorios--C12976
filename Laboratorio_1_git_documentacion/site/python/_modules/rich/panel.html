@@ -1,0 +1,425 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.panel &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.panel</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.panel</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.align</span><span class="w"> </span><span class="kn">import</span> <span class="n">AlignMethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.box</span><span class="w"> </span><span class="kn">import</span> <span class="n">ROUNDED</span><span class="p">,</span> <span class="n">Box</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.cells</span><span class="w"> </span><span class="kn">import</span> <span class="n">cell_len</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Measurement</span><span class="p">,</span> <span class="n">measure_renderables</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.padding</span><span class="w"> </span><span class="kn">import</span> <span class="n">Padding</span><span class="p">,</span> <span class="n">PaddingDimensions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span><span class="p">,</span> <span class="n">StyleType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span><span class="p">,</span> <span class="n">TextType</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">RenderableType</span><span class="p">,</span> <span class="n">RenderResult</span>
+
+
+<div class="viewcode-block" id="Panel">
+<a class="viewcode-back" href="../../api/rich.html#rich.panel.Panel">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Panel</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A console renderable that draws a border around its contents.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; console.print(Panel("Hello, World!"))</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable (RenderableType): A console renderable object.</span>
+<span class="sd">        box (Box): A Box instance that defines the look of the border (see :ref:`appendix_box`. Defaults to box.ROUNDED.</span>
+<span class="sd">        title (Optional[TextType], optional): Optional title displayed in panel header. Defaults to None.</span>
+<span class="sd">        title_align (AlignMethod, optional): Alignment of title. Defaults to "center".</span>
+<span class="sd">        subtitle (Optional[TextType], optional): Optional subtitle displayed in panel footer. Defaults to None.</span>
+<span class="sd">        subtitle_align (AlignMethod, optional): Alignment of subtitle. Defaults to "center".</span>
+<span class="sd">        safe_box (bool, optional): Disable box characters that don't display on windows legacy terminal with *raster* fonts. Defaults to True.</span>
+<span class="sd">        expand (bool, optional): If True the panel will stretch to fill the console width, otherwise it will be sized to fit the contents. Defaults to True.</span>
+<span class="sd">        style (str, optional): The style of the panel (border and contents). Defaults to "none".</span>
+<span class="sd">        border_style (str, optional): The style of the border. Defaults to "none".</span>
+<span class="sd">        width (Optional[int], optional): Optional width of panel. Defaults to None to auto-detect.</span>
+<span class="sd">        height (Optional[int], optional): Optional height of panel. Defaults to None to auto-detect.</span>
+<span class="sd">        padding (Optional[PaddingDimensions]): Optional padding around renderable. Defaults to 0.</span>
+<span class="sd">        highlight (bool, optional): Enable automatic highlighting of panel title (if str). Defaults to False.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">box</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">ROUNDED</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title_align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="s2">"center"</span><span class="p">,</span>
+        <span class="n">subtitle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">subtitle_align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="s2">"center"</span><span class="p">,</span>
+        <span class="n">safe_box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">expand</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">border_style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">PaddingDimensions</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">highlight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">box</span> <span class="o">=</span> <span class="n">box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title_align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="n">title_align</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subtitle</span> <span class="o">=</span> <span class="n">subtitle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subtitle_align</span> <span class="o">=</span> <span class="n">subtitle_align</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_box</span> <span class="o">=</span> <span class="n">safe_box</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">expand</span> <span class="o">=</span> <span class="n">expand</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">border_style</span> <span class="o">=</span> <span class="n">border_style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">padding</span> <span class="o">=</span> <span class="n">padding</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">highlight</span> <span class="o">=</span> <span class="n">highlight</span>
+
+<div class="viewcode-block" id="Panel.fit">
+<a class="viewcode-back" href="../../api/rich.html#rich.panel.Panel.fit">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">box</span><span class="p">:</span> <span class="n">Box</span> <span class="o">=</span> <span class="n">ROUNDED</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">title</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">title_align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="s2">"center"</span><span class="p">,</span>
+        <span class="n">subtitle</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TextType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">subtitle_align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="s2">"center"</span><span class="p">,</span>
+        <span class="n">safe_box</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">border_style</span><span class="p">:</span> <span class="n">StyleType</span> <span class="o">=</span> <span class="s2">"none"</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">padding</span><span class="p">:</span> <span class="n">PaddingDimensions</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">highlight</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Panel"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""An alternative constructor that sets expand=False."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">renderable</span><span class="p">,</span>
+            <span class="n">box</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span>
+            <span class="n">title_align</span><span class="o">=</span><span class="n">title_align</span><span class="p">,</span>
+            <span class="n">subtitle</span><span class="o">=</span><span class="n">subtitle</span><span class="p">,</span>
+            <span class="n">subtitle_align</span><span class="o">=</span><span class="n">subtitle_align</span><span class="p">,</span>
+            <span class="n">safe_box</span><span class="o">=</span><span class="n">safe_box</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+            <span class="n">border_style</span><span class="o">=</span><span class="n">border_style</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="n">padding</span><span class="p">,</span>
+            <span class="n">highlight</span><span class="o">=</span><span class="n">highlight</span><span class="p">,</span>
+            <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_title</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Text</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">:</span>
+            <span class="n">title_text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">plain</span> <span class="o">=</span> <span class="n">title_text</span><span class="o">.</span><span class="n">plain</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">no_wrap</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">expand_tabs</span><span class="p">()</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">title_text</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_subtitle</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Text</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtitle</span><span class="p">:</span>
+            <span class="n">subtitle_text</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtitle</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">subtitle</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+                <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">subtitle</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">end</span> <span class="o">=</span> <span class="s2">""</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">plain</span> <span class="o">=</span> <span class="n">subtitle_text</span><span class="o">.</span><span class="n">plain</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="s2">" "</span><span class="p">)</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">no_wrap</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">expand_tabs</span><span class="p">()</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">subtitle_text</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"RenderResult"</span><span class="p">:</span>
+        <span class="n">_padding</span> <span class="o">=</span> <span class="n">Padding</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">)</span>
+        <span class="n">renderable</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Padding</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">,</span> <span class="n">_padding</span><span class="p">)</span> <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">_padding</span><span class="p">)</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span>
+        <span class="p">)</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+        <span class="n">border_style</span> <span class="o">=</span> <span class="n">style</span> <span class="o">+</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">border_style</span><span class="p">)</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">options</span><span class="o">.</span><span class="n">max_width</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">safe_box</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">safe_box</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_box</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_box</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">box</span><span class="o">.</span><span class="n">substitute</span><span class="p">(</span><span class="n">options</span><span class="p">,</span> <span class="n">safe</span><span class="o">=</span><span class="n">safe_box</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">align_text</span><span class="p">(</span>
+            <span class="n">text</span><span class="p">:</span> <span class="n">Text</span><span class="p">,</span> <span class="n">width</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">align</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">character</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Style</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Text</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""Gets new aligned text.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                text (Text): Title or subtitle text.</span>
+<span class="sd">                width (int): Desired width.</span>
+<span class="sd">                align (str): Alignment.</span>
+<span class="sd">                character (str): Character for alignment.</span>
+<span class="sd">                style (Style): Border style</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                Text: New text instance</span>
+<span class="sd">            """</span>
+            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">text</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">excess_space</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="n">cell_len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">plain</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">style</span><span class="p">:</span>
+                <span class="n">text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">style</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">excess_space</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">align</span> <span class="o">==</span> <span class="s2">"left"</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                        <span class="n">text</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">character</span> <span class="o">*</span> <span class="n">excess_space</span><span class="p">,</span> <span class="n">style</span><span class="p">),</span>
+                        <span class="n">no_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="s2">"center"</span><span class="p">:</span>
+                    <span class="n">left</span> <span class="o">=</span> <span class="n">excess_space</span> <span class="o">//</span> <span class="mi">2</span>
+                    <span class="k">return</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">character</span> <span class="o">*</span> <span class="n">left</span><span class="p">,</span> <span class="n">style</span><span class="p">),</span>
+                        <span class="n">text</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">character</span> <span class="o">*</span> <span class="p">(</span><span class="n">excess_space</span> <span class="o">-</span> <span class="n">left</span><span class="p">),</span> <span class="n">style</span><span class="p">),</span>
+                        <span class="n">no_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">character</span> <span class="o">*</span> <span class="n">excess_space</span><span class="p">,</span> <span class="n">style</span><span class="p">),</span>
+                        <span class="n">text</span><span class="p">,</span>
+                        <span class="n">no_wrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">end</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">return</span> <span class="n">text</span>
+
+        <span class="n">title_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+        <span class="k">if</span> <span class="n">title_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">title_text</span><span class="o">.</span><span class="n">stylize_before</span><span class="p">(</span><span class="n">border_style</span><span class="p">)</span>
+
+        <span class="n">child_width</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">width</span> <span class="o">-</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand</span>
+            <span class="k">else</span> <span class="n">console</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span>
+                <span class="n">renderable</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">update_width</span><span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">maximum</span>
+        <span class="p">)</span>
+        <span class="n">child_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">height</span> <span class="ow">or</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">child_height</span><span class="p">:</span>
+            <span class="n">child_height</span> <span class="o">-=</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">title_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">child_width</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                <span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">child_width</span><span class="p">,</span> <span class="n">title_text</span><span class="o">.</span><span class="n">cell_len</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="n">child_width</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">child_options</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">child_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">child_height</span><span class="p">,</span> <span class="n">highlight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">highlight</span>
+        <span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span><span class="n">renderable</span><span class="p">,</span> <span class="n">child_options</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+
+        <span class="n">line_start</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">mid_left</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+        <span class="n">line_end</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">box</span><span class="o">.</span><span class="n">mid_right</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">title_text</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">width</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">get_top</span><span class="p">([</span><span class="n">width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">border_style</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">title_text</span> <span class="o">=</span> <span class="n">align_text</span><span class="p">(</span>
+                <span class="n">title_text</span><span class="p">,</span>
+                <span class="n">width</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">title_align</span><span class="p">,</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">top</span><span class="p">,</span>
+                <span class="n">border_style</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">top_left</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">top</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+            <span class="k">yield from</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">title_text</span><span class="p">,</span> <span class="n">child_options</span><span class="o">.</span><span class="n">update_width</span><span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">4</span><span class="p">))</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">top</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">top_right</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">new_line</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">line_start</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">yield</span> <span class="n">line_end</span>
+            <span class="k">yield</span> <span class="n">new_line</span>
+
+        <span class="n">subtitle_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_subtitle</span>
+        <span class="k">if</span> <span class="n">subtitle_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">subtitle_text</span><span class="o">.</span><span class="n">stylize_before</span><span class="p">(</span><span class="n">border_style</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">subtitle_text</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">width</span> <span class="o">&lt;=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">get_bottom</span><span class="p">([</span><span class="n">width</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">border_style</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">subtitle_text</span> <span class="o">=</span> <span class="n">align_text</span><span class="p">(</span>
+                <span class="n">subtitle_text</span><span class="p">,</span>
+                <span class="n">width</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subtitle_align</span><span class="p">,</span>
+                <span class="n">box</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span>
+                <span class="n">border_style</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">bottom_left</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">bottom</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+            <span class="k">yield from</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+                <span class="n">subtitle_text</span><span class="p">,</span> <span class="n">child_options</span><span class="o">.</span><span class="n">update_width</span><span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">yield</span> <span class="n">Segment</span><span class="p">(</span><span class="n">box</span><span class="o">.</span><span class="n">bottom</span> <span class="o">+</span> <span class="n">box</span><span class="o">.</span><span class="n">bottom_right</span><span class="p">,</span> <span class="n">border_style</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">new_line</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_measure__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Measurement"</span><span class="p">:</span>
+        <span class="n">_title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_title</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">left</span> <span class="o">=</span> <span class="n">Padding</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="n">right</span>
+        <span class="n">renderables</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">,</span> <span class="n">_title</span><span class="p">]</span> <span class="k">if</span> <span class="n">_title</span> <span class="k">else</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">measure_renderables</span><span class="p">(</span>
+                    <span class="n">console</span><span class="p">,</span>
+                    <span class="n">options</span><span class="o">.</span><span class="n">update_width</span><span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="n">padding</span> <span class="o">-</span> <span class="mi">2</span><span class="p">),</span>
+                    <span class="n">renderables</span><span class="p">,</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">maximum</span>
+                <span class="o">+</span> <span class="n">padding</span>
+                <span class="o">+</span> <span class="mi">2</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
+        <span class="k">return</span> <span class="n">Measurement</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.box</span><span class="w"> </span><span class="kn">import</span> <span class="n">DOUBLE</span><span class="p">,</span> <span class="n">ROUNDED</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.padding</span><span class="w"> </span><span class="kn">import</span> <span class="n">Padding</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Panel</span><span class="p">(</span>
+        <span class="s2">"Hello, World!"</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">"rich.Panel"</span><span class="p">,</span>
+        <span class="n">style</span><span class="o">=</span><span class="s2">"white on blue"</span><span class="p">,</span>
+        <span class="n">box</span><span class="o">=</span><span class="n">DOUBLE</span><span class="p">,</span>
+        <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">c</span><span class="o">.</span><span class="n">print</span><span class="p">()</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

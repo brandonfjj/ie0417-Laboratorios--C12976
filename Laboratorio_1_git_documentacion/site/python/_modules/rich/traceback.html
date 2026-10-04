@@ -1,0 +1,1050 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.traceback &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.traceback</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.traceback</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">inspect</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">linecache</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">islice</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">traceback</span><span class="w"> </span><span class="kn">import</span> <span class="n">walk_tb</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span><span class="p">,</span> <span class="n">TracebackType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Any</span><span class="p">,</span>
+    <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">Dict</span><span class="p">,</span>
+    <span class="n">Iterable</span><span class="p">,</span>
+    <span class="n">List</span><span class="p">,</span>
+    <span class="n">Optional</span><span class="p">,</span>
+    <span class="n">Sequence</span><span class="p">,</span>
+    <span class="n">Set</span><span class="p">,</span>
+    <span class="n">Tuple</span><span class="p">,</span>
+    <span class="n">Type</span><span class="p">,</span>
+    <span class="n">Union</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.lexers</span><span class="w"> </span><span class="kn">import</span> <span class="n">guess_lexer_for_filename</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.token</span><span class="w"> </span><span class="kn">import</span> <span class="n">Comment</span><span class="p">,</span> <span class="n">Keyword</span><span class="p">,</span> <span class="n">Name</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="n">Operator</span><span class="p">,</span> <span class="n">String</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.token</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span> <span class="k">as</span> <span class="n">TextToken</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.token</span><span class="w"> </span><span class="kn">import</span> <span class="n">Token</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pygments.util</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClassNotFound</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">pretty</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">._loop</span><span class="w"> </span><span class="kn">import</span> <span class="n">loop_first_last</span><span class="p">,</span> <span class="n">loop_last</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.columns</span><span class="w"> </span><span class="kn">import</span> <span class="n">Columns</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Console</span><span class="p">,</span>
+    <span class="n">ConsoleOptions</span><span class="p">,</span>
+    <span class="n">ConsoleRenderable</span><span class="p">,</span>
+    <span class="n">OverflowMethod</span><span class="p">,</span>
+    <span class="n">Group</span><span class="p">,</span>
+    <span class="n">RenderResult</span><span class="p">,</span>
+    <span class="n">group</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constrain</span><span class="w"> </span><span class="kn">import</span> <span class="n">Constrain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.highlighter</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegexHighlighter</span><span class="p">,</span> <span class="n">ReprHighlighter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.scope</span><span class="w"> </span><span class="kn">import</span> <span class="n">render_scope</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">Style</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.syntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">Syntax</span><span class="p">,</span> <span class="n">SyntaxPosition</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.theme</span><span class="w"> </span><span class="kn">import</span> <span class="n">Theme</span>
+
+<span class="n">WINDOWS</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">"win32"</span>
+
+<span class="n">LOCALS_MAX_LENGTH</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">LOCALS_MAX_STRING</span> <span class="o">=</span> <span class="mi">80</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_iter_syntax_lines</span><span class="p">(</span>
+    <span class="n">start</span><span class="p">:</span> <span class="n">SyntaxPosition</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="n">SyntaxPosition</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">"""Yield start and end positions per line.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        start: Start position.</span>
+<span class="sd">        end: End position.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Iterable of (LINE, COLUMN1, COLUMN2).</span>
+<span class="sd">    """</span>
+
+    <span class="n">line1</span><span class="p">,</span> <span class="n">column1</span> <span class="o">=</span> <span class="n">start</span>
+    <span class="n">line2</span><span class="p">,</span> <span class="n">column2</span> <span class="o">=</span> <span class="n">end</span>
+
+    <span class="k">if</span> <span class="n">line1</span> <span class="o">==</span> <span class="n">line2</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">line1</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="n">column2</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">first</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">line_no</span> <span class="ow">in</span> <span class="n">loop_first_last</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">line1</span><span class="p">,</span> <span class="n">line2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line_no</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">last</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line_no</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">column2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">line_no</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+
+
+<div class="viewcode-block" id="install">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.install">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">install</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">console</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Console</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">88</span><span class="p">,</span>
+    <span class="n">extra_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="n">theme</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">show_locals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">locals_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_LENGTH</span><span class="p">,</span>
+    <span class="n">locals_max_string</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_STRING</span><span class="p">,</span>
+    <span class="n">locals_max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">locals_hide_dunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">locals_hide_sunder</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">locals_overflow</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OverflowMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">indent_guides</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">suppress</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(),</span>
+    <span class="n">max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">]],</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""Install a rich traceback handler.</span>
+
+<span class="sd">    Once installed, any tracebacks will be printed with syntax highlighting and rich formatting.</span>
+
+
+<span class="sd">    Args:</span>
+<span class="sd">        console (Optional[Console], optional): Console to write exception to. Default uses internal Console instance.</span>
+<span class="sd">        width (Optional[int], optional): Width (in characters) of traceback. Defaults to 100.</span>
+<span class="sd">        code_width (Optional[int], optional): Code width (in characters) of traceback. Defaults to 88.</span>
+<span class="sd">        extra_lines (int, optional): Extra lines of code. Defaults to 3.</span>
+<span class="sd">        theme (Optional[str], optional): Pygments theme to use in traceback. Defaults to ``None`` which will pick</span>
+<span class="sd">            a theme appropriate for the platform.</span>
+<span class="sd">        word_wrap (bool, optional): Enable word wrapping of long lines. Defaults to False.</span>
+<span class="sd">        show_locals (bool, optional): Enable display of local variables. Defaults to False.</span>
+<span class="sd">        locals_max_length (int, optional): Maximum length of containers before abbreviating, or None for no abbreviation.</span>
+<span class="sd">            Defaults to 10.</span>
+<span class="sd">        locals_max_string (int, optional): Maximum length of string before truncating, or None to disable. Defaults to 80.</span>
+<span class="sd">        locals_max_depth (int, optional): Maximum depths of locals before truncating, or None to disable. Defaults to None.</span>
+<span class="sd">        locals_hide_dunder (bool, optional): Hide locals prefixed with double underscore. Defaults to True.</span>
+<span class="sd">        locals_hide_sunder (bool, optional): Hide locals prefixed with single underscore. Defaults to False.</span>
+<span class="sd">        locals_overflow (OverflowMethod, optional): How to handle overflowing locals, or None to disable. Defaults to None.</span>
+<span class="sd">        indent_guides (bool, optional): Enable indent guides in code and locals. Defaults to True.</span>
+<span class="sd">        suppress (Sequence[Union[str, ModuleType]]): Optional sequence of modules or paths to exclude from traceback.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Callable: The previous exception handler that was replaced.</span>
+
+<span class="sd">    """</span>
+    <span class="n">traceback_console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">(</span><span class="n">stderr</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">console</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">console</span>
+
+    <span class="n">locals_hide_sunder</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="kc">True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">traceback_console</span><span class="o">.</span><span class="n">is_jupyter</span> <span class="ow">and</span> <span class="n">locals_hide_sunder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span> <span class="n">locals_hide_sunder</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">excepthook</span><span class="p">(</span>
+        <span class="n">type_</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+        <span class="n">value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+        <span class="n">traceback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">exception_traceback</span> <span class="o">=</span> <span class="n">Traceback</span><span class="o">.</span><span class="n">from_exception</span><span class="p">(</span>
+            <span class="n">type_</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="n">traceback</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">code_width</span><span class="o">=</span><span class="n">code_width</span><span class="p">,</span>
+            <span class="n">extra_lines</span><span class="o">=</span><span class="n">extra_lines</span><span class="p">,</span>
+            <span class="n">theme</span><span class="o">=</span><span class="n">theme</span><span class="p">,</span>
+            <span class="n">word_wrap</span><span class="o">=</span><span class="n">word_wrap</span><span class="p">,</span>
+            <span class="n">show_locals</span><span class="o">=</span><span class="n">show_locals</span><span class="p">,</span>
+            <span class="n">locals_max_length</span><span class="o">=</span><span class="n">locals_max_length</span><span class="p">,</span>
+            <span class="n">locals_max_string</span><span class="o">=</span><span class="n">locals_max_string</span><span class="p">,</span>
+            <span class="n">locals_max_depth</span><span class="o">=</span><span class="n">locals_max_depth</span><span class="p">,</span>
+            <span class="n">locals_hide_dunder</span><span class="o">=</span><span class="n">locals_hide_dunder</span><span class="p">,</span>
+            <span class="n">locals_hide_sunder</span><span class="o">=</span><span class="nb">bool</span><span class="p">(</span><span class="n">locals_hide_sunder</span><span class="p">),</span>
+            <span class="n">locals_overflow</span><span class="o">=</span><span class="n">locals_overflow</span><span class="p">,</span>
+            <span class="n">indent_guides</span><span class="o">=</span><span class="n">indent_guides</span><span class="p">,</span>
+            <span class="n">suppress</span><span class="o">=</span><span class="n">suppress</span><span class="p">,</span>
+            <span class="n">max_frames</span><span class="o">=</span><span class="n">max_frames</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">traceback_console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">exception_traceback</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">ipy_excepthook_closure</span><span class="p">(</span><span class="n">ip</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="n">tb_data</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># store information about showtraceback call</span>
+        <span class="n">default_showtraceback</span> <span class="o">=</span> <span class="n">ip</span><span class="o">.</span><span class="n">showtraceback</span>  <span class="c1"># keep reference of default traceback</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">ipy_show_traceback</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""wrap the default ip.showtraceback to store info for ip._showtraceback"""</span>
+            <span class="k">nonlocal</span> <span class="n">tb_data</span>
+            <span class="n">tb_data</span> <span class="o">=</span> <span class="n">kwargs</span>
+            <span class="n">default_showtraceback</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">ipy_display_traceback</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">is_syntax</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""Internally called traceback from ip._showtraceback"""</span>
+            <span class="k">nonlocal</span> <span class="n">tb_data</span>
+            <span class="n">exc_tuple</span> <span class="o">=</span> <span class="n">ip</span><span class="o">.</span><span class="n">_get_exc_info</span><span class="p">()</span>
+
+            <span class="c1"># do not display trace on syntax error</span>
+            <span class="n">tb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">is_syntax</span> <span class="k">else</span> <span class="n">exc_tuple</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="c1"># determine correct tb_offset</span>
+            <span class="n">compiled</span> <span class="o">=</span> <span class="n">tb_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"running_compiled_code"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">tb_offset</span> <span class="o">=</span> <span class="n">tb_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tb_offset"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tb_offset</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tb_offset</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">compiled</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="c1"># remove ipython internal frames from trace with tb_offset</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tb_offset</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">tb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">tb</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">tb_next</span>
+
+            <span class="n">excepthook</span><span class="p">(</span><span class="n">exc_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">exc_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tb</span><span class="p">)</span>
+            <span class="n">tb_data</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># clear data upon usage</span>
+
+        <span class="c1"># replace _showtraceback instead of showtraceback to allow ipython features such as debugging to work</span>
+        <span class="c1"># this is also what the ipython docs recommends to modify when subclassing InteractiveShell</span>
+        <span class="n">ip</span><span class="o">.</span><span class="n">_showtraceback</span> <span class="o">=</span> <span class="n">ipy_display_traceback</span>
+        <span class="c1"># add wrapper to capture tb_data</span>
+        <span class="n">ip</span><span class="o">.</span><span class="n">showtraceback</span> <span class="o">=</span> <span class="n">ipy_show_traceback</span>
+        <span class="n">ip</span><span class="o">.</span><span class="n">showsyntaxerror</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">ipy_display_traceback</span><span class="p">(</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">is_syntax</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="c1"># if within ipython, use customized traceback</span>
+        <span class="n">ip</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span>  <span class="c1"># type: ignore[name-defined]</span>
+        <span class="n">ipy_excepthook_closure</span><span class="p">(</span><span class="n">ip</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="c1"># otherwise use default system hook</span>
+        <span class="n">old_excepthook</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook</span>
+        <span class="k">return</span> <span class="n">old_excepthook</span></div>
+
+
+
+<div class="viewcode-block" id="Frame">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Frame">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Frame</span><span class="p">:</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">lineno</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">line</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="nb">locals</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">pretty</span><span class="o">.</span><span class="n">Node</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">last_instruction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_SyntaxError</span><span class="p">:</span>
+    <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">line</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">lineno</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">notes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Stack">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Stack">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Stack</span><span class="p">:</span>
+    <span class="n">exc_type</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">exc_value</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">syntax_error</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_SyntaxError</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">is_cause</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">frames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Frame</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">notes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">is_group</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">exceptions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="s2">"Trace"</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="Trace">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Trace">[docs]</a>
+<span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Trace</span><span class="p">:</span>
+    <span class="n">stacks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Stack</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="PathHighlighter">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.PathHighlighter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PathHighlighter</span><span class="p">(</span><span class="n">RegexHighlighter</span><span class="p">):</span>
+    <span class="n">highlights</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s2">"(?P&lt;dim&gt;.*/)(?P&lt;bold&gt;.+)"</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="Traceback">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Traceback">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Traceback</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""A Console renderable that renders a traceback.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        trace (Trace, optional): A `Trace` object produced from `extract`. Defaults to None, which uses</span>
+<span class="sd">            the last exception.</span>
+<span class="sd">        width (Optional[int], optional): Number of characters used to traceback. Defaults to 100.</span>
+<span class="sd">        code_width (Optional[int], optional): Number of code characters used to traceback. Defaults to 88.</span>
+<span class="sd">        extra_lines (int, optional): Additional lines of code to render. Defaults to 3.</span>
+<span class="sd">        theme (str, optional): Override pygments theme used in traceback.</span>
+<span class="sd">        word_wrap (bool, optional): Enable word wrapping of long lines. Defaults to False.</span>
+<span class="sd">        show_locals (bool, optional): Enable display of local variables. Defaults to False.</span>
+<span class="sd">        indent_guides (bool, optional): Enable indent guides in code and locals. Defaults to True.</span>
+<span class="sd">        locals_max_length (int, optional): Maximum length of containers before abbreviating, or None for no abbreviation.</span>
+<span class="sd">            Defaults to 10.</span>
+<span class="sd">        locals_max_string (int, optional): Maximum length of string before truncating, or None to disable. Defaults to 80.</span>
+<span class="sd">        locals_max_depth (int, optional): Maximum depths of locals before truncating, or None to disable. Defaults to None.</span>
+<span class="sd">        locals_hide_dunder (bool, optional): Hide locals prefixed with double underscore. Defaults to True.</span>
+<span class="sd">        locals_hide_sunder (bool, optional): Hide locals prefixed with single underscore. Defaults to False.</span>
+<span class="sd">        locals_overflow (OverflowMethod, optional): How to handle overflowing locals, or None to disable. Defaults to None.</span>
+<span class="sd">        suppress (Sequence[Union[str, ModuleType]]): Optional sequence of modules or paths to exclude from traceback.</span>
+<span class="sd">        max_frames (int): Maximum number of frames to show in a traceback, 0 for no maximum. Defaults to 100.</span>
+
+<span class="sd">    """</span>
+
+    <span class="n">LEXERS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">""</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+        <span class="s2">".py"</span><span class="p">:</span> <span class="s2">"python"</span><span class="p">,</span>
+        <span class="s2">".pxd"</span><span class="p">:</span> <span class="s2">"cython"</span><span class="p">,</span>
+        <span class="s2">".pyx"</span><span class="p">:</span> <span class="s2">"cython"</span><span class="p">,</span>
+        <span class="s2">".pxi"</span><span class="p">:</span> <span class="s2">"pyrex"</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">trace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Trace</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">88</span><span class="p">,</span>
+        <span class="n">extra_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">theme</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_locals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">locals_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_LENGTH</span><span class="p">,</span>
+        <span class="n">locals_max_string</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_STRING</span><span class="p">,</span>
+        <span class="n">locals_max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">locals_hide_dunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">locals_hide_sunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">locals_overlow</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OverflowMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">indent_guides</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">suppress</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="k">if</span> <span class="n">trace</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">exc_type</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">exc_value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">traceback</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">"Value for 'trace' required if not called in except: block"</span>
+                <span class="p">)</span>
+            <span class="n">trace</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+                <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">,</span> <span class="n">show_locals</span><span class="o">=</span><span class="n">show_locals</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trace</span> <span class="o">=</span> <span class="n">trace</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">code_width</span> <span class="o">=</span> <span class="n">code_width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extra_lines</span> <span class="o">=</span> <span class="n">extra_lines</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">theme</span> <span class="o">=</span> <span class="n">Syntax</span><span class="o">.</span><span class="n">get_theme</span><span class="p">(</span><span class="n">theme</span> <span class="ow">or</span> <span class="s2">"ansi_dark"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span> <span class="o">=</span> <span class="n">word_wrap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_locals</span> <span class="o">=</span> <span class="n">show_locals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span> <span class="o">=</span> <span class="n">indent_guides</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_max_length</span> <span class="o">=</span> <span class="n">locals_max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_max_string</span> <span class="o">=</span> <span class="n">locals_max_string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_max_depth</span> <span class="o">=</span> <span class="n">locals_max_depth</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_hide_dunder</span> <span class="o">=</span> <span class="n">locals_hide_dunder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_hide_sunder</span> <span class="o">=</span> <span class="n">locals_hide_sunder</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">locals_overflow</span> <span class="o">=</span> <span class="n">locals_overlow</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">suppress_entity</span> <span class="ow">in</span> <span class="n">suppress</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">suppress_entity</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">assert</span> <span class="p">(</span>
+                    <span class="n">suppress_entity</span><span class="o">.</span><span class="vm">__file__</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="p">),</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">suppress_entity</span><span class="si">!r}</span><span class="s2"> must be a module with '__file__' attribute"</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">suppress_entity</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">suppress_entity</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_frames</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_frames</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_frames</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="Traceback.from_exception">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Traceback.from_exception">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_exception</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">exc_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">exc_value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+        <span class="n">traceback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="n">code_width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">88</span><span class="p">,</span>
+        <span class="n">extra_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="n">theme</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">word_wrap</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">show_locals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">locals_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_LENGTH</span><span class="p">,</span>
+        <span class="n">locals_max_string</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_STRING</span><span class="p">,</span>
+        <span class="n">locals_max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">locals_hide_dunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">locals_hide_sunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">locals_overflow</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OverflowMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">indent_guides</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">suppress</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">ModuleType</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">max_frames</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Traceback"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Create a traceback from exception info</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exc_type (Type[BaseException]): Exception type.</span>
+<span class="sd">            exc_value (BaseException): Exception value.</span>
+<span class="sd">            traceback (TracebackType): Python Traceback object.</span>
+<span class="sd">            width (Optional[int], optional): Number of characters used to traceback. Defaults to 100.</span>
+<span class="sd">            code_width (Optional[int], optional): Number of code characters used to traceback. Defaults to 88.</span>
+<span class="sd">            extra_lines (int, optional): Additional lines of code to render. Defaults to 3.</span>
+<span class="sd">            theme (str, optional): Override pygments theme used in traceback.</span>
+<span class="sd">            word_wrap (bool, optional): Enable word wrapping of long lines. Defaults to False.</span>
+<span class="sd">            show_locals (bool, optional): Enable display of local variables. Defaults to False.</span>
+<span class="sd">            indent_guides (bool, optional): Enable indent guides in code and locals. Defaults to True.</span>
+<span class="sd">            locals_max_length (int, optional): Maximum length of containers before abbreviating, or None for no abbreviation.</span>
+<span class="sd">                Defaults to 10.</span>
+<span class="sd">            locals_max_depth (int, optional): Maximum depths of locals before truncating, or None to disable. Defaults to None.</span>
+<span class="sd">            locals_max_string (int, optional): Maximum length of string before truncating, or None to disable. Defaults to 80.</span>
+<span class="sd">            locals_hide_dunder (bool, optional): Hide locals prefixed with double underscore. Defaults to True.</span>
+<span class="sd">            locals_hide_sunder (bool, optional): Hide locals prefixed with single underscore. Defaults to False.</span>
+<span class="sd">            locals_overflow (OverflowMethod, optional): How to handle overflowing locals, or None to disable. Defaults to None.</span>
+<span class="sd">            suppress (Iterable[Union[str, ModuleType]]): Optional sequence of modules or paths to exclude from traceback.</span>
+<span class="sd">            max_frames (int): Maximum number of frames to show in a traceback, 0 for no maximum. Defaults to 100.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Traceback: A Traceback instance that may be printed.</span>
+<span class="sd">        """</span>
+        <span class="n">rich_traceback</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+            <span class="n">exc_type</span><span class="p">,</span>
+            <span class="n">exc_value</span><span class="p">,</span>
+            <span class="n">traceback</span><span class="p">,</span>
+            <span class="n">show_locals</span><span class="o">=</span><span class="n">show_locals</span><span class="p">,</span>
+            <span class="n">locals_max_length</span><span class="o">=</span><span class="n">locals_max_length</span><span class="p">,</span>
+            <span class="n">locals_max_string</span><span class="o">=</span><span class="n">locals_max_string</span><span class="p">,</span>
+            <span class="n">locals_max_depth</span><span class="o">=</span><span class="n">locals_max_depth</span><span class="p">,</span>
+            <span class="n">locals_hide_dunder</span><span class="o">=</span><span class="n">locals_hide_dunder</span><span class="p">,</span>
+            <span class="n">locals_hide_sunder</span><span class="o">=</span><span class="n">locals_hide_sunder</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">rich_traceback</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">code_width</span><span class="o">=</span><span class="n">code_width</span><span class="p">,</span>
+            <span class="n">extra_lines</span><span class="o">=</span><span class="n">extra_lines</span><span class="p">,</span>
+            <span class="n">theme</span><span class="o">=</span><span class="n">theme</span><span class="p">,</span>
+            <span class="n">word_wrap</span><span class="o">=</span><span class="n">word_wrap</span><span class="p">,</span>
+            <span class="n">show_locals</span><span class="o">=</span><span class="n">show_locals</span><span class="p">,</span>
+            <span class="n">indent_guides</span><span class="o">=</span><span class="n">indent_guides</span><span class="p">,</span>
+            <span class="n">locals_max_length</span><span class="o">=</span><span class="n">locals_max_length</span><span class="p">,</span>
+            <span class="n">locals_max_string</span><span class="o">=</span><span class="n">locals_max_string</span><span class="p">,</span>
+            <span class="n">locals_max_depth</span><span class="o">=</span><span class="n">locals_max_depth</span><span class="p">,</span>
+            <span class="n">locals_hide_dunder</span><span class="o">=</span><span class="n">locals_hide_dunder</span><span class="p">,</span>
+            <span class="n">locals_hide_sunder</span><span class="o">=</span><span class="n">locals_hide_sunder</span><span class="p">,</span>
+            <span class="n">locals_overlow</span><span class="o">=</span><span class="n">locals_overflow</span><span class="p">,</span>
+            <span class="n">suppress</span><span class="o">=</span><span class="n">suppress</span><span class="p">,</span>
+            <span class="n">max_frames</span><span class="o">=</span><span class="n">max_frames</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Traceback.extract">
+<a class="viewcode-back" href="../../api/rich.html#rich.traceback.Traceback.extract">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">extract</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">exc_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+        <span class="n">exc_value</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span>
+        <span class="n">traceback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">show_locals</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">locals_max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_LENGTH</span><span class="p">,</span>
+        <span class="n">locals_max_string</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">LOCALS_MAX_STRING</span><span class="p">,</span>
+        <span class="n">locals_max_depth</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">locals_hide_dunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">locals_hide_sunder</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">_visited_exceptions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Set</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Trace</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Extract traceback information.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exc_type (Type[BaseException]): Exception type.</span>
+<span class="sd">            exc_value (BaseException): Exception value.</span>
+<span class="sd">            traceback (TracebackType): Python Traceback object.</span>
+<span class="sd">            show_locals (bool, optional): Enable display of local variables. Defaults to False.</span>
+<span class="sd">            locals_max_length (int, optional): Maximum length of containers before abbreviating, or None for no abbreviation.</span>
+<span class="sd">                Defaults to 10.</span>
+<span class="sd">            locals_max_string (int, optional): Maximum length of string before truncating, or None to disable. Defaults to 80.</span>
+<span class="sd">            locals_max_depth (int, optional): Maximum depths of locals before truncating, or None to disable. Defaults to None.</span>
+<span class="sd">            locals_hide_dunder (bool, optional): Hide locals prefixed with double underscore. Defaults to True.</span>
+<span class="sd">            locals_hide_sunder (bool, optional): Hide locals prefixed with single underscore. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Trace: A Trace instance which you can use to construct a `Traceback`.</span>
+<span class="sd">        """</span>
+
+        <span class="n">stacks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Stack</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">is_cause</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="kn">from</span><span class="w"> </span><span class="nn">rich</span><span class="w"> </span><span class="kn">import</span> <span class="n">_IMPORT_CWD</span>
+
+        <span class="n">notes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exc_value</span><span class="p">,</span> <span class="s2">"__notes__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="n">grouped_exceptions</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">set</span><span class="p">()</span> <span class="k">if</span> <span class="n">_visited_exceptions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">_visited_exceptions</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">safe_str</span><span class="p">(</span><span class="n">_object</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">"""Don't allow exceptions from __str__ to propagate."""</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">_object</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">"&lt;exception str() failed&gt;"</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">stack</span> <span class="o">=</span> <span class="n">Stack</span><span class="p">(</span>
+                <span class="n">exc_type</span><span class="o">=</span><span class="n">safe_str</span><span class="p">(</span><span class="n">exc_type</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+                <span class="n">exc_value</span><span class="o">=</span><span class="n">safe_str</span><span class="p">(</span><span class="n">exc_value</span><span class="p">),</span>
+                <span class="n">is_cause</span><span class="o">=</span><span class="n">is_cause</span><span class="p">,</span>
+                <span class="n">notes</span><span class="o">=</span><span class="n">notes</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc_value</span><span class="p">,</span> <span class="p">(</span><span class="n">BaseExceptionGroup</span><span class="p">,</span> <span class="n">ExceptionGroup</span><span class="p">)):</span>
+                    <span class="n">stack</span><span class="o">.</span><span class="n">is_group</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">for</span> <span class="n">exception</span> <span class="ow">in</span> <span class="n">exc_value</span><span class="o">.</span><span class="n">exceptions</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">exception</span> <span class="ow">in</span> <span class="n">grouped_exceptions</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">grouped_exceptions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+                        <span class="n">stack</span><span class="o">.</span><span class="n">exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">Traceback</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+                                <span class="nb">type</span><span class="p">(</span><span class="n">exception</span><span class="p">),</span>
+                                <span class="n">exception</span><span class="p">,</span>
+                                <span class="n">exception</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">,</span>
+                                <span class="n">show_locals</span><span class="o">=</span><span class="n">show_locals</span><span class="p">,</span>
+                                <span class="n">locals_max_length</span><span class="o">=</span><span class="n">locals_max_length</span><span class="p">,</span>
+                                <span class="n">locals_hide_dunder</span><span class="o">=</span><span class="n">locals_hide_dunder</span><span class="p">,</span>
+                                <span class="n">locals_hide_sunder</span><span class="o">=</span><span class="n">locals_hide_sunder</span><span class="p">,</span>
+                                <span class="n">_visited_exceptions</span><span class="o">=</span><span class="n">grouped_exceptions</span><span class="p">,</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exc_value</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">):</span>
+                <span class="n">stack</span><span class="o">.</span><span class="n">syntax_error</span> <span class="o">=</span> <span class="n">_SyntaxError</span><span class="p">(</span>
+                    <span class="n">offset</span><span class="o">=</span><span class="n">exc_value</span><span class="o">.</span><span class="n">offset</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="n">exc_value</span><span class="o">.</span><span class="n">filename</span> <span class="ow">or</span> <span class="s2">"?"</span><span class="p">,</span>
+                    <span class="n">lineno</span><span class="o">=</span><span class="n">exc_value</span><span class="o">.</span><span class="n">lineno</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="n">line</span><span class="o">=</span><span class="n">exc_value</span><span class="o">.</span><span class="n">text</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">,</span>
+                    <span class="n">msg</span><span class="o">=</span><span class="n">exc_value</span><span class="o">.</span><span class="n">msg</span><span class="p">,</span>
+                    <span class="n">notes</span><span class="o">=</span><span class="n">notes</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="n">stacks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span>
+            <span class="n">append</span> <span class="o">=</span> <span class="n">stack</span><span class="o">.</span><span class="n">frames</span><span class="o">.</span><span class="n">append</span>
+
+            <span class="k">def</span><span class="w"> </span><span class="nf">get_locals</span><span class="p">(</span>
+                <span class="n">iter_locals</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]],</span>
+            <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]:</span>
+<span class="w">                </span><span class="sd">"""Extract locals from an iterator of key pairs."""</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">locals_hide_dunder</span> <span class="ow">or</span> <span class="n">locals_hide_sunder</span><span class="p">):</span>
+                    <span class="k">yield from</span> <span class="n">iter_locals</span>
+                    <span class="k">return</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">iter_locals</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">locals_hide_dunder</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"__"</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">if</span> <span class="n">locals_hide_sunder</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"_"</span><span class="p">):</span>
+                        <span class="k">continue</span>
+                    <span class="k">yield</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span>
+
+            <span class="k">for</span> <span class="n">frame_summary</span><span class="p">,</span> <span class="n">line_no</span> <span class="ow">in</span> <span class="n">walk_tb</span><span class="p">(</span><span class="n">traceback</span><span class="p">):</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">frame_summary</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_filename</span>
+
+                <span class="n">last_instruction</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]]</span>
+                <span class="n">last_instruction</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">11</span><span class="p">):</span>
+                    <span class="n">instruction_index</span> <span class="o">=</span> <span class="n">frame_summary</span><span class="o">.</span><span class="n">f_lasti</span> <span class="o">//</span> <span class="mi">2</span>
+                    <span class="n">instruction_position</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                        <span class="n">islice</span><span class="p">(</span>
+                            <span class="n">frame_summary</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_positions</span><span class="p">(),</span>
+                            <span class="n">instruction_index</span><span class="p">,</span>
+                            <span class="n">instruction_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="p">(</span>
+                        <span class="n">start_line</span><span class="p">,</span>
+                        <span class="n">end_line</span><span class="p">,</span>
+                        <span class="n">start_column</span><span class="p">,</span>
+                        <span class="n">end_column</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">instruction_position</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">start_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">end_line</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">start_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                        <span class="ow">and</span> <span class="n">end_column</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                    <span class="p">):</span>
+                        <span class="n">last_instruction</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="p">(</span><span class="n">start_line</span><span class="p">,</span> <span class="n">start_column</span><span class="p">),</span>
+                            <span class="p">(</span><span class="n">end_line</span><span class="p">,</span> <span class="n">end_column</span><span class="p">),</span>
+                        <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">filename</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+                        <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">_IMPORT_CWD</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">frame_summary</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_rich_traceback_omit"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="n">frame</span> <span class="o">=</span> <span class="n">Frame</span><span class="p">(</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="n">filename</span> <span class="ow">or</span> <span class="s2">"?"</span><span class="p">,</span>
+                    <span class="n">lineno</span><span class="o">=</span><span class="n">line_no</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">frame_summary</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">,</span>
+                    <span class="nb">locals</span><span class="o">=</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="n">key</span><span class="p">:</span> <span class="n">pretty</span><span class="o">.</span><span class="n">traverse</span><span class="p">(</span>
+                                <span class="n">value</span><span class="p">,</span>
+                                <span class="n">max_length</span><span class="o">=</span><span class="n">locals_max_length</span><span class="p">,</span>
+                                <span class="n">max_string</span><span class="o">=</span><span class="n">locals_max_string</span><span class="p">,</span>
+                                <span class="n">max_depth</span><span class="o">=</span><span class="n">locals_max_depth</span><span class="p">,</span>
+                            <span class="p">)</span>
+                            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">get_locals</span><span class="p">(</span><span class="n">frame_summary</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="ow">or</span> <span class="n">inspect</span><span class="o">.</span><span class="n">isclass</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+                        <span class="p">}</span>
+                        <span class="k">if</span> <span class="n">show_locals</span>
+                        <span class="k">else</span> <span class="kc">None</span>
+                    <span class="p">),</span>
+                    <span class="n">last_instruction</span><span class="o">=</span><span class="n">last_instruction</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">append</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">frame_summary</span><span class="o">.</span><span class="n">f_locals</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"_rich_traceback_guard"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                    <span class="k">del</span> <span class="n">stack</span><span class="o">.</span><span class="n">frames</span><span class="p">[:]</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">grouped_exceptions</span><span class="p">:</span>
+                <span class="n">cause</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exc_value</span><span class="p">,</span> <span class="s2">"__cause__"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">exc_value</span><span class="p">:</span>
+                    <span class="n">exc_type</span> <span class="o">=</span> <span class="n">cause</span><span class="o">.</span><span class="vm">__class__</span>
+                    <span class="n">exc_value</span> <span class="o">=</span> <span class="n">cause</span>
+                    <span class="c1"># __traceback__ can be None, e.g. for exceptions raised by the</span>
+                    <span class="c1"># 'multiprocessing' module</span>
+                    <span class="n">traceback</span> <span class="o">=</span> <span class="n">cause</span><span class="o">.</span><span class="n">__traceback__</span>
+                    <span class="n">is_cause</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">continue</span>
+
+                <span class="n">cause</span> <span class="o">=</span> <span class="n">exc_value</span><span class="o">.</span><span class="n">__context__</span>
+                <span class="k">if</span> <span class="n">cause</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span>
+                    <span class="n">exc_value</span><span class="p">,</span> <span class="s2">"__suppress_context__"</span><span class="p">,</span> <span class="kc">False</span>
+                <span class="p">):</span>
+                    <span class="n">exc_type</span> <span class="o">=</span> <span class="n">cause</span><span class="o">.</span><span class="vm">__class__</span>
+                    <span class="n">exc_value</span> <span class="o">=</span> <span class="n">cause</span>
+                    <span class="n">traceback</span> <span class="o">=</span> <span class="n">cause</span><span class="o">.</span><span class="n">__traceback__</span>
+                    <span class="n">is_cause</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">continue</span>
+            <span class="c1"># No cover, code is reached but coverage doesn't recognize it.</span>
+            <span class="k">break</span>  <span class="c1"># pragma: no cover</span>
+
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">Trace</span><span class="p">(</span><span class="n">stacks</span><span class="o">=</span><span class="n">stacks</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">trace</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="n">Console</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">ConsoleOptions</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">theme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme</span>
+        <span class="n">background_style</span> <span class="o">=</span> <span class="n">theme</span><span class="o">.</span><span class="n">get_background_style</span><span class="p">()</span>
+        <span class="n">token_style</span> <span class="o">=</span> <span class="n">theme</span><span class="o">.</span><span class="n">get_style_for_token</span>
+
+        <span class="n">traceback_theme</span> <span class="o">=</span> <span class="n">Theme</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"pretty"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">TextToken</span><span class="p">),</span>
+                <span class="s2">"pygments.text"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Token</span><span class="p">),</span>
+                <span class="s2">"pygments.string"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">String</span><span class="p">),</span>
+                <span class="s2">"pygments.function"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Function</span><span class="p">),</span>
+                <span class="s2">"pygments.number"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Number</span><span class="p">),</span>
+                <span class="s2">"repr.indent"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Comment</span><span class="p">)</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s2">"repr.str"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">String</span><span class="p">),</span>
+                <span class="s2">"repr.brace"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">TextToken</span><span class="p">)</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">bold</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="s2">"repr.number"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Number</span><span class="p">),</span>
+                <span class="s2">"repr.bool_true"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Keyword</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+                <span class="s2">"repr.bool_false"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Keyword</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+                <span class="s2">"repr.none"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Keyword</span><span class="o">.</span><span class="n">Constant</span><span class="p">),</span>
+                <span class="s2">"scope.border"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">String</span><span class="o">.</span><span class="n">Delimiter</span><span class="p">),</span>
+                <span class="s2">"scope.equals"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Operator</span><span class="p">),</span>
+                <span class="s2">"scope.key"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Name</span><span class="p">),</span>
+                <span class="s2">"scope.key.special"</span><span class="p">:</span> <span class="n">token_style</span><span class="p">(</span><span class="n">Name</span><span class="o">.</span><span class="n">Constant</span><span class="p">)</span> <span class="o">+</span> <span class="n">Style</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+            <span class="p">},</span>
+            <span class="n">inherit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">highlighter</span> <span class="o">=</span> <span class="n">ReprHighlighter</span><span class="p">()</span>
+
+        <span class="nd">@group</span><span class="p">()</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">render_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">:</span> <span class="n">Stack</span><span class="p">,</span> <span class="n">last</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">frames</span><span class="p">:</span>
+                <span class="n">stack_renderable</span><span class="p">:</span> <span class="n">ConsoleRenderable</span> <span class="o">=</span> <span class="n">Panel</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_render_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">),</span>
+                    <span class="n">title</span><span class="o">=</span><span class="s2">"[traceback.title]Traceback [dim](most recent call last)"</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="n">background_style</span><span class="p">,</span>
+                    <span class="n">border_style</span><span class="o">=</span><span class="s2">"traceback.border"</span><span class="p">,</span>
+                    <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">)</span>
+                <span class="n">stack_renderable</span> <span class="o">=</span> <span class="n">Constrain</span><span class="p">(</span><span class="n">stack_renderable</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+                <span class="k">with</span> <span class="n">console</span><span class="o">.</span><span class="n">use_theme</span><span class="p">(</span><span class="n">traceback_theme</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">stack_renderable</span>
+
+            <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">syntax_error</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">console</span><span class="o">.</span><span class="n">use_theme</span><span class="p">(</span><span class="n">traceback_theme</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">Constrain</span><span class="p">(</span>
+                        <span class="n">Panel</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_render_syntax_error</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">syntax_error</span><span class="p">),</span>
+                            <span class="n">style</span><span class="o">=</span><span class="n">background_style</span><span class="p">,</span>
+                            <span class="n">border_style</span><span class="o">=</span><span class="s2">"traceback.border.syntax_error"</span><span class="p">,</span>
+                            <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                            <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                            <span class="n">width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                    <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">exc_type</span><span class="si">}</span><span class="s2">: "</span><span class="p">,</span> <span class="s2">"traceback.exc_type"</span><span class="p">),</span>
+                    <span class="n">highlighter</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">msg</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="n">stack</span><span class="o">.</span><span class="n">exc_value</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                    <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">exc_type</span><span class="si">}</span><span class="s2">: "</span><span class="p">,</span> <span class="s2">"traceback.exc_type"</span><span class="p">),</span>
+                    <span class="n">highlighter</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">exc_value</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">((</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">stack</span><span class="o">.</span><span class="n">exc_type</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"traceback.exc_type"</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">note</span> <span class="ow">in</span> <span class="n">stack</span><span class="o">.</span><span class="n">notes</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">((</span><span class="s2">"[NOTE] "</span><span class="p">,</span> <span class="s2">"traceback.note"</span><span class="p">),</span> <span class="n">highlighter</span><span class="p">(</span><span class="n">note</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">is_group</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">group_no</span><span class="p">,</span> <span class="n">group_exception</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">exceptions</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">grouped_exceptions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Group</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">group_last</span><span class="p">,</span> <span class="n">group_stack</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="n">group_exception</span><span class="o">.</span><span class="n">stacks</span><span class="p">):</span>
+                        <span class="n">grouped_exceptions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">render_stack</span><span class="p">(</span><span class="n">group_stack</span><span class="p">,</span> <span class="n">group_last</span><span class="p">))</span>
+                    <span class="k">yield</span> <span class="s2">""</span>
+                    <span class="k">yield</span> <span class="n">Constrain</span><span class="p">(</span>
+                        <span class="n">Panel</span><span class="p">(</span>
+                            <span class="n">Group</span><span class="p">(</span><span class="o">*</span><span class="n">grouped_exceptions</span><span class="p">),</span>
+                            <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Sub-exception #</span><span class="si">{</span><span class="n">group_no</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                            <span class="n">border_style</span><span class="o">=</span><span class="s2">"traceback.group.border"</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">last</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">stack</span><span class="o">.</span><span class="n">is_cause</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span>
+                        <span class="s2">"</span><span class="se">\n</span><span class="s2">[i]The above exception was the direct cause of the following exception:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span>
+                        <span class="s2">"</span><span class="se">\n</span><span class="s2">[i]During handling of the above exception, another exception occurred:</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">last</span><span class="p">,</span> <span class="n">stack</span> <span class="ow">in</span> <span class="n">loop_last</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trace</span><span class="o">.</span><span class="n">stacks</span><span class="p">)):</span>
+            <span class="k">yield</span> <span class="n">render_stack</span><span class="p">(</span><span class="n">stack</span><span class="p">,</span> <span class="n">last</span><span class="p">)</span>
+
+    <span class="nd">@group</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render_syntax_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">syntax_error</span><span class="p">:</span> <span class="n">_SyntaxError</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">highlighter</span> <span class="o">=</span> <span class="n">ReprHighlighter</span><span class="p">()</span>
+        <span class="n">path_highlighter</span> <span class="o">=</span> <span class="n">PathHighlighter</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">syntax_error</span><span class="o">.</span><span class="n">filename</span> <span class="o">!=</span> <span class="s2">"&lt;stdin&gt;"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                    <span class="p">(</span><span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">filename</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"pygments.string"</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="s2">"pygments.text"</span><span class="p">),</span>
+                    <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">lineno</span><span class="p">),</span> <span class="s2">"pygments.number"</span><span class="p">),</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">"pygments.text"</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">yield</span> <span class="n">path_highlighter</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">syntax_error_text</span> <span class="o">=</span> <span class="n">highlighter</span><span class="p">(</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+        <span class="n">syntax_error_text</span><span class="o">.</span><span class="n">no_wrap</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">syntax_error</span><span class="o">.</span><span class="n">offset</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">syntax_error_text</span><span class="p">))</span>
+        <span class="n">syntax_error_text</span><span class="o">.</span><span class="n">stylize</span><span class="p">(</span><span class="s2">"bold underline"</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">syntax_error_text</span> <span class="o">+=</span> <span class="n">Text</span><span class="o">.</span><span class="n">from_markup</span><span class="p">(</span>
+            <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">" "</span> <span class="o">*</span> <span class="n">offset</span> <span class="o">+</span> <span class="s2">"[traceback.offset]▲[/]"</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="s2">"pygments.text"</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">yield</span> <span class="n">syntax_error_text</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_guess_lexer</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ext</span><span class="p">:</span>
+            <span class="c1"># No extension, look at first line to see if it is a hashbang</span>
+            <span class="c1"># Note, this is an educated guess and not a guarantee</span>
+            <span class="c1"># If it fails, the only downside is that the code is highlighted strangely</span>
+            <span class="n">new_line_index</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">first_line</span> <span class="o">=</span> <span class="n">code</span><span class="p">[:</span><span class="n">new_line_index</span><span class="p">]</span> <span class="k">if</span> <span class="n">new_line_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="n">code</span>
+            <span class="k">if</span> <span class="n">first_line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"#!"</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">"python"</span> <span class="ow">in</span> <span class="n">first_line</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="k">return</span> <span class="s2">"python"</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">LEXERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="ow">or</span> <span class="n">guess_lexer_for_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">except</span> <span class="n">ClassNotFound</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"text"</span>
+
+    <span class="nd">@group</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_render_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stack</span><span class="p">:</span> <span class="n">Stack</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderResult</span><span class="p">:</span>
+        <span class="n">path_highlighter</span> <span class="o">=</span> <span class="n">PathHighlighter</span><span class="p">()</span>
+        <span class="n">theme</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">theme</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">render_locals</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">ConsoleRenderable</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">locals</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">render_scope</span><span class="p">(</span>
+                    <span class="n">frame</span><span class="o">.</span><span class="n">locals</span><span class="p">,</span>
+                    <span class="n">title</span><span class="o">=</span><span class="s2">"locals"</span><span class="p">,</span>
+                    <span class="n">indent_guides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span><span class="p">,</span>
+                    <span class="n">max_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_max_length</span><span class="p">,</span>
+                    <span class="n">max_string</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_max_string</span><span class="p">,</span>
+                    <span class="n">max_depth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_max_depth</span><span class="p">,</span>
+                    <span class="n">overflow</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">locals_overflow</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">exclude_frames</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frames</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">exclude_frames</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max_frames</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frames</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_frames</span> <span class="o">//</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">excluded</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">frame_index</span><span class="p">,</span> <span class="n">frame</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack</span><span class="o">.</span><span class="n">frames</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">exclude_frames</span> <span class="ow">and</span> <span class="n">frame_index</span> <span class="ow">in</span> <span class="n">exclude_frames</span><span class="p">:</span>
+                <span class="n">excluded</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">excluded</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">exclude_frames</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">yield</span> <span class="n">Text</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">... </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">exclude_frames</span><span class="p">)</span><span class="si">}</span><span class="s2"> frames hidden ..."</span><span class="p">,</span>
+                    <span class="n">justify</span><span class="o">=</span><span class="s2">"center"</span><span class="p">,</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">"traceback.error"</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">excluded</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">first</span> <span class="o">=</span> <span class="n">frame_index</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="n">frame_filename</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">filename</span>
+            <span class="n">suppressed</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">frame_filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">suppress</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="p">):</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                    <span class="n">path_highlighter</span><span class="p">(</span><span class="n">Text</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"pygments.string"</span><span class="p">)),</span>
+                    <span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="s2">"pygments.text"</span><span class="p">),</span>
+                    <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">lineno</span><span class="p">),</span> <span class="s2">"pygments.number"</span><span class="p">),</span>
+                    <span class="s2">" in "</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">"pygments.function"</span><span class="p">),</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">"pygments.text"</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">text</span> <span class="o">=</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                    <span class="s2">"in "</span><span class="p">,</span>
+                    <span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">"pygments.function"</span><span class="p">),</span>
+                    <span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="s2">"pygments.text"</span><span class="p">),</span>
+                    <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">lineno</span><span class="p">),</span> <span class="s2">"pygments.number"</span><span class="p">),</span>
+                    <span class="n">style</span><span class="o">=</span><span class="s2">"pygments.text"</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="s2">""</span>
+            <span class="k">yield</span> <span class="n">text</span>
+            <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"&lt;"</span><span class="p">):</span>
+                <span class="k">yield from</span> <span class="n">render_locals</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">suppressed</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">code_lines</span> <span class="o">=</span> <span class="n">linecache</span><span class="o">.</span><span class="n">getlines</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+                    <span class="n">code</span> <span class="o">=</span> <span class="s2">""</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">code_lines</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">code</span><span class="p">:</span>
+                        <span class="c1"># code may be an empty string if the file doesn't exist, OR</span>
+                        <span class="c1"># if the traceback filename is generated dynamically</span>
+                        <span class="k">continue</span>
+                    <span class="n">lexer_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_guess_lexer</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+                    <span class="n">syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="p">(</span>
+                        <span class="n">code</span><span class="p">,</span>
+                        <span class="n">lexer_name</span><span class="p">,</span>
+                        <span class="n">theme</span><span class="o">=</span><span class="n">theme</span><span class="p">,</span>
+                        <span class="n">line_numbers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">line_range</span><span class="o">=</span><span class="p">(</span>
+                            <span class="n">frame</span><span class="o">.</span><span class="n">lineno</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_lines</span><span class="p">,</span>
+                            <span class="n">frame</span><span class="o">.</span><span class="n">lineno</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_lines</span><span class="p">,</span>
+                        <span class="p">),</span>
+                        <span class="n">highlight_lines</span><span class="o">=</span><span class="p">{</span><span class="n">frame</span><span class="o">.</span><span class="n">lineno</span><span class="p">},</span>
+                        <span class="n">word_wrap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">word_wrap</span><span class="p">,</span>
+                        <span class="n">code_width</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">code_width</span><span class="p">,</span>
+                        <span class="n">indent_guides</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent_guides</span><span class="p">,</span>
+                        <span class="n">dedent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">yield</span> <span class="s2">""</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">Text</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span>
+                        <span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="si">{</span><span class="n">error</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="s2">"traceback.error"</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">last_instruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">last_instruction</span>
+
+                        <span class="c1"># Stylize a line at a time</span>
+                        <span class="c1"># So that indentation isn't underlined (which looks bad)</span>
+                        <span class="k">for</span> <span class="n">line1</span><span class="p">,</span> <span class="n">column1</span><span class="p">,</span> <span class="n">column2</span> <span class="ow">in</span> <span class="n">_iter_syntax_lines</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+                            <span class="k">try</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">column1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                                    <span class="n">line</span> <span class="o">=</span> <span class="n">code_lines</span><span class="p">[</span><span class="n">line1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                    <span class="n">column1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">())</span>
+                                <span class="k">if</span> <span class="n">column2</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                                    <span class="n">column2</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">code_lines</span><span class="p">[</span><span class="n">line1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                                <span class="c1"># Being defensive here</span>
+                                <span class="c1"># If last_instruction reports a line out-of-bounds, we don't want to crash</span>
+                                <span class="k">continue</span>
+
+                            <span class="n">syntax</span><span class="o">.</span><span class="n">stylize_range</span><span class="p">(</span>
+                                <span class="n">style</span><span class="o">=</span><span class="s2">"traceback.error_range"</span><span class="p">,</span>
+                                <span class="n">start</span><span class="o">=</span><span class="p">(</span><span class="n">line1</span><span class="p">,</span> <span class="n">column1</span><span class="p">),</span>
+                                <span class="n">end</span><span class="o">=</span><span class="p">(</span><span class="n">line1</span><span class="p">,</span> <span class="n">column2</span><span class="p">),</span>
+                            <span class="p">)</span>
+                    <span class="k">yield</span> <span class="p">(</span>
+                        <span class="n">Columns</span><span class="p">(</span>
+                            <span class="p">[</span>
+                                <span class="n">syntax</span><span class="p">,</span>
+                                <span class="o">*</span><span class="n">render_locals</span><span class="p">(</span><span class="n">frame</span><span class="p">),</span>
+                            <span class="p">],</span>
+                            <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">if</span> <span class="n">frame</span><span class="o">.</span><span class="n">locals</span>
+                        <span class="k">else</span> <span class="n">syntax</span>
+                    <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">install</span><span class="p">(</span><span class="n">show_locals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">bar</span><span class="p">(</span>
+        <span class="n">a</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># 这是对亚洲语言支持的测试。面对模棱两可的想法，拒绝猜测的诱惑</span>
+        <span class="n">one</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">one</span> <span class="o">/</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_rich_traceback_guard</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">zed</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"characters"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">"Paul Atreides"</span><span class="p">,</span>
+                <span class="s2">"Vladimir Harkonnen"</span><span class="p">,</span>
+                <span class="s2">"Thufir Hawat"</span><span class="p">,</span>
+                <span class="s2">"Duncan Idaho"</span><span class="p">,</span>
+            <span class="p">},</span>
+            <span class="s2">"atomic_types"</span><span class="p">:</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">bar</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">error</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">error</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Cache interna de Sphinx, no forma parte del sitio publicable
+site/python/.doctrees/
+**/.doctrees/
+.buildinfo
+
+# Entornos virtuales de Python (si alguno quedó accidentalmente dentro del repo)
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db

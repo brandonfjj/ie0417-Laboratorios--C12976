@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['edit_1411',['edit',['../classleveldb_1_1Compaction.html#a122e4f7b4fdb6c0d1862624742b34b3d',1,'leveldb::Compaction']]],
+  ['empty_1412',['empty',['../classleveldb_1_1Slice.html#a56ac7a70125c26187ecf4dd040004582',1,'leveldb::Slice::empty()'],['../classleveldb_1_1SnapshotList.html#a1db6b1cbcd79669168052e088e8af84e',1,'leveldb::SnapshotList::empty()'],['../classleveldb_1_1BlockBuilder.html#ab77e58261a06eadc2bc37bec8d390569',1,'leveldb::BlockBuilder::empty()']]],
+  ['encode_1413',['Encode',['../classleveldb_1_1InternalKey.html#a0cb2fdabc879bdbe7afc3ba12152384c',1,'leveldb::InternalKey']]],
+  ['encodefixed32_1414',['EncodeFixed32',['../namespaceleveldb.html#a7a0f87d9f26a81d90ce7b8c738af9e46',1,'leveldb']]],
+  ['encodefixed64_1415',['EncodeFixed64',['../namespaceleveldb.html#aefb16339a6b767d54c2ffedbb1120415',1,'leveldb']]],
+  ['encodekey_1416',['EncodeKey',['../namespaceleveldb.html#a30f623daa642a441a1bf58bcad70dbfc',1,'leveldb::EncodeKey(int k)'],['../namespaceleveldb.html#a1e6f16ce568bfceff4ba4d9623d7d795',1,'leveldb::EncodeKey(std::string *scratch, const Slice &amp;target)']]],
+  ['encodeto_1417',['EncodeTo',['../classleveldb_1_1Footer.html#a13267dee115f0281a5a5b405714d3948',1,'leveldb::Footer::EncodeTo()'],['../classleveldb_1_1BlockHandle.html#aed011eeca92f0852caa106a34c3a80e6',1,'leveldb::BlockHandle::EncodeTo()'],['../classleveldb_1_1VersionEdit.html#af95009ddc020f72a32a1aa805bcf3a91',1,'leveldb::VersionEdit::EncodeTo()']]],
+  ['encodevalue_1418',['EncodeValue',['../namespaceleveldb.html#a2cdd451cfce77df268927cad2371fe88',1,'leveldb']]],
+  ['encodevarint32_1419',['EncodeVarint32',['../namespaceleveldb.html#ac5e7a0e0356b856317349a870e3bfb41',1,'leveldb']]],
+  ['encodevarint64_1420',['EncodeVarint64',['../namespaceleveldb.html#a81e3ab2e7387f236aaf068e9369a4e3d',1,'leveldb']]],
+  ['end_1421',['end',['../classleveldb_1_1Slice.html#adb9fe8dd2dca35de5ac02bec1ce3a54f',1,'leveldb::Slice']]],
+  ['env_1422',['Env',['../classleveldb_1_1Env.html#a90f3648c740e3f5901f5843cd0dd07c4',1,'leveldb::Env::Env()'],['../classleveldb_1_1Env.html#a44fbfd1f9fc297611ede34c4c9e035e7',1,'leveldb::Env::Env(const Env &amp;)=delete']]],
+  ['env_1423',['env',['../classleveldb_1_1RecoveryTest.html#a1e7db47a1e8abe79a30b6f009b6877b1',1,'leveldb::RecoveryTest']]],
+  ['envposixtest_1424',['EnvPosixTest',['../classleveldb_1_1EnvPosixTest.html#a05fceab267ecdc2948ec96a3a6145bb3',1,'leveldb::EnvPosixTest']]],
+  ['envtest_1425',['EnvTest',['../classleveldb_1_1EnvTest.html#a2b2359c88f2d0a8f9f64fb71e55e03b1',1,'leveldb::EnvTest']]],
+  ['envwindowstest_1426',['EnvWindowsTest',['../classleveldb_1_1EnvWindowsTest.html#af8f731febde200c6cee5736b97b0fc86',1,'leveldb::EnvWindowsTest']]],
+  ['envwrapper_1427',['EnvWrapper',['../classleveldb_1_1EnvWrapper.html#a724d3740db2663034c8974c0378e49cb',1,'leveldb::EnvWrapper']]],
+  ['erase_1428',['Erase',['../classleveldb_1_1CacheTest.html#aeaa81bbd9d0fba1fb31b0a8f7aa94397',1,'leveldb::CacheTest::Erase()'],['../classleveldb_1_1Cache.html#af833a38763598253338de37aba079db6',1,'leveldb::Cache::Erase()']]],
+  ['escapestring_1429',['EscapeString',['../namespaceleveldb.html#a6d50705a37d7459f152f8ad839513a73',1,'leveldb']]],
+  ['evict_1430',['Evict',['../classleveldb_1_1TableCache.html#a57b81c58ff0533514b3a5d1652f044bc',1,'leveldb::TableCache']]],
+  ['expandedcompactionbytesizelimit_1431',['ExpandedCompactionByteSizeLimit',['../namespaceleveldb.html#a281557a55c0c9d6551e8195f9d7955cc',1,'leveldb']]],
+  ['extend_1432',['Extend',['../namespaceleveldb_1_1crc32c.html#a31714715fbd56786f38281d763a5b437',1,'leveldb::crc32c']]],
+  ['extractuserkey_1433',['ExtractUserKey',['../namespaceleveldb.html#a1c889869840312393b805ad91a41b94f',1,'leveldb']]]
+];

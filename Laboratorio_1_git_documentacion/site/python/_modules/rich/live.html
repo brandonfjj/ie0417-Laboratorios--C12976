@@ -1,0 +1,527 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.live &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.live</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.live</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">threading</span><span class="w"> </span><span class="kn">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">RLock</span><span class="p">,</span> <span class="n">Thread</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">TracebackType</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">cast</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_console</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleRenderable</span><span class="p">,</span> <span class="n">Group</span><span class="p">,</span> <span class="n">RenderableType</span><span class="p">,</span> <span class="n">RenderHook</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.control</span><span class="w"> </span><span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.file_proxy</span><span class="w"> </span><span class="kn">import</span> <span class="n">FileProxy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.live_render</span><span class="w"> </span><span class="kn">import</span> <span class="n">LiveRender</span><span class="p">,</span> <span class="n">VerticalOverflowMethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.screen</span><span class="w"> </span><span class="kn">import</span> <span class="n">Screen</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">Text</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="c1"># Can be replaced with `from typing import Self` in Python 3.11+</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing_extensions</span><span class="w"> </span><span class="kn">import</span> <span class="n">Self</span>  <span class="c1"># pragma: no cover</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_RefreshThread</span><span class="p">(</span><span class="n">Thread</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A thread that calls refresh() at regular intervals."""</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">live</span><span class="p">:</span> <span class="s2">"Live"</span><span class="p">,</span> <span class="n">refresh_per_second</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">live</span> <span class="o">=</span> <span class="n">live</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_per_second</span> <span class="o">=</span> <span class="n">refresh_per_second</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">daemon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_per_second</span><span class="p">):</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">live</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">done</span><span class="o">.</span><span class="n">is_set</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">live</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="Live">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Live</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">,</span> <span class="n">RenderHook</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Renders an auto-updating live display of any given renderable.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable (RenderableType, optional): The renderable to live display. Defaults to displaying nothing.</span>
+<span class="sd">        console (Console, optional): Optional Console instance. Defaults to an internal Console instance writing to stdout.</span>
+<span class="sd">        screen (bool, optional): Enable alternate screen mode. Defaults to False.</span>
+<span class="sd">        auto_refresh (bool, optional): Enable auto refresh. If disabled, you will need to call `refresh()` or `update()` with refresh flag. Defaults to True</span>
+<span class="sd">        refresh_per_second (float, optional): Number of times per second to refresh the live display. Defaults to 4.</span>
+<span class="sd">        transient (bool, optional): Clear the renderable on exit (has no effect when screen=True). Defaults to False.</span>
+<span class="sd">        redirect_stdout (bool, optional): Enable redirection of stdout, so ``print`` may be used. Defaults to True.</span>
+<span class="sd">        redirect_stderr (bool, optional): Enable redirection of stderr. Defaults to True.</span>
+<span class="sd">        vertical_overflow (VerticalOverflowMethod, optional): How to handle renderable when it is too tall for the console. Defaults to "ellipsis".</span>
+<span class="sd">        get_renderable (Callable[[], RenderableType], optional): Optional callable to get renderable. Defaults to None.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">RenderableType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">console</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Console</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">screen</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">auto_refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">refresh_per_second</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="n">transient</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">redirect_stdout</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">redirect_stderr</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">vertical_overflow</span><span class="p">:</span> <span class="n">VerticalOverflowMethod</span> <span class="o">=</span> <span class="s2">"ellipsis"</span><span class="p">,</span>
+        <span class="n">get_renderable</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[],</span> <span class="n">RenderableType</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">refresh_per_second</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"refresh_per_second must be &gt; 0"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">console</span> <span class="o">=</span> <span class="n">console</span> <span class="k">if</span> <span class="n">console</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_console</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_screen</span> <span class="o">=</span> <span class="n">screen</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redirect_stdout</span> <span class="o">=</span> <span class="n">redirect_stdout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_redirect_stderr</span> <span class="o">=</span> <span class="n">redirect_stderr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stdout</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IO</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stderr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IO</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span> <span class="o">=</span> <span class="n">RLock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">auto_refresh</span> <span class="o">=</span> <span class="n">auto_refresh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transient</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">screen</span> <span class="k">else</span> <span class="n">transient</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">_RefreshThread</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_per_second</span> <span class="o">=</span> <span class="n">refresh_per_second</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">=</span> <span class="n">vertical_overflow</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_renderable</span> <span class="o">=</span> <span class="n">get_renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span> <span class="o">=</span> <span class="n">LiveRender</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_renderable</span><span class="p">(),</span> <span class="n">vertical_overflow</span><span class="o">=</span><span class="n">vertical_overflow</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nested</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_started</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Check if live display has been started."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span>
+
+<div class="viewcode-block" id="Live.get_renderable">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.get_renderable">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_renderable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderableType</span><span class="p">:</span>
+        <span class="n">renderable</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_get_renderable</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_renderable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_renderable</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">renderable</span> <span class="ow">or</span> <span class="s2">""</span></div>
+
+
+<div class="viewcode-block" id="Live.start">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.start">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Start live rendering display.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            refresh (bool, optional): Also refresh. Defaults to False.</span>
+<span class="sd">        """</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">set_live</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_nested</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_screen</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">set_alt_screen</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">show_cursor</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_enable_redirect_io</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">push_render_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">refresh</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="c1"># If refresh fails, we want to stop the redirection of sys.stderr,</span>
+                    <span class="c1"># so the error stacktrace is properly displayed in the terminal.</span>
+                    <span class="c1"># (or, if the code that calls Rich captures the exception and wants to display something,</span>
+                    <span class="c1"># let this be displayed in the terminal).</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                    <span class="k">raise</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_refresh</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span> <span class="o">=</span> <span class="n">_RefreshThread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">refresh_per_second</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Live.stop">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.stop">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Stop live rendering display."""</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">clear_live</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nested</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">auto_refresh</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_refresh_thread</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="c1"># allow it to fully render on the last even if overflow</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">=</span> <span class="s2">"visible"</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_jupyter</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_disable_redirect_io</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">pop_render_hook</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span>
+                        <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_terminal</span>
+                        <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">last_render_height</span>
+                    <span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">show_cursor</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">set_alt_screen</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">control</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">restore_cursor</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># pragma: no cover</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Self</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">refresh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_renderable</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">exc_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">]],</span>
+        <span class="n">exc_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="ne">BaseException</span><span class="p">],</span>
+        <span class="n">exc_tb</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TracebackType</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_enable_redirect_io</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Enable redirecting of stdout / stderr."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_terminal</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_jupyter</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redirect_stdout</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">FileProxy</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stdout</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"TextIO"</span><span class="p">,</span> <span class="n">FileProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_redirect_stderr</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">FileProxy</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stderr</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"TextIO"</span><span class="p">,</span> <span class="n">FileProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_disable_redirect_io</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Disable redirecting of stdout / stderr."""</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stdout</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"TextIO"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stdout</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stdout</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stderr</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="s2">"TextIO"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stderr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restore_stderr</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">renderable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RenderableType</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Get the renderable that is being displayed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RenderableType: Displayed renderable.</span>
+<span class="sd">        """</span>
+        <span class="n">live_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">_live_stack</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="n">RenderableType</span>
+        <span class="k">if</span> <span class="n">live_stack</span> <span class="ow">and</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">live_stack</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="c1"># The first Live instance will render everything in the Live stack</span>
+            <span class="n">renderable</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">live</span><span class="o">.</span><span class="n">get_renderable</span><span class="p">()</span> <span class="k">for</span> <span class="n">live</span> <span class="ow">in</span> <span class="n">live_stack</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_renderable</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">Screen</span><span class="p">(</span><span class="n">renderable</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span> <span class="k">else</span> <span class="n">renderable</span>
+
+<div class="viewcode-block" id="Live.update">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.update">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renderable</span><span class="p">:</span> <span class="n">RenderableType</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">refresh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Update the renderable that is being displayed</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            renderable (RenderableType): New renderable to use.</span>
+<span class="sd">            refresh (bool, optional): Refresh the display. Defaults to False.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">renderable</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">renderable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">render_str</span><span class="p">(</span><span class="n">renderable</span><span class="p">)</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+            <span class="k">if</span> <span class="n">refresh</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="Live.refresh">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.refresh">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Update the display of the Live Render."""</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">set_renderable</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_nested</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">_live_stack</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">_live_stack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+                <span class="k">return</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_jupyter</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">display</span>
+                    <span class="kn">from</span><span class="w"> </span><span class="nn">ipywidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Output</span>
+                <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                    <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">'install "ipywidgets" for Jupyter support'</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span> <span class="o">=</span> <span class="n">Output</span><span class="p">()</span>
+                        <span class="n">display</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span><span class="p">)</span>
+
+                    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">ipy_widget</span><span class="o">.</span><span class="n">clear_output</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">renderable</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_terminal</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_dumb_terminal</span><span class="p">:</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Control</span><span class="p">())</span>
+            <span class="k">elif</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span>
+            <span class="p">):</span>  <span class="c1"># if it is finished allow files or dumb-terminals to see final result</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">Control</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="Live.process_renderables">
+<a class="viewcode-back" href="../../api/rich.html#rich.live.Live.process_renderables">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_renderables</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">renderables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ConsoleRenderable</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ConsoleRenderable</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Process renderables to restore cursor and display progress."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">vertical_overflow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_overflow</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">console</span><span class="o">.</span><span class="n">is_interactive</span><span class="p">:</span>
+            <span class="c1"># lock needs acquiring as user can modify live_render renderable at any time unlike in Progress.</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lock</span><span class="p">:</span>
+                <span class="n">reset</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">Control</span><span class="o">.</span><span class="n">home</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alt_screen</span>
+                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="o">.</span><span class="n">position_cursor</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="n">renderables</span> <span class="o">=</span> <span class="p">[</span><span class="n">reset</span><span class="p">,</span> <span class="o">*</span><span class="n">renderables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_started</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transient</span>
+        <span class="p">):</span>  <span class="c1"># if it is finished render the final output for files or dumb_terminals</span>
+            <span class="n">renderables</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="n">renderables</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_live_render</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">renderables</span></div>
+</div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cycle</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.align</span><span class="w"> </span><span class="kn">import</span> <span class="n">Align</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.live</span><span class="w"> </span><span class="kn">import</span> <span class="n">Live</span> <span class="k">as</span> <span class="n">Live</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.rule</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rule</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.syntax</span><span class="w"> </span><span class="kn">import</span> <span class="n">Syntax</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+
+    <span class="n">syntax</span> <span class="o">=</span> <span class="n">Syntax</span><span class="p">(</span>
+<span class="w">        </span><span class="sd">'''def loop_last(values: Iterable[T]) -&gt; Iterable[Tuple[bool, T]]:</span>
+<span class="sd">    """Iterate and generate a tuple with a flag for last value."""</span>
+<span class="sd">    iter_values = iter(values)</span>
+<span class="sd">    try:</span>
+<span class="sd">        previous_value = next(iter_values)</span>
+<span class="sd">    except StopIteration:</span>
+<span class="sd">        return</span>
+<span class="sd">    for value in iter_values:</span>
+<span class="sd">        yield False, previous_value</span>
+<span class="sd">        previous_value = value</span>
+<span class="sd">    yield True, previous_value'''</span><span class="p">,</span>
+        <span class="s2">"python"</span><span class="p">,</span>
+        <span class="n">line_numbers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">,</span> <span class="s2">"baz"</span><span class="p">)</span>
+    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">)</span>
+
+    <span class="n">progress_renderables</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"You can make the terminal shorter and taller to see the live table hide"</span>
+        <span class="s2">"Text may be printed while the progress bars are rendering."</span><span class="p">,</span>
+        <span class="n">Panel</span><span class="p">(</span><span class="s2">"In fact, [i]any[/i] renderable will work"</span><span class="p">),</span>
+        <span class="s2">"Such as [magenta]tables[/]..."</span><span class="p">,</span>
+        <span class="n">table</span><span class="p">,</span>
+        <span class="s2">"Pretty printed structures..."</span><span class="p">,</span>
+        <span class="p">{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"example"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Pretty printed"</span><span class="p">},</span>
+        <span class="s2">"Syntax..."</span><span class="p">,</span>
+        <span class="n">syntax</span><span class="p">,</span>
+        <span class="n">Rule</span><span class="p">(</span><span class="s2">"Give it a try!"</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">examples</span> <span class="o">=</span> <span class="n">cycle</span><span class="p">(</span><span class="n">progress_renderables</span><span class="p">)</span>
+
+    <span class="n">exchanges</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">"SGD"</span><span class="p">,</span>
+        <span class="s2">"MYR"</span><span class="p">,</span>
+        <span class="s2">"EUR"</span><span class="p">,</span>
+        <span class="s2">"USD"</span><span class="p">,</span>
+        <span class="s2">"AUD"</span><span class="p">,</span>
+        <span class="s2">"JPY"</span><span class="p">,</span>
+        <span class="s2">"CNH"</span><span class="p">,</span>
+        <span class="s2">"HKD"</span><span class="p">,</span>
+        <span class="s2">"CAD"</span><span class="p">,</span>
+        <span class="s2">"INR"</span><span class="p">,</span>
+        <span class="s2">"DKK"</span><span class="p">,</span>
+        <span class="s2">"GBP"</span><span class="p">,</span>
+        <span class="s2">"RUB"</span><span class="p">,</span>
+        <span class="s2">"NZD"</span><span class="p">,</span>
+        <span class="s2">"MXN"</span><span class="p">,</span>
+        <span class="s2">"IDR"</span><span class="p">,</span>
+        <span class="s2">"TWD"</span><span class="p">,</span>
+        <span class="s2">"THB"</span><span class="p">,</span>
+        <span class="s2">"VND"</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">with</span> <span class="n">Live</span><span class="p">(</span><span class="n">console</span><span class="o">=</span><span class="n">console</span><span class="p">)</span> <span class="k">as</span> <span class="n">live_table</span><span class="p">:</span>
+        <span class="n">exchange_rate_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+            <span class="n">select_exchange</span> <span class="o">=</span> <span class="n">exchanges</span><span class="p">[</span><span class="n">index</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">exchanges</span><span class="p">)]</span>
+
+            <span class="k">for</span> <span class="n">exchange</span> <span class="ow">in</span> <span class="n">exchanges</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">exchange</span> <span class="o">==</span> <span class="n">select_exchange</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">console</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">examples</span><span class="p">))</span>
+                <span class="n">exchange_rate_dict</span><span class="p">[(</span><span class="n">select_exchange</span><span class="p">,</span> <span class="n">exchange</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">200</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">*</span> <span class="mi">320</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exchange_rate_dict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">exchanges</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">exchange_rate_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">exchange_rate_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s2">"Exchange Rates"</span><span class="p">)</span>
+
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">"Source Currency"</span><span class="p">)</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">"Destination Currency"</span><span class="p">)</span>
+                <span class="n">table</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="s2">"Exchange Rate"</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">),</span> <span class="n">exchange_rate</span> <span class="ow">in</span> <span class="n">exchange_rate_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span>
+                        <span class="n">source</span><span class="p">,</span>
+                        <span class="n">dest</span><span class="p">,</span>
+                        <span class="n">Text</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">exchange_rate</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                            <span class="n">style</span><span class="o">=</span><span class="s2">"red"</span> <span class="k">if</span> <span class="n">exchange_rate</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="s2">"green"</span><span class="p">,</span>
+                        <span class="p">),</span>
+                    <span class="p">)</span>
+
+                <span class="n">live_table</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">Align</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

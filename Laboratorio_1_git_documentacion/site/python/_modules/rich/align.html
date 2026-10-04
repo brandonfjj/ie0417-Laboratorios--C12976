@@ -1,0 +1,437 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rich.align &mdash; Rich 15.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d0b4638"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Rich
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contenidos:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api/modules.html">rich</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Rich</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../rich.html">rich</a></li>
+      <li class="breadcrumb-item active">rich.align</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for rich.align</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">chain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Literal</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.constrain</span><span class="w"> </span><span class="kn">import</span> <span class="n">Constrain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.jupyter</span><span class="w"> </span><span class="kn">import</span> <span class="n">JupyterMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.measure</span><span class="w"> </span><span class="kn">import</span> <span class="n">Measurement</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.segment</span><span class="w"> </span><span class="kn">import</span> <span class="n">Segment</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.style</span><span class="w"> </span><span class="kn">import</span> <span class="n">StyleType</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">ConsoleOptions</span><span class="p">,</span> <span class="n">RenderableType</span><span class="p">,</span> <span class="n">RenderResult</span>
+
+<span class="n">AlignMethod</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"center"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">]</span>
+<span class="n">VerticalAlignMethod</span> <span class="o">=</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"top"</span><span class="p">,</span> <span class="s2">"middle"</span><span class="p">,</span> <span class="s2">"bottom"</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="Align">
+<a class="viewcode-back" href="../../api/rich.html#rich.align.Align">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">Align</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Align a renderable by adding spaces if necessary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable (RenderableType): A console renderable.</span>
+<span class="sd">        align (AlignMethod): One of "left", "center", or "right""</span>
+<span class="sd">        style (StyleType, optional): An optional style to apply to the background.</span>
+<span class="sd">        vertical (Optional[VerticalAlignMethod], optional): Optional vertical align, one of "top", "middle", or "bottom". Defaults to None.</span>
+<span class="sd">        pad (bool, optional): Pad the right with spaces. Defaults to True.</span>
+<span class="sd">        width (int, optional): Restrict contents to given width, or None to use default width. Defaults to None.</span>
+<span class="sd">        height (int, optional): Set height of align renderable, or None to fit to contents. Defaults to None.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: if ``align`` is not one of the expected values.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from rich.console import Console</span>
+<span class="sd">            from rich.align import Align</span>
+<span class="sd">            from rich.panel import Panel</span>
+
+<span class="sd">            console = Console()</span>
+<span class="sd">            # Create a panel 20 characters wide</span>
+<span class="sd">            p = Panel("Hello, [b]World[/b]!", style="on green", width=20)</span>
+
+<span class="sd">            # Renders the panel centered in the terminal</span>
+<span class="sd">            console.print(Align(p, align="center"))</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">align</span><span class="p">:</span> <span class="n">AlignMethod</span> <span class="o">=</span> <span class="s2">"left"</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">vertical</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VerticalAlignMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">align</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"center"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">'invalid value for align, expected "left", "center", or "right" (not </span><span class="si">{</span><span class="n">align</span><span class="si">!r}</span><span class="s1">)'</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">vertical</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">vertical</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"top"</span><span class="p">,</span> <span class="s2">"middle"</span><span class="p">,</span> <span class="s2">"bottom"</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">'invalid value for vertical, expected "top", "middle", or "bottom" (not </span><span class="si">{</span><span class="n">vertical</span><span class="si">!r}</span><span class="s1">)'</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">align</span> <span class="o">=</span> <span class="n">align</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span> <span class="o">=</span> <span class="n">vertical</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">pad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"Align(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="si">!r}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">align</span><span class="si">!r}</span><span class="s2">)"</span>
+
+<div class="viewcode-block" id="Align.left">
+<a class="viewcode-back" href="../../api/rich.html#rich.align.Align.left">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">left</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">vertical</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VerticalAlignMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Align"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Align a renderable to the left."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">renderable</span><span class="p">,</span>
+            <span class="s2">"left"</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+            <span class="n">vertical</span><span class="o">=</span><span class="n">vertical</span><span class="p">,</span>
+            <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Align.center">
+<a class="viewcode-back" href="../../api/rich.html#rich.align.Align.center">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">center</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">vertical</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VerticalAlignMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Align"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Align a renderable to the center."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">renderable</span><span class="p">,</span>
+            <span class="s2">"center"</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+            <span class="n">vertical</span><span class="o">=</span><span class="n">vertical</span><span class="p">,</span>
+            <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Align.right">
+<a class="viewcode-back" href="../../api/rich.html#rich.align.Align.right">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">right</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">vertical</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">VerticalAlignMethod</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pad</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">height</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Align"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Align a renderable to the right."""</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">renderable</span><span class="p">,</span>
+            <span class="s2">"right"</span><span class="p">,</span>
+            <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span>
+            <span class="n">vertical</span><span class="o">=</span><span class="n">vertical</span><span class="p">,</span>
+            <span class="n">pad</span><span class="o">=</span><span class="n">pad</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"RenderResult"</span><span class="p">:</span>
+        <span class="n">align</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">align</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">maximum</span>
+        <span class="n">rendered</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render</span><span class="p">(</span>
+            <span class="n">Constrain</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">,</span> <span class="n">width</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">min</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">)</span>
+            <span class="p">),</span>
+            <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">Segment</span><span class="o">.</span><span class="n">split_lines</span><span class="p">(</span><span class="n">rendered</span><span class="p">))</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">get_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">set_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+        <span class="n">excess_space</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">max_width</span> <span class="o">-</span> <span class="n">width</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">generate_segments</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">excess_space</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Exact fit</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">yield from</span> <span class="n">line</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+
+            <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="s2">"left"</span><span class="p">:</span>
+                <span class="c1"># Pad on the right</span>
+                <span class="n">pad</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="n">excess_space</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">yield from</span> <span class="n">line</span>
+                    <span class="k">if</span> <span class="n">pad</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">pad</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+
+            <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="s2">"center"</span><span class="p">:</span>
+                <span class="c1"># Pad left and right</span>
+                <span class="n">left</span> <span class="o">=</span> <span class="n">excess_space</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="n">pad</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="n">left</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+                <span class="n">pad_right</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="p">(</span><span class="n">excess_space</span> <span class="o">-</span> <span class="n">left</span><span class="p">),</span> <span class="n">style</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">left</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">pad</span>
+                    <span class="k">yield from</span> <span class="n">line</span>
+                    <span class="k">if</span> <span class="n">pad_right</span><span class="p">:</span>
+                        <span class="k">yield</span> <span class="n">pad_right</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+
+            <span class="k">elif</span> <span class="n">align</span> <span class="o">==</span> <span class="s2">"right"</span><span class="p">:</span>
+                <span class="c1"># Padding on left</span>
+                <span class="n">pad</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">" "</span> <span class="o">*</span> <span class="n">excess_space</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+                    <span class="k">yield</span> <span class="n">pad</span>
+                    <span class="k">yield from</span> <span class="n">line</span>
+                    <span class="k">yield</span> <span class="n">new_line</span>
+
+        <span class="n">blank_line</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Segment</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">' '</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="n">options</span><span class="o">.</span><span class="n">max_width</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span>
+            <span class="k">else</span> <span class="n">Segment</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">blank_lines</span><span class="p">(</span><span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">blank_line</span>
+
+        <span class="n">vertical_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">height</span>
+        <span class="n">iter_segments</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span> <span class="ow">and</span> <span class="n">vertical_height</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span> <span class="o">==</span> <span class="s2">"top"</span><span class="p">:</span>
+                <span class="n">bottom_space</span> <span class="o">=</span> <span class="n">vertical_height</span> <span class="o">-</span> <span class="n">height</span>
+                <span class="n">iter_segments</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">generate_segments</span><span class="p">(),</span> <span class="n">blank_lines</span><span class="p">(</span><span class="n">bottom_space</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical</span> <span class="o">==</span> <span class="s2">"middle"</span><span class="p">:</span>
+                <span class="n">top_space</span> <span class="o">=</span> <span class="p">(</span><span class="n">vertical_height</span> <span class="o">-</span> <span class="n">height</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+                <span class="n">bottom_space</span> <span class="o">=</span> <span class="n">vertical_height</span> <span class="o">-</span> <span class="n">top_space</span> <span class="o">-</span> <span class="n">height</span>
+                <span class="n">iter_segments</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span>
+                    <span class="n">blank_lines</span><span class="p">(</span><span class="n">top_space</span><span class="p">),</span>
+                    <span class="n">generate_segments</span><span class="p">(),</span>
+                    <span class="n">blank_lines</span><span class="p">(</span><span class="n">bottom_space</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1">#  self.vertical == "bottom":</span>
+                <span class="n">top_space</span> <span class="o">=</span> <span class="n">vertical_height</span> <span class="o">-</span> <span class="n">height</span>
+                <span class="n">iter_segments</span> <span class="o">=</span> <span class="n">chain</span><span class="p">(</span><span class="n">blank_lines</span><span class="p">(</span><span class="n">top_space</span><span class="p">),</span> <span class="n">generate_segments</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">iter_segments</span> <span class="o">=</span> <span class="n">generate_segments</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">:</span>
+            <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+            <span class="n">iter_segments</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">apply_style</span><span class="p">(</span><span class="n">iter_segments</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+        <span class="k">yield from</span> <span class="n">iter_segments</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_measure__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Measurement</span><span class="p">:</span>
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">measurement</span></div>
+
+
+
+<div class="viewcode-block" id="VerticalCenter">
+<a class="viewcode-back" href="../../api/rich.html#rich.align.VerticalCenter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">VerticalCenter</span><span class="p">(</span><span class="n">JupyterMixin</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Vertically aligns a renderable.</span>
+
+<span class="sd">    Warn:</span>
+<span class="sd">        This class is deprecated and may be removed in a future version. Use Align class with</span>
+<span class="sd">        `vertical="middle"`.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        renderable (RenderableType): A renderable object.</span>
+<span class="sd">        style (StyleType, optional): An optional style to apply to the background. Defaults to None.</span>
+<span class="sd">    """</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">renderable</span><span class="p">:</span> <span class="s2">"RenderableType"</span><span class="p">,</span>
+        <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">StyleType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span> <span class="o">=</span> <span class="n">renderable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">"VerticalCenter(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="si">!r}</span><span class="s2">)"</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_console__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"RenderResult"</span><span class="p">:</span>
+        <span class="n">style</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">get_style</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">console</span><span class="o">.</span><span class="n">render_lines</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">),</span> <span class="n">pad</span><span class="o">=</span><span class="kc">False</span>
+        <span class="p">)</span>
+        <span class="n">width</span><span class="p">,</span> <span class="n">_height</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">get_shape</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="n">new_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="o">.</span><span class="n">line</span><span class="p">()</span>
+        <span class="n">height</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">height</span> <span class="ow">or</span> <span class="n">options</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">height</span>
+        <span class="n">top_space</span> <span class="o">=</span> <span class="p">(</span><span class="n">height</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="n">bottom_space</span> <span class="o">=</span> <span class="n">height</span> <span class="o">-</span> <span class="n">top_space</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+        <span class="n">blank_line</span> <span class="o">=</span> <span class="n">Segment</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">' '</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">blank_lines</span><span class="p">(</span><span class="n">count</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterable</span><span class="p">[</span><span class="n">Segment</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+                <span class="k">yield</span> <span class="n">blank_line</span>
+                <span class="k">yield</span> <span class="n">new_line</span>
+
+        <span class="k">if</span> <span class="n">top_space</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">blank_lines</span><span class="p">(</span><span class="n">top_space</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">line</span>
+            <span class="k">yield</span> <span class="n">new_line</span>
+        <span class="k">if</span> <span class="n">bottom_space</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield from</span> <span class="n">blank_lines</span><span class="p">(</span><span class="n">bottom_space</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__rich_measure__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">console</span><span class="p">:</span> <span class="s2">"Console"</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="s2">"ConsoleOptions"</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Measurement</span><span class="p">:</span>
+        <span class="n">measurement</span> <span class="o">=</span> <span class="n">Measurement</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">console</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderable</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">measurement</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.console</span><span class="w"> </span><span class="kn">import</span> <span class="n">Console</span><span class="p">,</span> <span class="n">Group</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.highlighter</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReprHighlighter</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rich.panel</span><span class="w"> </span><span class="kn">import</span> <span class="n">Panel</span>
+
+    <span class="n">highlighter</span> <span class="o">=</span> <span class="n">ReprHighlighter</span><span class="p">()</span>
+    <span class="n">console</span> <span class="o">=</span> <span class="n">Console</span><span class="p">()</span>
+
+    <span class="n">panel</span> <span class="o">=</span> <span class="n">Panel</span><span class="p">(</span>
+        <span class="n">Group</span><span class="p">(</span>
+            <span class="n">Align</span><span class="o">.</span><span class="n">left</span><span class="p">(</span><span class="n">highlighter</span><span class="p">(</span><span class="s2">"align='left'"</span><span class="p">)),</span>
+            <span class="n">Align</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">highlighter</span><span class="p">(</span><span class="s2">"align='center'"</span><span class="p">)),</span>
+            <span class="n">Align</span><span class="o">.</span><span class="n">right</span><span class="p">(</span><span class="n">highlighter</span><span class="p">(</span><span class="s2">"align='right'"</span><span class="p">)),</span>
+        <span class="p">),</span>
+        <span class="n">width</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+        <span class="n">style</span><span class="o">=</span><span class="s2">"on dark_blue"</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s2">"Align"</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">console</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+        <span class="n">Align</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="n">vertical</span><span class="o">=</span><span class="s2">"middle"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"on red"</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">console</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Brandon Fuentes J.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
