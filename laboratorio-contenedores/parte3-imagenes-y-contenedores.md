@@ -118,7 +118,7 @@ Una imagen es una plantilla inmutable, es decir, una vez creada no se puede modi
 Con esta parte entendí que una imagen y un contenedor son cosas distintas: la imagen es la base que se descarga una sola vez, y los contenedores se pueden crear a partir de ella las veces que se necesite. También me llamó la atención que el contenedor reportara Ubuntu 26.04 mientras que mi sistema es Ubuntu 22.04, porque muestra que el contenedor trae su propio entorno aunque comparta el kernel con el host. Esto ayuda a entender por qué los contenedores son más livianos que una máquina virtual.
 
 
-## Administración de contenedores
+## Administracion de contenedores
 
 ### Qué se hizo
 
