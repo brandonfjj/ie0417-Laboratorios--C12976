@@ -1,0 +1,18 @@
+# Ejecutables compilados
+/prueba
+/error_sintaxis
+/error_logico
+/gdb_basico
+/gdb_funciones
+/memory_leak
+/invalid_access
+/use_after_free
+/use_after_free_asan
+/race_condition
+/race_condition_tsan
+/race_condition_corregido
+/race_condition_corregido_tsan
+/reto
+/reto_asan
+vgcore.*
+core
