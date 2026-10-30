@@ -162,8 +162,6 @@ git commit -m "Corrige prueba fallida"
 git push
 ```
 
-Se usó `git add tests/test_calculator.cpp` en lugar de `git add .` para no agregar las carpetas de otros laboratorios.
-
 ### Qué se aprendió
 
 Que un error en una prueba no llega desapercibido, porque GitHub lo marca en el pull request con el mismo detalle que se ve en local. También que cada push nuevo vuelve a ejecutar el workflow, así que al corregir bastó con subir el cambio para ver el resultado en verde.
