@@ -1,0 +1,37 @@
+name: C++ testing
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y build-essential cmake lcov
+
+      - name: Configure CMake
+        run: |
+          cd laboratorio-testing
+          mkdir -p build
+          cd build
+          cmake ..
+
+      - name: Build
+        run: |
+          cd laboratorio-testing/build
+          make
+
+      - name: Run tests
+        run: |
+          cd laboratorio-testing/build
+          ./run_tests

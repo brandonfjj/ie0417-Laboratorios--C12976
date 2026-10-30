@@ -1,0 +1,6 @@
+# Compilación y cobertura
+/build/
+/coverage_report/
+*.gcda
+*.gcno
+*.info
