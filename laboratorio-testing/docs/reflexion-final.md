@@ -102,3 +102,71 @@ Un valor como 50 está en medio del rango y casi cualquier implementación lo tr
 ### 5. ¿Qué aprendió sobre diseñar pruebas?
 
 Que no se trata de probar muchos valores, sino de probar especificos para probar el funcionamiento. Es decir, conviene pensar primero en donde podría fallar la función y escoger los casos a partir de eso, con un caso normal y los valores alrededor de cada límite.
+
+## Parte 13: reflexión final
+
+## Reflexión final
+
+### 1. ¿Qué es software testing?
+
+El software testing consiste en la actividad de ejecutar un programa con entradas definidas y comparar el resultado obtenido con el esperado, para detectar errores del mismo. En este laboratorio se hizo con pruebas escritas en código, que se ejecutan con un comando y dicen cuáles pasan y cuáles fallan.
+
+### 2. ¿Por qué el testing mejora la calidad del software?
+
+Porque esto permite encontrar errores antes de que lleguen a los usuarios que van a usar los programas, y mientras más temprano se detecta un error, más barato resulta corregirlo. Además, las pruebas dan confianza para modificar el código, ya que si algo se rompe, se nota de inmediato.
+
+### 3. ¿Cuál es la diferencia entre verificación y validación?
+
+La verificación comprueba que el producto cumple lo que se especificó, es decir, si se construyó bien. La validación comprueba que el producto sirve para el uso que se necesita, es decir, si se construyó lo correcto [1]. Las pruebas de este laboratorio son sobre todo verificación, porque revisan que las funciones se comporten como se definió.
+
+### 4. ¿Qué es una prueba unitaria?
+
+Es una prueba que revisa una pieza individual del software, como una función [2]. En este laboratorio, por ejemplo, `add(2, 3)` se probó por separado, sin depender del resto del programa.
+
+### 5. ¿Qué es una prueba funcional?
+
+Es una prueba cuyos casos se obtienen de lo que el sistema debe hacer según su especificación [3]. En la Parte 9 se hizo una tabla de casos a partir del requisito de convertir notas a letras, y se revisó que cada caso tuviera su prueba.
+
+### 6. ¿Qué diferencia hay entre `EXPECT_` y `ASSERT_`?
+
+Las dos comprueban una condición, pero en el caso de `ASSERT_`, el mismo detiene la prueba actual cuando falla, y `EXPECT_` registra el fallo pero deja que el programa continue. Por eso se usa `EXPECT_` en la mayoría de los casos, ya que reporta varios fallos en una sola ejecución. `ASSERT_` se deja para cuando seguir no tiene sentido.
+
+### 7. ¿Por qué las pruebas deben ser deterministas?
+
+Porque una prueba que a veces pasa y a veces falla sin que el código cambie hace perder la confianza en las pruebas, además de que perdería el sentido de probarla. Cuando eso ocurre, nadie sabe si un fallo es un error real o ruido.
+
+### 8. ¿Por qué puede ser útil una semilla en pruebas con valores aleatorios?
+
+Porque con una semilla fija el generador produce siempre la misma secuencia de valores. Así la prueba es repetible, y si falla, se puede volver a ejecutar con los mismos datos para encontrar la causa. Esto se vio en la Parte 7, donde cambiar la semilla cambió los valores de la ejecución.
+
+### 9. ¿Qué es cobertura de código?
+
+Es una métrica que indica qué partes del código se ejecutaron mientras corrían las pruebas. Se puede medir por líneas, funciones o ramas. En la Parte 8 se obtuvo 100% de líneas y funciones, y 87.5% de ramas.
+
+### 10. ¿Por qué una cobertura alta no garantiza ausencia de errores?
+
+Porque la cobertura como tal solo indica que tantas lineas se ejecutaron, no que el resultado se haya comprobado ni que el valor obtenido haya sido el esperado. Una prueba puede recorrer todo el código y aun así no revisar nada importante. En este laboratorio las líneas llegaron a 100%, pero quedaron ramas sin cubrir.
+
+### 11. ¿Qué ventaja tiene ejecutar pruebas en GitHub Actions?
+
+Las pruebas se ejecutan solas con cada cambio, en una máquina limpia y sin depender del equipo de nadie. En la Parte 11, un fallo intencional quedó marcado en el pull request apenas se subió, y al corregirlo el workflow volvió a salir en verde.
+
+### 12. ¿Qué parte del laboratorio le pareció más útil?
+
+Los casos borde, junto con la ejecución en GitHub Actions. Los casos borde mostraron que probar solo valores normales deja pasar errores en los límites, y en realidad estos casos son los que a veces se debe de prestar más atención para evitar probelmas en los programas. Actions mostró cómo una prueba que falla se detecta sin que nadie la ejecute a mano, lo cual resulta muy util.
+
+### 13. ¿Qué parte le pareció más difícil?
+
+Configurar GitHub Actions, porque el workflow solo funciona si está en la raíz del repositorio y solo se ejecuta con los eventos correctos. Al principio el push a la rama de trabajo no lo activaba, y fue necesario abrir un pull request hacia `main`.
+
+### 14. ¿Cómo aplicaría pruebas automatizadas en un proyecto futuro?
+
+Se escribirían pruebas junto con el código desde el inicio, incluyendo casos normales, casos borde y casos inválidos. Se ejecutarían en CI con cada pull request, para que nada llegue a la rama principal con pruebas fallidas. También se revisaría la cobertura, sabiendo que sirve para encontrar código sin probar y no para asegurar que no hay errores.
+
+## Referencias
+
+[1] ISTQB, "Verification", en ISTQB Glossary. https://istqb-glossary.page/verification/
+
+[2] ISTQB, "Unit testing", en ISTQB Glossary. https://istqb-glossary.page/unit-testing/
+
+[3] ISTQB, "Functional testing", en ISTQB Glossary. https://istqb-glossary.page/functional-testing/
