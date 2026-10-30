@@ -67,21 +67,9 @@ Todas las pruebas pasaron en local, las 42 que ya existían más las 6 nuevas.
 [  PASSED  ] 48 tests.
 ```
 
-Al compilar aparecieron avisos de `libgcov profiling error ... overwriting an existing profile data`. No son errores del código. Vienen de archivos de cobertura de ejecuciones anteriores que quedaron en `build/`.
-
-### Subida a GitHub
-
-Sí. Se hizo un commit con los tres archivos modificados y se subió la rama `Laboratorio-testing-mini-reto`. Como el workflow solo escucha eventos de `main`, se abrió un pull request hacia `main` para que se ejecutara.
-
-```bash
-git add include/grade_utils.h src/grade_utils.cpp tests/test_grade_utils.cpp
-git commit -m "Agrega is_valid_grade y sus pruebas (mini reto)"
-git push -u origin Laboratorio-testing-mini-reto
-```
-
 ### Ejecución de GitHub Actions
 
-GitHub Actions ejecutó el workflow sobre el pull request y terminó con estado exitoso. Todos los pasos salieron en verde, incluido `Run tests`.
+GitHub Actions ejecutó el workflow sobre el pull request y terminó con estado exitoso. Todos los pasos salieron en verde.
 
 ![Workflow exitoso del mini reto](Captura_parte_12.png)
 
@@ -109,4 +97,4 @@ Un valor como 50 está en medio del rango y casi cualquier implementación lo tr
 
 ### 5. ¿Qué aprendió sobre diseñar pruebas?
 
-Que no se trata de probar muchos valores, sino los correctos. Conviene pensar primero en dónde podría fallar la función y escoger los casos a partir de eso, con un caso normal y los valores alrededor de cada límite.
+Que no se trata de probar muchos valores, sino de probar especificos para probar el funcionamiento. Es decir, conviene pensar primero en donde podría fallar la función y escoger los casos a partir de eso, con un caso normal y los valores alrededor de cada límite.
