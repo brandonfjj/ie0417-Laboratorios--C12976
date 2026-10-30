@@ -42,3 +42,7 @@ char letter_grade(int grade) {
 
     return 'F';
 }
+
+bool is_valid_grade(int grade) {
+    return grade >= 0 && grade <= 100;
+}

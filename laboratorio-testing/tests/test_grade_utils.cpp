@@ -79,3 +79,30 @@ TEST(GradeUtilsTest, GradeBoundaryBetweenBAndA) {
     EXPECT_EQ(letter_grade(89), 'B');
     EXPECT_EQ(letter_grade(90), 'A');
 }
+
+// Mini reto: pruebas de is_valid_grade
+
+TEST(GradeUtilsTest, ValidGradeNormalValue) {
+    EXPECT_TRUE(is_valid_grade(85));
+}
+
+TEST(GradeUtilsTest, InvalidGradeNormalValue) {
+    // Valor claramente fuera del rango, no solo cerca de un borde
+    EXPECT_FALSE(is_valid_grade(250));
+}
+
+TEST(GradeUtilsTest, ValidGradeLowerBound) {
+    EXPECT_TRUE(is_valid_grade(0));
+}
+
+TEST(GradeUtilsTest, ValidGradeUpperBound) {
+    EXPECT_TRUE(is_valid_grade(100));
+}
+
+TEST(GradeUtilsTest, GradeJustBelowLowerBoundIsInvalid) {
+    EXPECT_FALSE(is_valid_grade(-1));
+}
+
+TEST(GradeUtilsTest, GradeJustAboveUpperBoundIsInvalid) {
+    EXPECT_FALSE(is_valid_grade(101));
+}
