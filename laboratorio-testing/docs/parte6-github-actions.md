@@ -89,6 +89,103 @@ Muestra qué trabajo y qué paso fallaron, y el registro completo de cada paso. 
 
 Da una verificación común que no depende de la máquina de nadie. Quien revisa un pull request puede ver si las pruebas pasaron sin tener que ejecutarlas, y quien lo escribió sabe pronto si afectó el trabajo de los demás [2].
 
+## Parte 11: fallo intencional en CI
+
+## Fallo intencional en CI
+
+### Qué se hizo
+
+Se rompió una prueba a propósito para ver cómo reacciona GitHub Actions, y después se corrigió. Antes del cambio, el pull request mostraba el workflow en verde.
+
+![Workflow en verde antes del fallo](Captura_parte_11_antes.png)
+
+### Qué cambio se hizo para provocar el fallo
+
+Se modificó `tests/test_calculator.cpp`. En la prueba `AddPositiveNumbers` se cambió el valor esperado de 5 a 999.
+
+```cpp
+EXPECT_EQ(add(2, 3), 999);
+```
+
+### Qué pasó localmente
+
+Se compiló con `make` y se ejecutó `./run_tests` desde `build/`. Pasaron 41 de las 42 pruebas y falló `CalculatorTest.AddPositiveNumbers`. El programa terminó con código 1.
+
+```
+tests/test_calculator.cpp:6: Failure
+Expected equality of these values:
+  add(2, 3)
+    Which is: 5
+  999
+[  FAILED  ] CalculatorTest.AddPositiveNumbers (0 ms)
+```
+
+### Qué pasó en GitHub Actions
+
+Se subió el cambio con el mensaje `Introduce fallo intencional en prueba`. El pull request volvió a ejecutar el workflow y esta vez terminó en fallo. Los pasos de instalación, configuración y compilación salieron en verde, y solo `Run tests` salió con ✘, lo que hizo fallar el trabajo `build-and-test`.
+
+![Workflow fallido en GitHub Actions](Captura_parte_11_fallo.png)
+
+### Qué mensaje mostró el workflow
+
+En el registro de `Run tests` apareció el mismo mensaje de Google Test que en la terminal. Indica el archivo y la línea (`test_calculator.cpp:6`), el valor obtenido (5) y el esperado (999). También se vio que corrieron 42 pruebas.
+
+![Mensaje de fallo en el paso Run tests](Captura_parte_11_fallo_run_test.png)
+
+### Cómo se corrigió
+
+Se restauró el valor esperado en `tests/test_calculator.cpp`.
+
+```cpp
+EXPECT_EQ(add(2, 3), 5);
+```
+
+Se verificó en local, donde pasaron las 42 pruebas, y se subió con el mensaje `Corrige prueba fallida`.
+
+### Evidencia del workflow exitoso después de corregir
+
+El workflow se ejecutó otra vez sobre el pull request y todos los pasos salieron en verde.
+
+![Workflow exitoso después de corregir](Captura_parte_11_corregido.png)
+
+### Comandos ejecutados
+
+```bash
+cd build
+make
+./run_tests
+git add tests/test_calculator.cpp
+git commit -m "Introduce fallo intencional en prueba"
+git push
+git add tests/test_calculator.cpp
+git commit -m "Corrige prueba fallida"
+git push
+```
+
+Se usó `git add tests/test_calculator.cpp` en lugar de `git add .` para no agregar las carpetas de otros laboratorios.
+
+### Qué se aprendió
+
+Que un error en una prueba no llega desapercibido, porque GitHub lo marca en el pull request con el mismo detalle que se ve en local. También que cada push nuevo vuelve a ejecutar el workflow, así que al corregir bastó con subir el cambio para ver el resultado en verde.
+
+## Preguntas de reflexión de la Parte 11
+
+### 1. ¿Por qué es útil ver una prueba fallar al menos una vez?
+
+Porque confirma que la prueba realmente detecta errores. Una prueba que nunca ha fallado podría estar mal escrita y pasar siempre. Además permite conocer cómo se ve el mensaje de fallo y practicar cómo leerlo.
+
+### 2. ¿Qué diferencia hay entre una prueba fallando localmente y una prueba fallando en CI?
+
+En local el fallo solo lo ve quien ejecuta las pruebas. En CI queda registrado en el pull request y lo ve todo el equipo, porque el pull request queda marcado como fallido [2]. También se ejecuta en una máquina limpia, por lo que descarta que el fallo dependa del entorno de una persona.
+
+### 3. ¿Por qué no se debería dejar código con pruebas fallidas en la rama principal?
+
+Porque la rama principal es la base del trabajo de los demás. Si tiene pruebas fallidas, cualquiera que parta de ella hereda el problema y no sabe si un fallo es suyo o ya existía. Por eso conviene que las pruebas pasen antes del merge [2].
+
+### 4. ¿Qué aporta CI a la calidad del software?
+
+Una revisión automática y constante. Cada cambio se compila y se prueba apenas se sube, así que los errores se encuentran pronto y se corrigen cuando todavía es fácil saber qué los causó [2].
+
 ## Referencias
 
 [1] GitHub, "Understanding GitHub Actions", en GitHub Docs. https://docs.github.com/en/actions/about-github-actions/understanding-github-actions
